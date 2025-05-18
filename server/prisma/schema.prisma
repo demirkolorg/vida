@@ -1,0 +1,296 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----- Enums -----
+
+enum MalzemeTipiEnum {
+  Demirbas
+  Sarf
+}
+
+enum HareketTuruEnum {
+  Zimmet
+  Iade
+  Kayit
+  Devir
+  Kayip
+  KondisyonGuncelleme
+  DepoTransferi
+  Dusum
+}
+
+enum MalzemeKondisyonuEnum {
+  Saglam
+  Arizali
+  Hurda
+}
+
+enum AuditStatusEnum {
+  Aktif
+  Pasif
+  Silindi
+}
+
+enum RoleEnum {
+  User
+  Personel
+  Admin
+  Superadmin
+}
+
+// ----- Models -----
+
+model Birim {
+  id         String    @id // String ID, uygulama tarafından atanacak
+  ad         String    @unique
+  aciklama   String?
+  subeler    Sube[]
+  malzemeler Malzeme[] @relation("KuvveBirimMalzemeleri")
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String // Personel ID'si (String)
+  createdBy   Personel        @relation("BirimCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String? // Personel ID'si (String)
+  updatedBy   Personel?       @relation("BirimUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Sube {
+  id         String    @id
+  ad         String
+  aciklama   String?
+  birimId    String // String FK
+  birim      Birim     @relation(fields: [birimId], references: [id])
+  burolar    Buro[]
+  malzemeler Malzeme[] @relation("IsKarsiligiSubeMalzemeleri")
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String
+  createdBy   Personel        @relation("SubeCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String?
+  updatedBy   Personel?       @relation("SubeUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Buro {
+  id          String     @id
+  ad          String
+  aciklama    String?
+  subeId      String // String FK
+  sube        Sube       @relation(fields: [subeId], references: [id])
+  amirId      String? // String FK
+  amir        Personel?  @relation("BuroAmiri", fields: [amirId], references: [id])
+  personeller Personel[] @relation("BuroPersonelleri")
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String
+  createdBy   Personel        @relation("BuroCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String?
+  updatedBy   Personel?       @relation("BuroUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model SabitKodu {
+  id         String    @id
+  ad         String    @unique
+  aciklama   String?
+  malzemeler Malzeme[]
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String
+  createdBy   Personel        @relation("SabitKoduCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String?
+  updatedBy   Personel?       @relation("SabitKoduUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Marka {
+  id         String    @id
+  ad         String    @unique
+  aciklama   String?
+  modeller   Model[]
+  malzemeler Malzeme[]
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String
+  createdBy   Personel        @relation("MarkaCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String?
+  updatedBy   Personel?       @relation("MarkaUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Model {
+  id         String    @id
+  ad         String
+  aciklama   String?
+  markaId    String // String FK
+  marka      Marka     @relation(fields: [markaId], references: [id])
+  malzemeler Malzeme[]
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String
+  createdBy   Personel        @relation("ModelCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String?
+  updatedBy   Personel?       @relation("ModelUpdatedBy", fields: [updatedById], references: [id])
+
+  @@unique([ad, markaId])
+}
+
+model Depo {
+  id       String  @id
+  ad       String  @unique
+  aciklama String?
+  konumlar Konum[]
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String
+  createdBy   Personel        @relation("DepoCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String?
+  updatedBy   Personel?       @relation("DepoUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Konum {
+  id                 String           @id
+  ad                 String
+  aciklama           String?
+  depoId             String // String FK
+  depo               Depo             @relation(fields: [depoId], references: [id])
+  malzemeHareketleri MalzemeHareket[]
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String
+  createdBy   Personel        @relation("KonumCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String?
+  updatedBy   Personel?       @relation("KonumUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Malzeme {
+  id                 String           @id
+  vidaNo             String?          @unique
+  kayitTarihi        DateTime?        @db.Date
+  malzemeTipi        MalzemeTipiEnum
+  birimId            String // String FK
+  birim              Birim            @relation("KuvveBirimMalzemeleri", fields: [birimId], references: [id])
+  subeId             String // String FK
+  sube               Sube             @relation("IsKarsiligiSubeMalzemeleri", fields: [subeId], references: [id])
+  sabitKoduId        String // String FK
+  sabitKodu          SabitKodu        @relation(fields: [sabitKoduId], references: [id])
+  markaId            String // String FK
+  marka              Marka            @relation(fields: [markaId], references: [id])
+  modelId            String // String FK
+  model              Model            @relation(fields: [modelId], references: [id])
+  kod                String?
+  bademSeriNo        String?
+  etmysSeriNo        String?
+  stokDemirbasNo     String?          @unique
+  aciklama           String?
+  malzemeHareketleri MalzemeHareket[]
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String // String FK
+  createdBy   Personel        @relation("MalzemeCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String? // String FK
+  updatedBy   Personel?       @relation("MalzemeUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model MalzemeHareket {
+  id                String                @id
+  islemTarihi       DateTime              @default(now())
+  hareketTuru       HareketTuruEnum
+  malzemeKondisyonu MalzemeKondisyonuEnum
+  malzemeId         String // String FK
+  malzeme           Malzeme               @relation(fields: [malzemeId], references: [id])
+  kaynakPersonelId  String? // String FK
+  kaynakPersonel    Personel?             @relation("HareketKaynakPersonel", fields: [kaynakPersonelId], references: [id])
+  hedefPersonelId   String? // String FK
+  hedefPersonel     Personel?             @relation("HareketHedefPersonel", fields: [hedefPersonelId], references: [id])
+  konumId           String? // String FK
+  konum             Konum?                @relation(fields: [konumId], references: [id])
+  aciklama          String?
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String // String FK
+  createdBy   Personel        @relation("MalzemeHareketCreatedBy", fields: [createdById], references: [id])
+}
+
+model Personel {
+  id         String    @id
+  ad         String
+  sicil      String    @unique
+  parola     String
+  role       RoleEnum  @default(Personel)
+  avatar     String?
+  buroId     String? // String FK
+  buro       Buro?     @relation("BuroPersonelleri", fields: [buroId], references: [id])
+  isUser     Boolean   @default(false)
+  isAmir     Boolean   @default(false)
+  lastLogin  DateTime?
+  lastLogout DateTime?
+
+  birimlerOlusturan           Birim[]          @relation("BirimCreatedBy")
+  birimlerGuncelleyen         Birim[]          @relation("BirimUpdatedBy")
+  subelerOlusturan            Sube[]           @relation("SubeCreatedBy")
+  subelerGuncelleyen          Sube[]           @relation("SubeUpdatedBy")
+  burolarOlusturan            Buro[]           @relation("BuroCreatedBy")
+  burolarGuncelleyen          Buro[]           @relation("BuroUpdatedBy")
+  yonettigiBurolar            Buro[]           @relation("BuroAmiri")
+  sabitKodlarOlusturan        SabitKodu[]      @relation("SabitKoduCreatedBy")
+  sabitKodlarGuncelleyen      SabitKodu[]      @relation("SabitKoduUpdatedBy")
+  markalarOlusturan           Marka[]          @relation("MarkaCreatedBy")
+  markalarGuncelleyen         Marka[]          @relation("MarkaUpdatedBy")
+  modellerOlusturan           Model[]          @relation("ModelCreatedBy")
+  modellerGuncelleyen         Model[]          @relation("ModelUpdatedBy")
+  depolarOlusturan            Depo[]           @relation("DepoCreatedBy")
+  depolarGuncelleyen          Depo[]           @relation("DepoUpdatedBy")
+  konumlarOlusturan           Konum[]          @relation("KonumCreatedBy")
+  konumlarGuncelleyen         Konum[]          @relation("KonumUpdatedBy")
+  malzemelerOlusturan         Malzeme[]        @relation("MalzemeCreatedBy")
+  malzemelerGuncelleyen       Malzeme[]        @relation("MalzemeUpdatedBy")
+  malzemeHareketleriOlusturan MalzemeHareket[] @relation("MalzemeHareketCreatedBy")
+  malzemeHareketleriKaynak    MalzemeHareket[] @relation("HareketKaynakPersonel")
+  malzemeHareketleriHedef     MalzemeHareket[] @relation("HareketHedefPersonel")
+  auditLoglarOlusturan        AuditLog[]       @relation("AuditLogCreatedBy")
+  kendiKaydiniOlusturan       Personel[]       @relation("PersonelCreatedBy")
+  kendiKaydiniGuncelleyen     Personel[]       @relation("PersonelUpdatedBy")
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String? // String FK
+  createdBy   Personel?       @relation("PersonelCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String? // String FK
+  updatedBy   Personel?       @relation("PersonelUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model AuditLog {
+  id          String    @id
+  level       String
+  rota        String
+  hizmet      String
+  log         Json
+  createdAt   DateTime  @default(now())
+  createdById String? // String FK
+  createdBy   Personel? @relation("AuditLogCreatedBy", fields: [createdById], references: [id])
+}
