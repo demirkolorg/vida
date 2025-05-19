@@ -19,7 +19,7 @@
   },
   "prisma": {
     "schema": "server/prisma/schema.prisma",
-    "seed": "node server/prisma/seed.js" 
+    "seed": "node server/prisma/seed.js"
   },
   "keywords": [],
   "author": "",

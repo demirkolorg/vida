@@ -7,6 +7,6 @@ import { RoleEnum } from '@prisma/client';
 r.post('/login', c.login);
 r.post('/register', c.register);
 r.post('/refreshAccessToken', c.refreshAccessToken);
-r.post('/logout', c.logout);
+r.post('/logout',authToken, c.logout);
 
 export default r;

@@ -5,8 +5,8 @@ import { HizmetName, HumanName } from './base.js';
 
 const controller = {
   login: async (req, res) => {
+    const rota = 'login';
     try {
-      const rota = 'login';
       const data = req.body;
 
       if (!data.sicil) return response.error(req, res, HizmetName, rota, message.login.error, message.required.sicil);
@@ -20,8 +20,8 @@ const controller = {
   },
 
   register: async (req, res) => {
+    const rota = 'register';
     try {
-      const rota = 'register';
       const data = req.body;
 
       if (!data.ad) return response.error(req, res, HizmetName, rota, message.register.error, message.required.ad);
@@ -38,8 +38,8 @@ const controller = {
   },
 
   refreshAccessToken: async (req, res) => {
+    const rota = 'refreshAccessToken';
     try {
-      const rota = 'refreshAccessToken';
       const data = req.body;
       data.islemYapanKullanici = req.user.id;
 
@@ -54,13 +54,14 @@ const controller = {
   },
 
   logout: async (req, res) => {
+    const rota = 'logout';
     try {
-      const rota = 'logout';
       const data = req.body;
+      console.log('data', data);
+      console.log('req.user', req.user);
       data.islemYapanKullanici = req.user.id;
 
       if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.logout.error, message.required.islemYapanKullanici);
-      if (!data.id) return response.error(req, res, HizmetName, rota, message.logout.error, message.required.id);
 
       const result = await service[rota](data);
 
