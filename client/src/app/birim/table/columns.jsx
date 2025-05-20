@@ -1,23 +1,12 @@
-// birim.columns.js
 
-// 'use client'; // JavaScript dosyasında bu direktife genellikle gerek yoktur.
-// Eğer Next.js veya benzeri bir framework kullanıyorsanız ve bu dosya
-// client-side render ediliyorsa, framework bunu kendi yönetir.
-
-// Gerekli React importu (JSX kullanıldığı için)
 import React from 'react';
-// import type { ColumnDef } from '@tanstack/react-table'; // Tip importu kaldırıldı
 import { HeaderButton } from '@/components/table/HeaderButton';
 import { AvatarWithNameAndHover } from '@/components/table/AvatarWithNameAndHover'; // Personel gösterimi için
 import { turkishCaseInsensitiveFilterFn } from '@/components/table/Functions';
 import { Badge } from '@/components/ui/badge'; // Status gösterimi için (opsiyonel)
 import { format } from 'date-fns'; // Tarih formatlama için (opsiyonel)
-import { tr } from 'date-fns/locale'; // Türkçe lokalizasyon için (opsiyonel)
+import {  tr } from 'date-fns/locale'; // Türkçe lokalizasyon için (opsiyonel)
 
-// YEREL - Tip importu kaldırıldı
-// import type { Birim_Item as EntityItem } from '../constant/types';
-
-// AuditStatusEnum'un string değerlerini ve renklerini eşleştirmek için bir yardımcı (opsiyonel)
 const statusStyles = {
   Aktif: 'bg-green-500 hover:bg-green-600',
   Pasif: 'bg-yellow-500 hover:bg-yellow-600',
@@ -25,7 +14,6 @@ const statusStyles = {
 };
 
 export const Birim_Columns = () => [
-  // Fonksiyon dönüş tipi ek açıklaması kaldırıldı
   {
     accessorKey: 'ad',
     header: ({ column }) => <HeaderButton column={column} title="Birim Adı" />,
@@ -86,6 +74,7 @@ export const Birim_Columns = () => [
     size: 100,
     enableHiding: false,
     enableSorting: true,
+    hideable: true,
   },
   {
     accessorKey: 'createdBy',

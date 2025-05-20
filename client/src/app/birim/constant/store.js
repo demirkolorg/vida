@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { createCrudStore } from '@/stores/crudStoreFactory';
-import { apiBirimGetAll, apiBirimGetById, apiBirimCreate, apiBirimUpdate, apiBirimDelete, apiBirimSearch, apiBirimUpdateStatus } from './api'; // .js uzantısı eklenebilir veya build aracınız halleder
+import { getAll, getById, create, update, search, updateStatus, deleteEntity } from './api';
+import { ENTITY_HUMAN } from './api';
 
 export const useBirimStore = createCrudStore(
-  'Birim',
+  ENTITY_HUMAN,
   {
-    // Temel CRUD API fonksiyonları
-    getAll: apiBirimGetAll,
-    getById: apiBirimGetById,
-    create: apiBirimCreate,
-    update: apiBirimUpdate,
-    delete: apiBirimDelete,
-    search: apiBirimSearch, // Birim arama API fonksiyonu
-    updateStatus: apiBirimUpdateStatus, // Birim için updateStatus API fonksiyonu
+    getAll: getAll,
+    getById: getById,
+    create: create,
+    update: update,
+    delete: deleteEntity,
+    search: search,
+    updateStatus: updateStatus,
   },
   (set, get, baseStore) => {
     // Eğer özel state/action yoksa bu fonksiyon tamamen kaldırılabilir
@@ -30,12 +30,4 @@ export const useBirimStore = createCrudStore(
       // --- Özel State ve Action'lar Sonu ---
     };
   },
-  // Opsiyonel: Store için başlangıç state değerleri
-  // {
-  //   loadingList: true, // Örneğin, uygulama başlarken liste direkt yüklensin isteniyorsa
-  // }
 );
-
-// Store'u kullanmak için:
-// import { useBirimStore } from './birim.store';
-// const { datas, FetchAll, Create, loadingAction } = useBirimStore();

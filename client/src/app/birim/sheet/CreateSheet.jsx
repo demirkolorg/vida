@@ -1,30 +1,13 @@
-// src/app/(features)/birim/sheet/birim-create-sheet.jsx (Örnek dosya yolu)
-
-// 'use client'; // JavaScript dosyasında bu direktife genellikle gerek yoktur.
-
 import React from 'react';
 import { FormFieldInput } from '@/components/table/FormFieldInput';
 import { FormFieldTextarea } from '@/components/table/FormFieldTextarea';
 import { BaseCreateSheet } from '@/components/sheet/BaseCreateSheet';
 
-// YEREL
-import { useBirimStore } from '../constant/store'; // .js uzantısı eklenebilir
-// Zod şeması doğrudan import edilir, tipler değil.
-import { Birim_CreateSchema as EntityCreateSchema } from '../constant/schema'; // .js uzantısı eklenebilir
+import { useBirimStore } from '../constant/store'; 
+import { Birim_CreateSchema as EntityCreateSchema } from '../constant/schema'; 
+import { ENTITY_TYPE ,ENTITY_HUMAN} from '../constant/api';
 
-// Tip importları kaldırıldı
-// import type {
-//   Birim_Item as EntityItem,
-//   Birim_CreateSheetProps as EntityCreateSheetProps,
-//   Birim_FormRenderInputProps as EntityFormRenderInputProps,
-// } from '../constant/types';
 
-// --- Bileşen Konfigürasyonu ---
-const TITLE = 'Yeni Birim Ekle';
-const ENTITY_TYPE = 'birim';
-
-// Form alanlarını render eden fonksiyon
-// Parametrelerden tip ek açıklamaları kaldırıldı
 const renderFormInputs = ({ formData, setFieldValue, errors }) => (
   // JSX için React importu gerekli
   <div className="space-y-4">
@@ -38,7 +21,7 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => (
       showRequiredStar={true}
       maxLength={100}
       placeholder="Birim adını giriniz"
-    />
+      />
     <FormFieldTextarea
       label="Açıklama"
       name="aciklama"
@@ -48,35 +31,30 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => (
       error={errors.aciklama}
       placeholder="Birim ile ilgili kısa bir açıklama (opsiyonel)"
       rows={3}
-    />
+      />
     {/*
       <FormFieldSelect
-        label="Bağlı Şubeler"
-        name="subeIds"
+      label="Bağlı Şubeler"
+      name="subeIds"
       />
-    */}
+      */}
   </div>
 );
 
-// Fonksiyon parametrelerinden ve dönüş tipinden tip ek açıklamaları kaldırıldı
-export const BirimCreateSheet = (props) => { // React.FC kaldırıldı, props doğrudan alınır
+export const BirimCreateSheet = (props) => { 
   const createAction = useBirimStore(state => state.Create);
   const loadingCreate = useBirimStore(state => state.loadingAction);
 
-  // BaseCreateSheet generic tipleri (<EntityItem, EntityCreatePayload>) kaldırıldı
   return (
     <BaseCreateSheet
-      entityType={props.entityType || ENTITY_TYPE}
-      title={TITLE}
-      schema={EntityCreateSchema} // Zod şeması doğrudan kullanılır
+      entityType={ENTITY_TYPE}
+      title={`Yeni ${ENTITY_HUMAN} Ekle`}
+      schema={EntityCreateSchema}
       createAction={createAction}
       loadingCreate={loadingCreate}
-      // itemToString={(item) => item.ad || 'Yeni Birim'}
-      // defaultValues={{}}
-      {...props} // Diğer props'ları BaseCreateSheet'e yay
+      {...props}
     >
       {({ formData, setFieldValue, errors }) =>
-        // renderFormInputs'a geçerken tip zorlaması (as EntityFormRenderInputProps) kaldırıldı
         renderFormInputs({ formData, setFieldValue, errors })
       }
     </BaseCreateSheet>

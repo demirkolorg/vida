@@ -1,26 +1,9 @@
-// src/app/(features)/birim/sheet/birim-delete-sheet.jsx (Örnek dosya yolu)
-
-// 'use client'; // JavaScript dosyasında bu direktife genellikle gerek yoktur.
-
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { BaseDeleteSheet } from "@/components/sheet/BaseDeleteSheet";
-
-// YEREL
 import { useBirimStore } from "../constant/store"; // .js uzantısı eklenebilir
+import {ENTITY_TYPE, ENTITY_HUMAN} from '../constant/api'; 
 
-// Tip importları kaldırıldı
-// import type {
-//   Birim_Item as EntityItem,
-//   Birim_DeleteSheetProps as EntityDeleteSheetProps,
-// } from "../constant/types";
-
-// --- Bileşen Konfigürasyonu ---
-const TITLE = "Birimi Sil";
-const ENTITY_TYPE = "birim";
-
-// Silme onayı için gösterilecek detayları render eden fonksiyon
-// Parametreden tip ek açıklaması kaldırıldı
 const renderBirimDetails = (itemData) => (
   // JSX için React importu gerekli
   <div className="space-y-3 rounded-md border bg-muted/30 p-4">
@@ -54,7 +37,7 @@ const renderBirimDetails = (itemData) => (
             itemData.subeler.length > 0 ? "destructive_muted" : "outline"
           }
           className="text-xs"
-        >
+          >
           {itemData.subeler.length}
         </Badge>
       </div>
@@ -69,7 +52,7 @@ const renderBirimDetails = (itemData) => (
             itemData.malzemeler.length > 0 ? "destructive_muted" : "outline"
           }
           className="text-xs"
-        >
+          >
           {itemData.malzemeler.length}
         </Badge>
       </div>
@@ -83,21 +66,17 @@ const renderBirimDetails = (itemData) => (
   </div>
 );
 
-// Fonksiyon parametrelerinden ve dönüş tipinden tip ek açıklamaları kaldırıldı
 export const BirimDeleteSheet = (props) => { // React.FC kaldırıldı, props doğrudan alınır
   const deleteAction = useBirimStore((state) => state.Delete);
   const loadingAction = useBirimStore((state) => state.loadingAction);
 
-  // BaseDeleteSheet generic tipi (<EntityItem>) kaldırıldı
   return (
     <BaseDeleteSheet
-      entityType={props.entityType || ENTITY_TYPE}
-      title={TITLE}
+      entityType={ENTITY_TYPE}
+      title={`${ENTITY_HUMAN} Sil`}
       deleteAction={deleteAction}
       loadingAction={loadingAction}
-      // item={props.item} // Eğer props'tan item alınıyorsa
-      // itemToString={(item) => item.ad || 'Birim'}
-      {...props} // Diğer props'ları BaseDeleteSheet'e yay
+      {...props} 
     >
       {(item) => renderBirimDetails(item)}
     </BaseDeleteSheet>

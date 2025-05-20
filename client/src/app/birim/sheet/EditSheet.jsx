@@ -1,62 +1,17 @@
-// src/app/(features)/birim/sheet/birim-edit-sheet.jsx (Örnek dosya yolu)
-
-// 'use client'; // JavaScript dosyasında bu direktife genellikle gerek yoktur.
-
 import React from 'react'; // useEffect, useMemo gerekirse eklenecek
 import { FormFieldInput } from '@/components/table/FormFieldInput';
 import { FormFieldTextarea } from '@/components/table/FormFieldTextarea';
-// import { FormFieldCombobox } from '@/components/table/FormFieldCombobox'; // Gerekirse
 import { BaseEditSheet } from '@/components/sheet/BaseEditSheet';
-// import { selectIsSheetOpen, useSheetStore } from '@/stores/sheetStore'; // Gerekirse
-
-// YEREL Store ve Tipler
 import { useBirimStore } from '../constant/store'; // .js uzantısı eklenebilir
-// import { useSubeStore } from '../../sube/sube.store'; // Örnek
-// Tip importları kaldırıldı
-// import type { Sube_Item as SubeItemForSelect } from '../../sube/sube.types';
-// import type {
-//   Birim_Item as EntityItem,
-//   Birim_EditSheetProps as EntityEditSheetProps,
-// } from '../constant/types';
+import {  Birim_FormInputSchema as EntityFormUpdateSchema } from '../constant/schema'; // .js uzantısı eklenebilir
+import {ENTITY_HUMAN, ENTITY_TYPE} from '../constant/api'; 
 
-// Zod şeması import edilir, tipler değil.
-import {
-  // type Birim_UpdatePayload as EntityUpdatePayload, // Tip importu kaldırıldı
-  Birim_FormInputSchema as EntityFormUpdateSchema,
-} from '../constant/schema'; // .js uzantısı eklenebilir
-
-// --- Bileşen Konfigürasyonu ---
-const TITLE = 'Birimi Düzenle';
-const ENTITY_TYPE = 'birim';
-
-// Fonksiyon parametrelerinden ve dönüş tipinden tip ek açıklamaları kaldırıldı
 export const BirimEditSheet = (props) => { // React.FC kaldırıldı
   const updateAction = useBirimStore(state => state.Update);
   const loadingAction = useBirimStore(state => state.loadingAction);
   const currentItemForEdit = useBirimStore(state => state.currentData);
 
-  // const subelerForSelect = useSubeStore(state => state.datas);
-  // const loadingSubeler = useSubeStore(state => state.loadingList);
-  // const fetchSubeler = useSubeStore(state => state.FetchAll);
-  // const isSheetOpen = useSheetStore(selectIsSheetOpen('edit', ENTITY_TYPE));
-
-  // useEffect(() => {
-  //   if (isSheetOpen && subelerForSelect.length === 0 && !loadingSubeler) {
-  //     fetchSubeler();
-  //   }
-  // }, [isSheetOpen, fetchSubeler, subelerForSelect.length, loadingSubeler]);
-
-  // const subeOptions = useMemo(() => {
-  //   if (!Array.isArray(subelerForSelect)) return [];
-  //   return subelerForSelect.map(sube => ({
-  //     label: sube.ad || 'İsimsiz Şube',
-  //     value: sube.id,
-  //   }));
-  // }, [subelerForSelect]);
-
-  // Parametrelerden ve dönüş tipinden tip ek açıklamaları kaldırıldı
   const handleBirimUpdateSubmit = async (id, formData) => {
-    // JavaScript'te Partial tipi yoktur, bu yüzden payload'u boş bir nesne olarak başlatırız.
     const payload = {};
 
     if (formData.ad !== undefined && formData.ad !== currentItemForEdit?.ad) {
@@ -66,15 +21,9 @@ export const BirimEditSheet = (props) => { // React.FC kaldırıldı
       payload.aciklama = formData.aciklama;
     }
 
-    // const filteredPayload = Object.entries(payload).reduce((acc, [key, value]) => {
-    //   if (value !== undefined && value !== null && (typeof value !== 'string' || value !== '')) {
-    //     acc[key] = value; // Tip zorlaması kaldırıldı
-    //   }
-    //   return acc;
-    // }, {});
 
     if (Object.keys(payload).length === 0) {
-      // toast.info("Değişiklik yapılmadı.");
+       toast.info("Değişiklik yapılmadı.");
       return currentItemForEdit;
     }
 
@@ -128,11 +77,10 @@ export const BirimEditSheet = (props) => { // React.FC kaldırıldı
     </div>
   );
 
-  // BaseEditSheet generic tipleri (<EntityItem, EntityUpdatePayload>) kaldırıldı
   return (
     <BaseEditSheet
-      entityType={props.entityType || ENTITY_TYPE}
-      title={TITLE}
+      entityType={ ENTITY_TYPE}
+      title={`${ENTITY_HUMAN} Düzenle`}
       description={generateBirimDescription}
       schema={EntityFormUpdateSchema} // Zod şeması doğrudan kullanılır
       updateAction={handleBirimUpdateSubmit}

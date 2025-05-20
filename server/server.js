@@ -35,10 +35,10 @@ app.options("*", cors(corsOptions));
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan("dev"));
-app.get("/", (req, res) => {
+app.get("/api/", (req, res) => {
   res.send("Vida API'sine Hoş Geldiniz!");
 });
-app.use("/", router);
+app.use("/api/", router);
 app.use(errorHandler);
 
 server

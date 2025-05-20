@@ -37,7 +37,7 @@ export const VidaNavMenu = () => {
                       {" "}
                       {/* Bu span, NavLink'in tek çocuğu olur */}
                       {IconComponent && (
-                        <IconComponent className="h-4 w-4 mr-2" />
+                        <IconComponent className="h-6 w-6 mr-2" />
                       )}
                       {/* item.label null veya undefined değilse render et */}
                       {item.label != null && item.label}

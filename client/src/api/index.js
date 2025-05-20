@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const _serverUrl = 'http://localhost:1007';
+const _serverUrl = 'http://localhost:1007/api/';
 
 export const axiosInstance = async (method, endpoint, data) => {
   let token = null;
