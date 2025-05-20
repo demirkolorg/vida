@@ -1,75 +1,29 @@
-import { BookOpen, Bot, Fan,EggFried, LayoutDashboard, Settings2, SquareTerminal,LucideAirVent ,Map,MapPin} from 'lucide-react';
+import { LayoutDashboard, Users, Package, ShieldCheck, Route } from 'lucide-react';
 
 export const NavMainData = [
-  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-
   {
-    title: 'İller',
-    url: '/il',
-    icon: Map,
-    items: [
-      { title: 'Tablo', url: '/iltablo' },
-      { title: 'Harita', url: '/ilharita' },
-    ],
+    to: '/',
+    label: 'Anasayfa',
+    icon: LayoutDashboard,
   },
   {
-    title: 'İlçeler',
-    url: '/ilce',
-    icon: MapPin,
-    items: [
-      { title: 'Tablo', url: '/ilcetablo' },
-      { title: 'Harita', url: '/ilceharita' },
-    ],
+    to: '/personeller',
+    label: 'Personeller',
+    icon: Users,
   },
   {
-    title: 'Mülki İdare Amirleri',
-    url: '/mia',
-    icon: SquareTerminal,
-    items: [
-      { title: 'Tablo', url: '/mialist' },
-      { title: 'Harita', url: '/miamaps' },
-      { title: 'Güncelle', url: '/miaupdate' },
-    ],
+    to: '/malzemeler',
+    label: 'Malzemeler',
+    icon: Package,
   },
   {
-    title: 'Valilikler',
-    url: '/valilik',
-    icon: Bot,
-    items: [
-      { title: 'Listele', url: '/valiliklist' },
-      { title: 'Karşılaştır', url: '/valilikcompare' },
-      { title: 'Güncelle', url: '/valilikupdate' },
-    ],
+    to: '/malzeme-hareketleri',
+    label: 'Malzeme Hareketleri',
+    icon: Route,
   },
   {
-    title: 'Kaymakamlıklar',
-    url: '/kaymakamlik',
-    icon: BookOpen,
-    items: [
-      { title: 'Listele', url: '/kaymakamliklist' },
-      { title: 'Karşılaştır', url: '/kaymakamlikcompare' },
-      { title: 'Güncelle', url: '/kaymakamlikupdate' },
-    ],
+    to: '/birim',
+    label: 'Birim',
+    icon: ShieldCheck,
   },
-  {
-    title: 'Belediye Başkanları',
-    url: '/mip',
-    icon: LucideAirVent,
-    items: [
-      { title: 'Listele', url: '/miplist' },
-      { title: 'Karşılaştır', url: '/mipcompare' },
-      { title: 'Güncelle', url: '/mipupdate' },
-    ],
-  },
-  {
-    title: 'Belediyeler',
-    url: '/belediye',
-    icon: Settings2,
-    items: [
-      { title: 'Listele', url: '/belediyelist' },
-      { title: 'Karşılaştır', url: '/belediyecompare' },
-      { title: 'Güncelle', url: '/belediyeupdate' },
-    ],
-  },
- 
 ];

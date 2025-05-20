@@ -4,36 +4,55 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { Spinner } from "@/components/general/Spinner";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { NotFoundPage } from "@/pages/not-found";
-import { HomePage } from "@/pages/home";
 import { RootLayout } from "@/layout/RootLayout";
 import { AuthLayout } from "@/layout/AuthLayout";
 import { DashboardPage } from "@/pages/dashboard";
 import { useAuthStore } from "@/stores/authStore";
 import LoginPage from "@/pages/auth/login";
+import { BirimListPage } from "../app/birim/pages/ListPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <RootLayout />,
+    element: <RootLayout />, // RootLayout <Outlet /> ve <Toaster /> içerir
     errorElement: <NotFoundPage />,
-    handle: { breadcrumb: () => <HomeIcon className="h-4 w-4" /> },
+    handle: { breadcrumb: () => <HomeIcon className="h-4 w-4" /> }, // Ana sayfa breadcrumb'ı
     children: [
-      { index: true, element: <LoginPage /> },
       {
-        element: <ProtectedRoute />,
+        // 1. Giriş sayfası için ayrı bir yol (korumasız)
+        path: "login",
+        element: <LoginPage />,
+      },
+      {
+        // 2. Koruma altındaki tüm yollar için bir sarmalayıcı
+        element: <ProtectedRoute />, // Bu bileşen giriş yapılmamışsa /login'e yönlendirir
         children: [
+          // {
+          //   // 3. Ana sayfa ("/") artık burası ve ProtectedRoute altında
+          //   index: true, // path: "/" ile aynı anlama gelir (parent'ı "/" olduğu için)
+          //   element: <HomePage />,
+          //   // handle: { breadcrumb: "Ana Sayfa" }, // Gerekirse HomePage için breadcrumb
+          // },
           {
-            element: <AuthLayout />,
+            // 4. AuthLayout kullanan diğer korumalı yollar (örneğin /dashboard)
+            element: <AuthLayout />, // Kenar çubuğu, başlık vb. içeren layout
             children: [
               {
-                path: "/dashboard",
+                path: "/", // "/dashboard" olarak çözümlenir
                 element: <DashboardPage />,
                 handle: { breadcrumb: "Dashboard" },
+              },  {
+                path: "/birim", // "/dashboard" olarak çözümlenir
+                element: <BirimListPage />,
+                handle: { breadcrumb: "Birim" },
               },
+              // ... AuthLayout kullanan diğer korumalı sayfalarınız
             ],
           },
+          // ... AuthLayout KULLANMAYAN ama korumalı olan başka sayfalarınız varsa buraya eklenebilir
         ],
       },
+      // ... Diğer herkese açık yollarınız (varsa)
     ],
   },
 ]);

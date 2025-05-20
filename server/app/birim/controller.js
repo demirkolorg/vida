@@ -5,8 +5,8 @@ import { HizmetName, HumanName } from './base.js';
 
 const controller = {
   getAll: async (req, res) => {
+    const rota = 'getAll';
     try {
-      const rota = 'getAll';
       const result = await service[rota]();
       response.success(req, res, HizmetName, rota, message.list.ok, result);
     } catch (error) {
@@ -15,8 +15,8 @@ const controller = {
   },
 
   getById: async (req, res) => {
+    const rota = 'getById';
     try {
-      const rota = 'getById';
       const data = req.body;
 
       if (!data.id) return response.error(req, res, HizmetName, rota, message.get.error, message.required.id);
@@ -29,8 +29,8 @@ const controller = {
   },
 
   create: async (req, res) => {
+    const rota = 'create';
     try {
-      const rota = 'create';
       const data = req.body;
       data.islemYapanKullanici = req.user.id;
 
@@ -45,8 +45,8 @@ const controller = {
   },
 
   update: async (req, res) => {
+    const rota = 'update';
     try {
-      const rota = 'update';
       const data = req.body;
       data.islemYapanKullanici = req.user.id;
 
@@ -61,8 +61,8 @@ const controller = {
   },
 
   updateStatus: async (req, res) => {
+    const rota = 'updateStatus';
     try {
-      const rota = 'updateStatus';
       const data = req.body;
       data.islemYapanKullanici = req.user.id;
 
@@ -77,10 +77,9 @@ const controller = {
     }
   },
 
-
   delete: async (req, res) => {
+    const rota = 'delete';
     try {
-      const rota = 'delete';
       const data = req.body;
       data.islemYapanKullanici = req.user.id;
 
@@ -96,8 +95,8 @@ const controller = {
   },
 
   health: async (req, res) => {
+    const rota = 'health';
     try {
-      const rota = 'health';
       const result = { status: `${HumanName} Servisi Aktif`, timestamp: new Date().toISOString() };
       response.success(req, res, HizmetName, rota, message.health.ok, result);
     } catch (error) {
@@ -106,8 +105,8 @@ const controller = {
   },
 
   search: async (req, res) => {
+    const rota = 'search';
     try {
-      const rota = 'search';
       const data = req.body;
 
       if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.get.error, message.required.islemYapanKullanici);

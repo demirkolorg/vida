@@ -1,28 +1,24 @@
 // src/components/LoginForm.tsx (veya benzeri bir yol)
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils"; // Shadcn UI utility
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from 'react-router-dom';
-// import { Package2 } from "lucide-react"; // Login formunda doğrudan kullanılmıyor gibi
-import { useAuthStore } from '@/stores/authStore'; // authStore'unuzun doğru yolu
-import { toast } from 'sonner';
+import { Link } from "react-router-dom";
+import { useAuthStore } from "@/stores/authStore"; // authStore'unuzun doğru yolu
+import { toast } from "sonner";
 
 // Props tipini React.ComponentProps<"form"> yerine daha spesifik yapabiliriz
 // ama şimdilik bu şekilde bırakıyorum.
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"form">) {
-  const [sicil, setSicil] = useState('');
-  const [parola, setParola] = useState('');
+export function LoginForm({ redirectTo = "/" ,className, ...props }) {
+  const [sicil, setSicil] = useState("");
+  const [parola, setParola] = useState("");
   const authLogin = useAuthStore((state) => state.login); // Store'daki login fonksiyonu
   const isLoading = useAuthStore((state) => state.loading);
   const navigate = useNavigate();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!sicil.trim() || !parola.trim()) {
       toast.error("Sicil ve parola alanları boş bırakılamaz.");
@@ -30,14 +26,9 @@ export function LoginForm({
     }
 
     try {
-      // authStore'daki login fonksiyonu {sicil, parola} objesini bekliyor olmalı.
-      // Bu fonksiyon başarılı olursa true dönecek veya hata fırlatacak.
       await authLogin({ sicil, parola });
-      // Başarılı giriş mesajı store'dan veya buradan verilebilir. Store'da zaten var.
-      navigate('/dashboard'); // Başarılı giriş sonrası yönlendir
+      navigate(redirectTo, { replace: true }); // Başarılı login sonrası yönlendir
     } catch (error) {
-      // Hata mesajı zaten authStore'daki login fonksiyonu tarafından toast ile gösteriliyor.
-      // Burada ek bir loglama yapılabilir.
       console.error("LoginForm handleSubmit error:", error);
     }
   };
@@ -45,7 +36,10 @@ export function LoginForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className={cn("w-full max-w-md mx-auto flex flex-col gap-6 p-6 sm:p-8 border rounded-lg shadow-lg bg-card", className)}
+      className={cn(
+        "w-full max-w-md mx-auto flex flex-col gap-6 p-6 sm:p-8 border rounded-lg shadow-lg bg-card",
+        className
+      )}
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center">
@@ -92,12 +86,15 @@ export function LoginForm({
           />
         </div>
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+          {isLoading ? "Giriş Yapılıyor..." : "Giriş Yap"}
         </Button>
       </div>
       <div className="text-center text-sm">
         Hesabın yok mu?{" "}
-        <Link to="/kayit-ol" className="font-medium underline underline-offset-4 text-primary hover:text-primary/90">
+        <Link
+          to="/kayit-ol"
+          className="font-medium underline underline-offset-4 text-primary hover:text-primary/90"
+        >
           Kayıt ol
         </Link>
       </div>

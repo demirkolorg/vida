@@ -57,8 +57,6 @@ const controller = {
     const rota = 'logout';
     try {
       const data = req.body;
-      console.log('data', data);
-      console.log('req.user', req.user);
       data.islemYapanKullanici = req.user.id;
 
       if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.logout.error, message.required.islemYapanKullanici);

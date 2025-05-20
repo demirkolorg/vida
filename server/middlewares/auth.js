@@ -68,7 +68,6 @@ const authToken = (req, res, next) => {
 const authRoles = (...roles) => {
   return (req, res, next) => {
     try {
-      console.log("req.user", req.user);
       if (!req.user) {
         return res.status(401).json({
           success: false,
