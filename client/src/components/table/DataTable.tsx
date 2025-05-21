@@ -5,7 +5,14 @@ import { Spinner } from "../general/Spinner";
 import { Button } from "../ui/button";
 import { DataTableFacetedFilter } from "./Filter";
 import { DataTablePagination } from "./Pagination";
-import { Search, XIcon, RefreshCw, Plus, ChevronDown } from "lucide-react";
+import {
+  Search,
+  XIcon,
+  RefreshCw,
+  Plus,
+  ChevronDown,
+  EyeIcon,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -47,7 +54,15 @@ import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useSheetStore } from "@/stores/sheetStore";
 import { Badge } from "../ui/badge";
 import { ScrollArea } from "../ui/scroll-area";
-import { getAuditColumns } from '@/components/table/auditColumns'; // Yeni import
+import { getAuditColumns } from "@/components/table/auditColumns"; // Yeni import
+import { ChevronRight, ChevronsUpDown, Settings2 } from "lucide-react"; // Settings2 ikonu "Ek İşlemler" için
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Separator } from "@/components/ui/separator"; // Opsiyonel: Ayırıcı için
+import { EntityStatusOptions } from "@/constants/statusOptions";
 
 interface SummarySetup<TData> {
   columnId: keyof TData | string; // Sütun ID'si
@@ -83,6 +98,7 @@ interface DataTableProps<TData extends { id: string }, TValue> {
   initialSortingState?: SortingState;
   facetedFilterSetup?: FacetedFilterSetup[];
   onRefresh?: () => void;
+  onToggleStatus?: () => void;
   toolbarActions?: React.ReactNode;
   enableRowSelection?: boolean;
   getRowId?: (originalRow: TData, index: number, parent?: any) => string;
@@ -92,6 +108,9 @@ interface DataTableProps<TData extends { id: string }, TValue> {
   summarySetup?: SummarySetup<TData>[];
   columnVisibilityData?: VisibilityState;
   includeAuditColumns?: boolean; // Denetim kolonlarını ekleyip eklememeyi kontrol etmek için yeni prop
+  collapsibleToolbarTitle?: string;
+  renderCollapsibleToolbarContent?: () => React.ReactNode;
+  currentDataListType: EntityStatusOptions; // Yeni prop
 }
 
 export function DataTable<TData extends { id: string }, TValue>({
@@ -103,6 +122,7 @@ export function DataTable<TData extends { id: string }, TValue>({
   globalFilterPlaceholder = "Tabloda Ara...",
   facetedFilterSetup = [],
   onRefresh,
+  onToggleStatus,
   enableRowSelection = true,
   hideNewButton = false,
   moreButtonRendered,
@@ -111,7 +131,10 @@ export function DataTable<TData extends { id: string }, TValue>({
   initialSortingState = [],
   summarySetup = [],
   columnVisibilityData = {},
-  includeAuditColumns = true, // Varsayılan olarak denetim kolonları eklensin
+  includeAuditColumns = true,
+  collapsibleToolbarTitle = "Diğer Araçlar", // Varsayılan başlık
+  renderCollapsibleToolbarContent,
+  currentDataListType,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>(
     initialSortingState
@@ -120,19 +143,28 @@ export function DataTable<TData extends { id: string }, TValue>({
     []
   );
   const [globalFilter, setGlobalFilter] = React.useState("");
+  // Yeni state açılır/kapanır toolbar için
+  const [
+    isCollapsibleToolbarOpen,
+    setIsCollapsibleToolbarOpen,
+  ] = React.useState(false);
 
   // Varsayılan denetim kolonları gizliliği + prop'tan gelenler
   const initialVisibility = React.useMemo(() => {
-    const auditColumnDefaultVisibility: VisibilityState = includeAuditColumns ? {
-      createdBy: false,
-      createdAt: false,
-      updatedBy: false,
-      updatedAt: false,
-    } : {};
+    const auditColumnDefaultVisibility: VisibilityState = includeAuditColumns
+      ? {
+          createdBy: false,
+          createdAt: false,
+          updatedBy: false,
+          updatedAt: false,
+        }
+      : {};
     return { ...auditColumnDefaultVisibility, ...columnVisibilityData };
   }, [columnVisibilityData, includeAuditColumns]);
 
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(initialVisibility);
+  const [columnVisibility, setColumnVisibility] = React.useState<
+    VisibilityState
+  >(initialVisibility);
 
   const [rowSelection, setRowSelection] = React.useState({});
   const debouncedGlobalFilter = useDebounce(globalFilter, 300);
@@ -143,7 +175,7 @@ export function DataTable<TData extends { id: string }, TValue>({
     // TypeScript kullanıyorsanız ve getAuditColumns TData'yı doğru şekilde handle edemiyorsa
     // burada bir 'as ColumnDef<TData, any>[]' cast gerekebilir.
     // JavaScript'te bu cast'e gerek yoktur.
-    return [...specificColumns, ...auditCols as ColumnDef<TData, any>[]];
+    return [...specificColumns, ...(auditCols as ColumnDef<TData, any>[])];
   }, [specificColumns, includeAuditColumns]); // TData'nın değişmeyeceğini varsayıyoruz, değişirse bağımlılıklara eklenmeli
 
   const table = useReactTable({
@@ -387,7 +419,53 @@ export function DataTable<TData extends { id: string }, TValue>({
                 ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <Collapsible
+            open={isCollapsibleToolbarOpen}
+            onOpenChange={setIsCollapsibleToolbarOpen}
+            className="w-full" // Veya duruma göre farklı bir stil
+          >
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 cursor-pointer"
+              >
+                {collapsibleToolbarTitle}
+                <ChevronsUpDown
+                  className={cn(
+                    "ml-2 h-4 w-4 transition-transform",
+                    isCollapsibleToolbarOpen && "rotate-180"
+                  )}
+                />
+              </Button>
+            </CollapsibleTrigger>
+          </Collapsible>
         </div>
+        {renderCollapsibleToolbarContent && (
+          <Collapsible
+            open={isCollapsibleToolbarOpen}
+            onOpenChange={setIsCollapsibleToolbarOpen}
+            className="w-full" // Veya duruma göre farklı bir stil
+          >
+            <CollapsibleContent className="mt-2 pt-2">
+              <div className="p-2 bg-muted/20 rounded-md flex items-center justify-end gap-2">
+                {renderCollapsibleToolbarContent()}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 cursor-pointer"
+                  onClick={onToggleStatus}
+                >
+                  <EyeIcon className="mr-2 h-4 w-4" />
+                  {currentDataListType === EntityStatusOptions.Aktif
+                    ? "Pasif Kayıtları Göster"
+                    : "Aktif Kayıtları Göster"}
+                </Button>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
       </div>
       <div className="rounded-md border">
         <Table>
@@ -434,7 +512,7 @@ export function DataTable<TData extends { id: string }, TValue>({
 
                 if (contextMenuContent) {
                   return (
-                    <ContextMenu key={row.id}>
+                    <ContextMenu key={`context-${row.id}`}>
                       <ContextMenuTrigger asChild>
                         <TableRow
                           data-state={

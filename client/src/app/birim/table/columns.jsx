@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { HeaderButton } from '@/components/table/HeaderButton';
 
 export const Birim_Columns = () => [

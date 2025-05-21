@@ -2,9 +2,9 @@ import React from 'react'; // useEffect, useMemo gerekirse eklenecek
 import { FormFieldInput } from '@/components/table/FormFieldInput';
 import { FormFieldTextarea } from '@/components/table/FormFieldTextarea';
 import { BaseEditSheet } from '@/components/sheet/BaseEditSheet';
-import { useBirimStore } from '../constant/store'; // .js uzantısı eklenebilir
-import {  Birim_FormInputSchema as EntityFormUpdateSchema } from '../constant/schema'; // .js uzantısı eklenebilir
-import {ENTITY_HUMAN, ENTITY_TYPE} from '../constant/api'; 
+import { useBirimStore } from '../constants/store'; // .js uzantısı eklenebilir
+import {  Birim_FormInputSchema as EntityFormUpdateSchema } from '../constants/schema'; // .js uzantısı eklenebilir
+import {EntityHuman, ENTITY_TYPE} from '../constants/api'; 
 
 export const BirimEditSheet = (props) => { // React.FC kaldırıldı
   const updateAction = useBirimStore(state => state.Update);
@@ -80,7 +80,7 @@ export const BirimEditSheet = (props) => { // React.FC kaldırıldı
   return (
     <BaseEditSheet
       entityType={ ENTITY_TYPE}
-      title={`${ENTITY_HUMAN} Düzenle`}
+      title={`${EntityHuman} Düzenle`}
       description={generateBirimDescription}
       schema={EntityFormUpdateSchema} // Zod şeması doğrudan kullanılır
       updateAction={handleBirimUpdateSubmit}

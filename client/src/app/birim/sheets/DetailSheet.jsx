@@ -12,10 +12,10 @@ import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import {ENTITY_TYPE,ENTITY_HUMAN} from '../constant/api'; 
+import {ENTITY_TYPE,EntityHuman} from '../constants/api'; 
 
 const renderBirimTitle = (itemData) => {
-  return itemData?.ad ? `${itemData.ad} ${ENTITY_HUMAN} Detayı` : `${ENTITY_HUMAN} Detayı`;
+  return itemData?.ad ? `${itemData.ad} ${EntityHuman} Detayı` : `${EntityHuman} Detayı`;
 };
 
 const renderBirimDetails = (itemData) => {

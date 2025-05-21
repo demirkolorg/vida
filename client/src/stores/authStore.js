@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { login as loginApi, logout as logoutApi, refreshAccessToken as refreshAccessTokenApi } from "../api/auth/index"; // refreshAccessTokenApi eklendi
 import { jwtDecode } from "jwt-decode";
 import { toast } from "sonner";
-import { axiosInstance } from "../api"; // axiosInstance'ı import et
+
 
 export const useAuthStore = create((set, get) => ({
   isAuth: false,

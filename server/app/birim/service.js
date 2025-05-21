@@ -35,6 +35,37 @@ const service = {
     }
   },
 
+  getAllQuery: async (data = {}) => {
+    try {
+      const whereClause = {};
+      if (data.status) whereClause.status = data.status;
+      if (data.ad) whereClause.ad = data.ad;
+      if (data.aciklama) whereClause.aciklama = data.aciklama;
+console.log('getAllQuery whereClause:', whereClause);
+
+      return await prisma[PrismaName].findMany({
+        where: whereClause,
+        orderBy: { ad: 'asc' },
+        include: {
+          subeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true },
+          },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true, sabitKodu: { select: { ad: true } } },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  },
+
+ 
+
   getById: async data => {
     try {
       await service.checkExistsById(data.id);

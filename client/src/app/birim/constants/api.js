@@ -1,11 +1,11 @@
-import { axiosInstance } from '@/api/index'; 
+import { axiosInstance } from '@/api/index';
 
 export const ENTITY_TYPE = 'birim';
-export const ENTITY_HUMAN= 'Birim';
+export const EntityHuman = 'Birim';
 
-export const getAll = async () => {
+export const getAllQuery = async (data = {}) => {
   try {
-    const response = await axiosInstance('get', `${ENTITY_TYPE}/getAll`);
+    const response = await axiosInstance('post', `${ENTITY_TYPE}/getAllQuery`, data);
     return response?.data?.data || [];
   } catch (error) {
     console.error('API hatası (Birim getAll):', error?.response?.data || error.message || error);
@@ -47,11 +47,7 @@ export const update = async (id, data) => {
 export const updateStatus = async (id, status) => {
   try {
     const payload = { id, status };
-    const response = await axiosInstance(
-      'post',
-      `${ENTITY_TYPE}/updateStatus`,
-      payload,
-    );
+    const response = await axiosInstance('post', `${ENTITY_TYPE}/updateStatus`, payload);
     return response?.data?.data || null;
   } catch (error) {
     console.error(`API hatası (Birim updateStatus - ID: ${id}):`, status, error?.response?.data || error.message || error);

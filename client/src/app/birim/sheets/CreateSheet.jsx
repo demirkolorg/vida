@@ -3,9 +3,9 @@ import { FormFieldInput } from '@/components/table/FormFieldInput';
 import { FormFieldTextarea } from '@/components/table/FormFieldTextarea';
 import { BaseCreateSheet } from '@/components/sheet/BaseCreateSheet';
 
-import { useBirimStore } from '../constant/store'; 
-import { Birim_CreateSchema as EntityCreateSchema } from '../constant/schema'; 
-import { ENTITY_TYPE ,ENTITY_HUMAN} from '../constant/api';
+import { useBirimStore } from '../constants/store'; 
+import { Birim_CreateSchema as EntityCreateSchema } from '../constants/schema'; 
+import { ENTITY_TYPE ,EntityHuman} from '../constants/api';
 
 
 const renderFormInputs = ({ formData, setFieldValue, errors }) => (
@@ -48,7 +48,7 @@ export const BirimCreateSheet = (props) => {
   return (
     <BaseCreateSheet
       entityType={ENTITY_TYPE}
-      title={`Yeni ${ENTITY_HUMAN} Ekle`}
+      title={`Yeni ${EntityHuman} Ekle`}
       schema={EntityCreateSchema}
       createAction={createAction}
       loadingCreate={loadingCreate}

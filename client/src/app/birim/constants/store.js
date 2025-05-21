@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { createCrudStore } from '@/stores/crudStoreFactory';
-import { getAll, getById, create, update, search, updateStatus, deleteEntity } from './api';
-import { ENTITY_HUMAN } from './api';
+import { getAllQuery,  getById, create, update, search, updateStatus, deleteEntity } from './api';
+import { EntityHuman } from './api';
 
 export const useBirimStore = createCrudStore(
-  ENTITY_HUMAN,
+  EntityHuman,
   {
-    getAll: getAll,
+    getAllQuery: getAllQuery,
     getById: getById,
     create: create,
     update: update,
