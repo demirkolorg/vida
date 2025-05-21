@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 import { DataTable } from '@/components/table/DataTable';
 import { Birim_Columns as EntityColumns } from './columns';
 import { BirimContextMenu as EntityContextMenu } from './contextMenu';
-import {ENTITY_TYPE} from '../constant/api'; 
+import { ENTITY_TYPE } from '../constant/api';
 
+const columnVisibilityData = {}
 const sorting = [{ id: 'ad', desc: false }];
 const facesFilterData = [
   { columnId: 'status', title: 'Durum' },
@@ -24,6 +25,7 @@ export function BirimDataTable({ data, isLoading, onRowClick, onRefresh }) {
       rowContextMenu={contextMenu}
       facetedFilterSetup={facesFilterData}
       initialSortingState={sorting}
+      columnVisibilityData={columnVisibilityData}
     />
   );
 }

@@ -2,6 +2,11 @@
 
 import { type Row, type FilterFn } from '@tanstack/react-table';
 import { useEffect, useState, type ReactNode } from 'react';
+ export const statusStyles = {
+  Aktif: 'bg-green-500 hover:bg-green-600',
+  Pasif: 'bg-yellow-500 hover:bg-yellow-600',
+  Silindi: 'bg-red-500 hover:bg-red-600',
+};
 
 export const getInitials = (name?: string | null): string => {
   if (!name) return '?';

@@ -47,6 +47,7 @@ import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useSheetStore } from "@/stores/sheetStore";
 import { Badge } from "../ui/badge";
 import { ScrollArea } from "../ui/scroll-area";
+import { getAuditColumns } from '@/components/table/auditColumns'; // Yeni import
 
 interface SummarySetup<TData> {
   columnId: keyof TData | string; // Sütun ID'si
@@ -74,7 +75,7 @@ type RowContextMenuFn<TData> = (row: Row<TData>) => React.ReactNode | null;
 
 interface DataTableProps<TData extends { id: string }, TValue> {
   entityType?: string;
-  columns: ColumnDef<TData, TValue>[];
+  columns: ColumnDef<TData, TValue>[]; // Varlığa özel kolonlar
   data: TData[];
   isLoading: boolean;
   onRowClick?: (rowData: TData) => void;
@@ -88,12 +89,14 @@ interface DataTableProps<TData extends { id: string }, TValue> {
   rowContextMenu?: RowContextMenuFn<TData>;
   hideNewButton?: boolean;
   moreButtonRendered?: React.ReactNode;
-  summarySetup?: SummarySetup<TData>[]; // Özetlenecek sütunların konfigürasyonu
+  summarySetup?: SummarySetup<TData>[];
+  columnVisibilityData?: VisibilityState;
+  includeAuditColumns?: boolean; // Denetim kolonlarını ekleyip eklememeyi kontrol etmek için yeni prop
 }
 
 export function DataTable<TData extends { id: string }, TValue>({
   entityType,
-  columns,
+  columns: specificColumns, // Prop adını değiştirdik karışıklığı önlemek için
   data,
   isLoading,
   onRowClick,
@@ -107,8 +110,9 @@ export function DataTable<TData extends { id: string }, TValue>({
   rowContextMenu,
   initialSortingState = [],
   summarySetup = [],
+  columnVisibilityData = {},
+  includeAuditColumns = true, // Varsayılan olarak denetim kolonları eklensin
 }: DataTableProps<TData, TValue>) {
-  // ... (state tanımlamaları aynı kalır) ...
   const [sorting, setSorting] = React.useState<SortingState>(
     initialSortingState
   );
@@ -116,16 +120,35 @@ export function DataTable<TData extends { id: string }, TValue>({
     []
   );
   const [globalFilter, setGlobalFilter] = React.useState("");
-  const [columnVisibility, setColumnVisibility] = React.useState<
-    VisibilityState
-  >({});
+
+  // Varsayılan denetim kolonları gizliliği + prop'tan gelenler
+  const initialVisibility = React.useMemo(() => {
+    const auditColumnDefaultVisibility: VisibilityState = includeAuditColumns ? {
+      createdBy: false,
+      createdAt: false,
+      updatedBy: false,
+      updatedAt: false,
+    } : {};
+    return { ...auditColumnDefaultVisibility, ...columnVisibilityData };
+  }, [columnVisibilityData, includeAuditColumns]);
+
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(initialVisibility);
+
   const [rowSelection, setRowSelection] = React.useState({});
   const debouncedGlobalFilter = useDebounce(globalFilter, 300);
-  // const normalizedSearchTerm = React.useMemo(() => normalizeTurkishString(debouncedGlobalFilter), [debouncedGlobalFilter]);
+
+  // Kolonları birleştirme
+  const allColumns = React.useMemo(() => {
+    const auditCols = includeAuditColumns ? getAuditColumns<TData>() : [];
+    // TypeScript kullanıyorsanız ve getAuditColumns TData'yı doğru şekilde handle edemiyorsa
+    // burada bir 'as ColumnDef<TData, any>[]' cast gerekebilir.
+    // JavaScript'te bu cast'e gerek yoktur.
+    return [...specificColumns, ...auditCols as ColumnDef<TData, any>[]];
+  }, [specificColumns, includeAuditColumns]); // TData'nın değişmeyeceğini varsayıyoruz, değişirse bağımlılıklara eklenmeli
 
   const table = useReactTable({
     data,
-    columns,
+    columns: allColumns, // Birleştirilmiş kolonları kullan
     autoResetPageIndex: false,
     enableRowSelection,
     getRowId,
@@ -139,6 +162,8 @@ export function DataTable<TData extends { id: string }, TValue>({
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    // initialState'den columnVisibility'yi çıkardık, çünkü state ile yönetiliyor
+    initialState: { pagination: { pageSize: 10 } },
     state: {
       sorting,
       columnFilters,
@@ -146,7 +171,6 @@ export function DataTable<TData extends { id: string }, TValue>({
       columnVisibility,
       rowSelection,
     },
-    initialState: { pagination: { pageSize: 10 } },
   });
 
   const isFiltered =
