@@ -1,12 +1,15 @@
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { ChevronDown, DownloadIcon, EyeIcon } from 'lucide-react';
+import { ChevronDown, DownloadIcon, EyeIcon, Table2, FileTextIcon, FileSpreadsheetIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { exportTableToExcel } from '@/lib/exportUtils';
+import { exportTableToExcel, exportTableToTxt } from '@/lib/exportUtils';
 import { EntityStatusOptions } from '@/constants/statusOptions';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
 
 export const ToolbarDigerAraclarContent = props => {
   const { isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen, renderCollapsibleToolbarContent, table, entityType, displayStatusFilter, onToggleStatus } = props;
+
+
   return (
     <>
       {renderCollapsibleToolbarContent && (
@@ -18,14 +21,29 @@ export const ToolbarDigerAraclarContent = props => {
           <CollapsibleContent className="">
             <div className="rounded-md flex items-center justify-end gap-2 mt-2">
               {renderCollapsibleToolbarContent()}
-
-              <Button variant="outline" size="sm" className="h-8" onClick={() => exportTableToExcel(table, entityType)}>
-                <DownloadIcon className="mr-2 h-4 w-4" /> Dışa Aktar (Excel)
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8">
+                    <DownloadIcon className="mr-2 h-4 w-4" />
+                    Dışa Aktar
+                    {/* <ChevronDown className="ml-2 h-4 w-4" /> */}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end"> {/* Menünün butonun sağına hizalanması için */}
+                  <DropdownMenuItem onClick={() => exportTableToExcel(table, entityType)}>
+                    <Table2 className="mr-2 h-4 w-4" /> {/* Excel ikonu */}
+                    Excel (.xlsx)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => exportTableToTxt(table, entityType)}>
+                    <FileTextIcon className="mr-2 h-4 w-4" /> {/* TXT ikonu */}
+                    Metin (.txt)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <Button variant="outline" size="sm" className="h-8 cursor-pointer" onClick={onToggleStatus}>
                 <EyeIcon className="mr-2 h-4 w-4" />
-                {displayStatusFilter === EntityStatusOptions.Aktif ? 'Pasif Kayıtları Göster' : 'Aktif Kayıtları Göster'}
+                {displayStatusFilter === EntityStatusOptions.Aktif ? 'Pasif Kayıtlar' : 'Aktif Kayıtlar'}
               </Button>
 
               <DropdownMenu>
