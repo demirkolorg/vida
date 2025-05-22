@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { ContextMenuItem } from '@/components/ui/context-menu';
-import { BaseContextMenu } from '@/components/table/BaseContextMenu';
+import { BaseContextMenu } from '@/components/contextMenu/BaseContextMenu';
 import { EntityHuman, EntityType } from '../constants/api';
 import { HomeIcon } from 'lucide-react';
 

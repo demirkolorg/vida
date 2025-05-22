@@ -1,33 +1,20 @@
-// src/components/table/auditColumns.tsx
 import React from "react";
-import { ColumnDef } from "@tanstack/react-table";
 import { HeaderButton } from "@/components/table/HeaderButton";
-import { AvatarWithNameAndHover } from "@/components/table/AvatarWithNameAndHover";
+import { AvatarWithName } from "@/components/table/AvatarWithName";
 import { turkishCaseInsensitiveFilterFn } from "@/components/table/Functions";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
-import { StatusCell } from "@/components/table/StatusCell";
+import { Badge } from '@/components/ui/badge';
+import { statusStyles } from '@/components/table/Functions';
 
-interface PersonelReference {
-  id: string; // veya kullandığınız ID tipi
-  ad?: string | null;
-  sicil?: string | null;
-  avatar?: string | null;
+const StatusCell = ({ status }) => {
+  return (
+    <Badge variant="outline" className={`${statusStyles[status] || 'bg-gray-500'} text-white text-xs`}>
+      {status || '-'}
+    </Badge>)
 }
 
-interface AuditableBase {
-  createdBy?: PersonelReference | null;
-  createdAt?: string | Date | null; // API'den string gelip Date'e çevrilebilir
-  updatedBy?: PersonelReference | null;
-  updatedAt?: string | Date | null;
-}
-
-// Generic TData, AuditableBase'i (veya benzer bir arayüzü) extend etmeli
-// Bu, row.original.createdBy gibi erişimlerin tip güvenli olmasını sağlar.
-export const getAuditColumns = <TData extends AuditableBase>(): ColumnDef<
-  TData,
-  any
->[] => [
+export const AuditColumns = () => [
   {
     accessorKey: "status",
     header: ({ column }) => <HeaderButton column={column} title="Durum" />,
@@ -46,13 +33,10 @@ export const getAuditColumns = <TData extends AuditableBase>(): ColumnDef<
     accessorKey: "createdBy",
     header: ({ column }) => <HeaderButton column={column} title="Oluşturan" />,
     cell: ({ row }) => {
-      const createdByPersonel = row.original.createdBy as
-        | PersonelReference
-        | undefined
-        | null; // Tip ataması
+      const createdByPersonel = row.original.createdBy; // Tip ataması kaldırıldı
       if (!createdByPersonel) return "-";
       return (
-        <AvatarWithNameAndHover
+        <AvatarWithName
           name={createdByPersonel.ad || createdByPersonel.sicil || "Bilinmiyor"}
           photoUrl={createdByPersonel.avatar}
           subText={createdByPersonel.sicil}
@@ -60,10 +44,10 @@ export const getAuditColumns = <TData extends AuditableBase>(): ColumnDef<
       );
     },
     accessorFn: (row) =>
-      (row.createdBy as PersonelReference | undefined | null)?.ad, // Filtreleme ve sıralama için
+      row.createdBy?.ad, // Tip ataması kaldırıldı, opsiyonel zincirleme korundu
     filterFn: turkishCaseInsensitiveFilterFn,
     size: 200,
-    enableHiding: true, // Varsayılan olarak gizlenebilir olsun
+    enableHiding: true,
     meta: {
       exportHeader: "Oluşturan",
     },
@@ -89,7 +73,7 @@ export const getAuditColumns = <TData extends AuditableBase>(): ColumnDef<
     },
     enableColumnFilter: false,
     size: 180,
-    enableHiding: true, // Varsayılan olarak gizlenebilir olsun
+    enableHiding: true,
     meta: {
       exportHeader: "Oluşturulma Tarihi",
     },
@@ -98,13 +82,10 @@ export const getAuditColumns = <TData extends AuditableBase>(): ColumnDef<
     accessorKey: "updatedBy",
     header: ({ column }) => <HeaderButton column={column} title="Düzenleyen" />,
     cell: ({ row }) => {
-      const updatedByPersonel = row.original.updatedBy as
-        | PersonelReference
-        | undefined
-        | null; // Tip ataması
+      const updatedByPersonel = row.original.updatedBy; // Tip ataması kaldırıldı
       if (!updatedByPersonel) return "-";
       return (
-        <AvatarWithNameAndHover
+        <AvatarWithName
           name={updatedByPersonel.ad || updatedByPersonel.sicil || "Bilinmiyor"}
           photoUrl={updatedByPersonel.avatar}
           subText={updatedByPersonel.sicil}
@@ -112,10 +93,10 @@ export const getAuditColumns = <TData extends AuditableBase>(): ColumnDef<
       );
     },
     accessorFn: (row) =>
-      (row.updatedBy as PersonelReference | undefined | null)?.ad, // Filtreleme ve sıralama için
+      row.updatedBy?.ad, // Tip ataması kaldırıldı, opsiyonel zincirleme korundu
     filterFn: turkishCaseInsensitiveFilterFn,
     size: 200,
-    enableHiding: true, // Varsayılan olarak gizlenebilir olsun
+    enableHiding: true,
     meta: {
       exportHeader: "Düzenleyen",
     },
@@ -141,7 +122,7 @@ export const getAuditColumns = <TData extends AuditableBase>(): ColumnDef<
     },
     enableColumnFilter: false,
     size: 180,
-    enableHiding: true, // Varsayılan olarak gizlenebilir olsun
+    enableHiding: true,
     meta: {
       exportHeader: "Düzenleme Tarihi",
     },

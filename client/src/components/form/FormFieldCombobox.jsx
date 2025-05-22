@@ -1,4 +1,4 @@
-// src/components/ui/form-field-combobox.tsx
+// src/components/ui/form-field-combobox.jsx
 // (veya projenizdeki doğru yolu kullanın)
 
 'use client';
@@ -11,42 +11,12 @@ import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label'; // Doğru yolu kontrol edin
-import { ScrollArea } from '../ui/scroll-area';
-// import { normalizeTurkishString } from '@/lib/functions'; // Fonksiyon varsa import edin
+import { ScrollArea } from '../ui/scroll-area'; // ScrollArea kullanılmıyor gibi görünüyor ama importu koruyoruz.
+import { normalizeTurkishString } from '@/lib/functions'; // Fonksiyon varsa import edin
 
-// Basit normalleştirme fonksiyonu (varsa kendi fonksiyonunuzu kullanın)
-const normalizeTurkishString = (str: string | undefined | null): string => {
-  if (!str) return '';
-  return str.toLowerCase().replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
-};
 
-// --- Arayüzler ---
-export interface ComboboxOption {
-  value: string;
-  label: string;
-}
 
-export interface FormFieldComboboxProps {
-  label: string;
-  value: string | undefined;
-  onValueChange: (value: string) => void;
-  options: ComboboxOption[];
-  error?: string | { message?: string };
-  name?: string;
-  id?: string;
-  disabled?: boolean;
-  showRequiredStar?: boolean;
-  placeholder?: string;
-  searchPlaceholder?: string;
-  noResultsText?: string;
-  labelClassName?: string;
-  wrapperClassName?: string;
-  triggerClassName?: string;
-  // ++ commandListClassName ve contentClassName kaldırıldı ++
-}
-
-// --- Component ---
-export const FormFieldCombobox: React.FC<FormFieldComboboxProps> = ({
+export const FormFieldCombobox = ({
   label,
   value,
   onValueChange,
@@ -73,6 +43,7 @@ export const FormFieldCombobox: React.FC<FormFieldComboboxProps> = ({
   const hasError = !!errorMessage;
 
   const selectedLabel = React.useMemo(() => {
+    // options'ın ComboboxOption yapısında olması beklenir (value, label içeren objeler)
     return options.find(option => option.value === value)?.label;
   }, [options, value]);
 
@@ -82,8 +53,11 @@ export const FormFieldCombobox: React.FC<FormFieldComboboxProps> = ({
       return options;
     }
     return options.filter(option => {
+      // option.label'in string olduğu varsayılır
       const normalizedLabel = normalizeTurkishString(option.label.toLocaleLowerCase('tr-TR'));
-      return option.label.toLocaleLowerCase('tr-TR').includes(searchValue)
+      // Bu satır, aşağıdaki return nedeniyle ulaşılamaz durumda görünüyor.
+      // Orijinal kodda olduğu gibi bırakıyorum.
+      // return option.label.toLocaleLowerCase('tr-TR').includes(searchValue)
       return normalizedLabel.includes(normalizedSearch);
     });
   }, [options, searchValue]); // Sadece options veya searchValue değiştiğinde yeniden hesapla
@@ -105,7 +79,7 @@ export const FormFieldCombobox: React.FC<FormFieldComboboxProps> = ({
           </PopoverTrigger>
           {/* ++ PopoverContent için sadeleştirilmiş className ++ */}
                 <PopoverContent className=" p-0" align="start">
-          
+
             <Command shouldFilter={false}>
               <CommandInput placeholder={searchPlaceholder} value={searchValue} onValueChange={setSearchValue} />
           <CommandList>
@@ -114,7 +88,7 @@ export const FormFieldCombobox: React.FC<FormFieldComboboxProps> = ({
                     {filteredOptions.map(option => (
                       <CommandItem
                         key={option.value}
-                        value={option.label}
+                        value={option.label} // CommandItem value prop'u genellikle string alır
                         onSelect={() => {
                           onValueChange(option.value === value ? '' : option.value);
                           setSearchValue('');

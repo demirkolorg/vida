@@ -37,7 +37,7 @@ export const turkishCaseInsensitiveFilterFn = (row, columnId, filterValue) => {
 };
 
 export function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = useState < T > value;
+  const [debouncedValue, setDebouncedValue] = useState (value);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedValue(value), delay || 500);

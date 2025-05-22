@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSheetStore } from '@/stores/sheetStore';
 import { useMemo, useCallback, useState } from 'react';
 import { ToolbarIndex } from '@/components/toolbar/ToolbarIndex';
-import { getAuditColumns } from '@/components/table/auditColumns';
+import { AuditColumns } from '@/components/table/AuditColumns';
 import { DataTablePagination } from '@/components/table/Pagination';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { customGlobalFilterFn, useDebounce } from '@/components/table/Functions';
@@ -55,7 +55,7 @@ export function DataTable({
   const debouncedGlobalFilter = useDebounce(globalFilter, 300);
 
   const allColumns = useMemo(() => {
-    const auditCols = includeAuditColumns ? getAuditColumns() : [];
+    const auditCols = includeAuditColumns ? AuditColumns() : [];
     return [...specificColumns, ...auditCols];
   }, [specificColumns, includeAuditColumns]);
 

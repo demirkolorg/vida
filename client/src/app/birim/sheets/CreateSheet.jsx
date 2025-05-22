@@ -1,6 +1,6 @@
 import React from 'react';
-import { FormFieldInput } from '@/components/table/FormFieldInput';
-import { FormFieldTextarea } from '@/components/table/FormFieldTextarea';
+import { FormFieldInput } from '@/components/form/FormFieldInput';
+import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 import { BaseCreateSheet } from '@/components/sheet/BaseCreateSheet';
 
 import { useBirimStore } from '../constants/store'; 

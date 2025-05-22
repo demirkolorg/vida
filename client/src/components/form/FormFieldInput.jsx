@@ -2,29 +2,19 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-interface FormFieldInputProps extends React.ComponentProps<"input"> {
-  label: string;
-  name: string;
-  error?: string;
-  readonly?: boolean;
-  labelClassName?: string;
-  wrapperClassName?: string;
-  showRequiredStar?: boolean;
-}
-
-export const FormFieldInput: React.FC<FormFieldInputProps> = ({
+export const FormFieldInput = ({
   label,
   id,
   name,
   error,
   readonly,
   className,
-  labelClassName = 'text-right pt-1.5', // Varsayılan stil
-  wrapperClassName = 'col-span-3', // Varsayılan stil
-  showRequiredStar = false, // Varsayılan olarak yıldız gösterme
+  labelClassName = 'text-right pt-1.5',
+  wrapperClassName = 'col-span-3',
+  showRequiredStar = false,
   ...inputProps
 }) => {
-  const inputId = id || name; // ID yoksa name'i kullan
+  const inputId = id || name;
   const errorId = `${inputId}-error`;
   const hasError = !!error;
 

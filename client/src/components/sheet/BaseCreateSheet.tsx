@@ -5,7 +5,7 @@ import { PlusCircle } from "lucide-react";
 import { Spinner } from "@/components/general/Spinner";
 import { Button } from "@/components/ui/button";
 import { useSheetStore, selectIsSheetOpen } from "@/stores/sheetStore";
-import { useEditForm, FormErrors } from "@/components/table/useEditForm";
+import { useEditForm, FormErrors } from "@/components/form/useEditForm";
 import {
   Sheet,
   SheetClose,

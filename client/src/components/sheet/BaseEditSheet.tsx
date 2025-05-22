@@ -4,7 +4,7 @@ import { Pencil } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { Spinner } from '@/components/general/Spinner';
 import { Button } from '@/components/ui/button';
-import { useEditForm, FormErrors } from '@/components/table/useEditForm';
+import { useEditForm, FormErrors } from '@/components/form/useEditForm';
 import { useSheetStore, selectIsSheetOpen, selectSheetData } from '@/stores/sheetStore';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 

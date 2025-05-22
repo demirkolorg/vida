@@ -1,6 +1,6 @@
 import React from 'react'; // useEffect, useMemo gerekirse eklenecek
-import { FormFieldInput } from '@/components/table/FormFieldInput';
-import { FormFieldTextarea } from '@/components/table/FormFieldTextarea';
+import { FormFieldInput } from '@/components/form/FormFieldInput';
+import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 import { BaseEditSheet } from '@/components/sheet/BaseEditSheet';
 import { useBirimStore } from '../constants/store'; // .js uzantısı eklenebilir
 import {  Birim_FormInputSchema as EntityFormUpdateSchema } from '../constants/schema'; // .js uzantısı eklenebilir

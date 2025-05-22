@@ -1,30 +1,19 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '../ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 
-interface FormFieldInputProps extends React.ComponentProps<"textarea"> {
-  id?: string;
-  label: string;
-  name: string;
-  error?: string;
-  className?: string;
-  labelClassName?: string;
-  wrapperClassName?: string;
-  showRequiredStar?: boolean;
-}
-
-export const FormFieldTextarea: React.FC<FormFieldInputProps> = ({
+export const FormFieldTextarea = ({
   label,
   id,
   name,
   error,
   className,
-  labelClassName = 'text-right pt-1.5', // Varsayılan stil
-  wrapperClassName = 'col-span-3', // Varsayılan stil
-  showRequiredStar = false, // Varsayılan olarak yıldız gösterme
-  ...inputProps // Geriye kalan Input props'ları (value, onChange, type, disabled etc.)
+  labelClassName = 'text-right pt-1.5',
+  wrapperClassName = 'col-span-3',
+  showRequiredStar = false,
+  ...inputProps
 }) => {
-  const inputId = id || name; // ID yoksa name'i kullan
+  const inputId = id || name;
   const errorId = `${inputId}-error`;
   const hasError = !!error;
 
@@ -40,7 +29,7 @@ export const FormFieldTextarea: React.FC<FormFieldInputProps> = ({
           className={`${className} ${hasError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
           aria-invalid={hasError}
           aria-describedby={hasError ? errorId : undefined}
-          {...inputProps} // value, onChange vb. buraya gelir
+          {...inputProps}
         />
         {hasError && (
           <p id={errorId} className="text-sm text-destructive mt-1.5">

@@ -1,26 +1,23 @@
 import React from 'react';
-import { Label } from '../ui/label';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-interface FormFieldSelectProps {
-  id?: string;
-  label: string;
-  name: string;
-  error?: string;
-  options: { value: string; label: string }[];
-  placeholder?: string;
-  value: string | undefined;
-  onValueChange: (value: string) => void;
-  labelClassName?: string;
-  wrapperClassName?: string;
-  showRequiredStar?: boolean;
-  triggerId?: string;
-  triggerClassName?: string;
-  disabled?: boolean;
-  contentClassName?: string;
-}
-
-export const FormFieldSelect: React.FC<FormFieldSelectProps> = ({ label, name, error, options, placeholder, value, onValueChange, labelClassName = 'text-right pt-1.5', wrapperClassName = 'col-span-3', showRequiredStar = false, triggerId, triggerClassName, disabled, contentClassName }) => {
+export const FormFieldSelect = ({
+  label,
+  name,
+  error,
+  options,
+  placeholder,
+  value,
+  onValueChange,
+  labelClassName = 'text-right pt-1.5',
+  wrapperClassName = 'col-span-3',
+  showRequiredStar = false,
+  triggerId,
+  triggerClassName,
+  disabled,
+  contentClassName,
+}) => {
   const selectTriggerId = triggerId || name;
   const errorId = `${selectTriggerId}-error`;
   const hasError = !!error;
@@ -32,7 +29,12 @@ export const FormFieldSelect: React.FC<FormFieldSelectProps> = ({ label, name, e
       </Label>
       <div className={wrapperClassName}>
         <Select value={value ?? ''} onValueChange={onValueChange} disabled={disabled}>
-          <SelectTrigger id={selectTriggerId} className={`${triggerClassName} w-full ${hasError ? 'border-destructive focus-visible:ring-destructive' : ''}`} aria-invalid={hasError} aria-describedby={hasError ? errorId : undefined}>
+          <SelectTrigger
+            id={selectTriggerId}
+            className={`${triggerClassName} w-full ${hasError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+            aria-invalid={hasError}
+            aria-describedby={hasError ? errorId : undefined}
+          >
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent className={contentClassName}>
