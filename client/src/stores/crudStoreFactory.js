@@ -9,7 +9,6 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
   const storeCreator = (set, get) => {
     const baseState = {
       datas: initialBaseState?.datas ?? [],
-      dataListType: EntityStatusOptions.Aktif,
       currentData: initialBaseState?.currentData ?? null,
       loadingList: initialBaseState?.loadingList ?? false,
       loadingDetail: initialBaseState?.loadingDetail ?? false,
@@ -17,35 +16,20 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
       loadingSearch: initialBaseState?.loadingSearch ?? false,
       isSearchResult: initialBaseState?.isSearchResult ?? false,
       error: initialBaseState?.error ?? null,
-      lastFetchAllTime: initialBaseState?.lastFetchAllTime ?? null,
+      displayStatusFilter: initialBaseState?.displayStatusFilter ?? EntityStatusOptions.Aktif,
     };
 
     const baseActions = {
-      FetchAll: async (queryData = {}, options) => {
+      FetchAll: async options => {
         const showSuccessToast = options?.showToast ?? true;
-        const forceFetch = options?.force ?? false;
-        const CACHE_DURATION_MS = 5 * 60 * 1000;
-
         if (get().loadingList || get().loadingSearch) return;
 
-        if (!forceFetch && get().lastFetchAllTime && Date.now() - get().lastFetchAllTime < CACHE_DURATION_MS && get().datas.length > 0 && !get().isSearchResult) {
-          if (showSuccessToast) {
-            toast.info(`${entityName} listesi önbellekten yüklendi.`);
-          }
-          return;
-        }
-
-        set({ loadingList: true, isSearchResult: false, error: null });
+        set({ loadingList: true, isSearchResult: false, error: null, datas: [] });
         try {
-          const fetchedData = await api.getAllQuery(queryData);
-          const newDataType = queryData.status || EntityStatusOptions.Aktif;
-          console.log('[Store] Setting dataListType in FetchAll to:', newDataType); // LOG
-
+          const fetchedData = await api.getAllQuery();
           set({
-            datas: fetchedData,
+            datas: fetchedData, // DOĞRU: Mevcut datas'ı fetchedData ile tamamen değiştir
             loadingList: false,
-            dataListType: newDataType,
-            lastFetchAllTime: Date.now(),
           });
           if (showSuccessToast) {
             toast.success(`${entityName} listesi başarıyla getirildi.`);
@@ -56,6 +40,7 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           set({ error: message, loadingList: false, datas: [], isSearchResult: false, lastFetchAllTime: null });
         }
       },
+      
       FetchById: async id => {
         if (get().loadingDetail || get().loadingList || get().loadingSearch) return null;
         set({ loadingDetail: true, currentData: null, error: null });
@@ -104,11 +89,7 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           set({ error: message, loadingSearch: false, datas: [], isSearchResult: false });
         }
       },
-   _fetchCurrentListType: async (options = { showToast: false, force: true }) => {
-        const currentType = get().dataListType; // Store'dan güncel tipi al
-        const queryForFetch = { status: currentType || EntityStatusOptions.Aktif }; // Varsayılan Aktif
-        await get().FetchAll(queryForFetch, options); // FetchAll'u doğru query ve options ile çağır
-      },
+
       Create: async (newData, options) => {
         const showSuccessToast = options?.showToast ?? true;
         if (get().loadingAction) return null;
@@ -118,18 +99,18 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           if (!createdData) {
             throw new Error("API'den geçerli bir yanıt alınamadı (create).");
           }
-          await get()._fetchCurrentListType({ showToast: false, force: true });
 
-          set(state => ({
-            datas: state.isSearchResult ? state.datas : [...state.datas, createdData].sort((a, b) => (a.ad || '').localeCompare(b.ad || '', 'tr')),
-            loadingAction: false,
-            currentData: createdData,
-          }));
-          if (get().isSearchResult) {
-            toast.info(`'${createdData.ad || 'Yeni Kayıt'}' eklendi. Arama sonuçları güncelliğini yitirmiş olabilir. Listeyi yenileyin.`);
-          } else if (showSuccessToast) {
+          if (showSuccessToast) {
             toast.success(`'${createdData.ad || 'Yeni Kayıt'}' (${entityName}) başarıyla oluşturuldu.`);
           }
+
+          set(state => ({
+            datas: [...state.datas, createdData].sort((a, b) => (a.ad || '').localeCompare(b.ad || '', 'tr')),
+            loadingAction: false,
+            currentData: createdData, // İsteğe bağlı olarak yeni oluşturulanı current yap
+          }));
+
+          await get().FetchAll({ showToast: false });
           return createdData;
         } catch (error) {
           const apiError = error?.response?.data?.errors || error?.response?.data?.message;
@@ -149,8 +130,6 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           if (!updatedData) {
             throw new Error("API'den geçerli bir yanıt alınamadı (update).");
           }
-                    await get()._fetchCurrentListType({ showToast: false, force: true });
-
           set(state => {
             const updatedList = state.datas.map(item => (item.id === id ? updatedData : item));
             return {
@@ -163,6 +142,7 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           if (showSuccessToast) {
             toast.success(`'${updatedData.ad || id}' (${entityName}) başarıyla güncellendi.`);
           }
+          await get().FetchAll({ showToast: false });
           return updatedData;
         } catch (error) {
           const apiError = error?.response?.data?.errors || error?.response?.data?.message;
@@ -175,9 +155,6 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
 
       UpdateStatus: async (id, status, options) => {
         const showSuccessToast = options?.showToast ?? true;
-        // The check `if (!api.updateStatus)` is implicitly handled by this conditional assignment
-        // but if api.updateStatus could become undefined after store creation (unlikely), an explicit check might be needed
-        // For this direct translation, it's fine.
         if (get().loadingAction) return null;
         set({ loadingAction: true, error: null });
         try {
@@ -185,7 +162,6 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           if (!updatedItemWithNewStatus) {
             throw new Error("API'den geçerli bir yanıt alınamadı (updateStatus).");
           }
-
           set(state => {
             const updatedList = state.datas.map(item => (item.id === id ? updatedItemWithNewStatus : item));
             return {
@@ -197,8 +173,9 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           });
 
           if (showSuccessToast) {
-            toast.success(`'${updatedItemWithNewStatus.ad || id}' (${entityName}) durumu başarıyla güncellendi.`);
+            toast.success(`'${updatedItemWithNewStatus.ad || id}' (${entityName}) durumu başarıyla güncellendi..`);
           }
+          await get().FetchAll({ showToast: false });
           return updatedItemWithNewStatus;
         } catch (error) {
           const apiError = error?.response?.data?.errors || error?.response?.data?.message;
@@ -231,6 +208,8 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           if (showSuccessToast) {
             toast.success(`'${itemToDelete?.ad || id}' (${entityName}) başarıyla silindi.`);
           }
+          await get().FetchAll({ showToast: false });
+
           return true;
         } catch (error) {
           const apiError = error?.response?.data?.errors || error?.response?.data?.message;
@@ -249,6 +228,7 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           }
           return;
         }
+        await get().FetchAll({ showToast: false }); // Tüm listeyi yeniden çek
         set({ isSearchResult: false, loadingSearch: false, error: null });
         await get().FetchAll({ showToast: false, force: true });
         if (showSuccessToast) {
@@ -256,17 +236,14 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
         }
       },
 
-      SetDataListType: newType => {
-        set({ dataListType: newType });
+      ToggleDisplayStatusFilter: async () => {
+        if (get().displayStatusFilter === EntityStatusOptions.Aktif) {
+          set({ displayStatusFilter: EntityStatusOptions.Pasif });
+        } else {
+          set({ displayStatusFilter: EntityStatusOptions.Aktif });
+        }
       },
-      _fetchCurrentListType: async (options = { showToast: false, force: true }) => {
-        const currentType = get().dataListType;
-        const queryForFetch = { status: currentType || EntityStatusOptions.Aktif };
-        // Burada ek filtreler varsa (örneğin, global arama metni, faceted filtreler)
-        // onları da queryForFetch'e eklemeniz gerekebilir. Şimdilik sadece status'e odaklanıyoruz.
-        console.log('[Store] _fetchCurrentListType called. Querying with:', queryForFetch); // LOG
-        await get().FetchAll(queryForFetch, options);
-      },
+
       SetCurrent: data => set({ currentData: data, error: null }),
       ClearCurrent: () => set({ currentData: null }),
     };

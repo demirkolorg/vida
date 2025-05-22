@@ -1,11 +1,11 @@
 import { axiosInstance } from '@/api/index';
 
-export const ENTITY_TYPE = 'birim';
+export const EntityType = 'birim';
 export const EntityHuman = 'Birim';
 
 export const getAllQuery = async (data = {}) => {
   try {
-    const response = await axiosInstance('post', `${ENTITY_TYPE}/getAllQuery`, data);
+    const response = await axiosInstance('post', `${EntityType}/getAllQuery`, data);
     return response?.data?.data || [];
   } catch (error) {
     console.error('API hatası (Birim getAll):', error?.response?.data || error.message || error);
@@ -15,7 +15,7 @@ export const getAllQuery = async (data = {}) => {
 
 export const getById = async id => {
   try {
-    const response = await axiosInstance('post', `${ENTITY_TYPE}/getById`, { id });
+    const response = await axiosInstance('post', `${EntityType}/getById`, { id });
     return response?.data?.data || null;
   } catch (error) {
     console.error(`API hatası (Birim getById - ID: ${id}):`, error?.response?.data || error.message || error);
@@ -25,7 +25,7 @@ export const getById = async id => {
 
 export const create = async data => {
   try {
-    const response = await axiosInstance('post', `${ENTITY_TYPE}/create`, data);
+    const response = await axiosInstance('post', `${EntityType}/create`, data);
     return response?.data?.data || null;
   } catch (error) {
     console.error('API hatası (Birim create):', data, error?.response?.data || error.message || error);
@@ -36,7 +36,7 @@ export const create = async data => {
 export const update = async (id, data) => {
   try {
     const payload = { id, ...data };
-    const response = await axiosInstance('post', `${ENTITY_TYPE}/update`, payload); // Veya "put"
+    const response = await axiosInstance('post', `${EntityType}/update`, payload); // Veya "put"
     return response?.data?.data || null;
   } catch (error) {
     console.error(`API hatası (Birim update - ID: ${id}):`, data, error?.response?.data || error.message || error);
@@ -47,7 +47,7 @@ export const update = async (id, data) => {
 export const updateStatus = async (id, status) => {
   try {
     const payload = { id, status };
-    const response = await axiosInstance('post', `${ENTITY_TYPE}/updateStatus`, payload);
+    const response = await axiosInstance('post', `${EntityType}/updateStatus`, payload);
     return response?.data?.data || null;
   } catch (error) {
     console.error(`API hatası (Birim updateStatus - ID: ${id}):`, status, error?.response?.data || error.message || error);
@@ -57,7 +57,7 @@ export const updateStatus = async (id, status) => {
 
 export const deleteEntity = async id => {
   try {
-    await axiosInstance('post', `${ENTITY_TYPE}/delete`, { id }); // Veya "patch" veya "delete"
+    await axiosInstance('post', `${EntityType}/delete`, { id }); // Veya "patch" veya "delete"
     return true;
   } catch (error) {
     console.error(`API hatası (Birim delete - ID: ${id}):`, error?.response?.data || error.message || error);
@@ -67,7 +67,7 @@ export const deleteEntity = async id => {
 
 export const search = async criteria => {
   try {
-    const response = await axiosInstance('post', `${ENTITY_TYPE}/search`, criteria);
+    const response = await axiosInstance('post', `${EntityType}/search`, criteria);
     return response?.data?.data || [];
   } catch (error) {
     console.error(`API hatası (Birim search - Criteria: ${JSON.stringify(criteria)}):`, error?.response?.data || error.message || error);

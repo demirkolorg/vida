@@ -1,4 +1,3 @@
-
 import { HeaderButton } from '@/components/table/HeaderButton';
 
 export const Birim_Columns = () => [
@@ -11,6 +10,9 @@ export const Birim_Columns = () => [
     },
     enableHiding: false,
     size: 250,
+    meta: {
+      exportHeader: 'Birim Adı',
+    },
   },
   {
     accessorKey: 'aciklama',
@@ -20,10 +22,13 @@ export const Birim_Columns = () => [
       return <div className="text-sm text-gray-600 truncate max-w-xs">{aciklama || '-'}</div>;
     },
     size: 300,
+    meta: {
+      exportHeader: 'Açıklama',
+    },
   },
   {
     accessorKey: 'subeSayisi',
-    accessorFn: (row) => row.subeler?.length ?? 0,
+    accessorFn: row => row.subeler?.length ?? 0,
     header: ({ column }) => <HeaderButton column={column} title="Şube Sayısı" />,
     cell: ({ row }) => {
       const subeSayisi = row.original.subeler?.length ?? 0;
@@ -32,10 +37,13 @@ export const Birim_Columns = () => [
     size: 100,
     enableSorting: true,
     enableColumnFilter: false,
+    meta: {
+      exportHeader: 'Şube Sayısı',
+    },
   },
   {
     accessorKey: 'malzemeSayisi',
-    accessorFn: (row) => row.malzemeler?.length ?? 0,
+    accessorFn: row => row.malzemeler?.length ?? 0,
     header: ({ column }) => <HeaderButton column={column} title="Malzeme Sayısı" />,
     cell: ({ row }) => {
       const malzemeSayisi = row.original.malzemeler?.length ?? 0;
@@ -44,8 +52,8 @@ export const Birim_Columns = () => [
     size: 120,
     enableSorting: true,
     enableColumnFilter: false,
-  }
+    meta: {
+      exportHeader: 'Malzeme Sayısı',
+    },
+  },
 ];
-
-
-

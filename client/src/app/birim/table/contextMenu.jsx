@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { ContextMenuItem } from '@/components/ui/context-menu';
 import { BaseContextMenu } from '@/components/table/BaseContextMenu';
-import { EntityHuman, ENTITY_TYPE } from '../constants/api';
+import { EntityHuman, EntityType } from '../constants/api';
 import { HomeIcon } from 'lucide-react';
 
 export function BirimContextMenu({ item }) {
@@ -13,7 +13,7 @@ export function BirimContextMenu({ item }) {
   }, [item]);
 
   return (
-    <BaseContextMenu item={item} entityType={ENTITY_TYPE} entityHuman={EntityHuman} menuTitle={menuTitle}>
+    <BaseContextMenu item={item} entityType={EntityType} entityHuman={EntityHuman} menuTitle={menuTitle}>
       {item?.subeler && item.subeler.length > 0 && (
         <ContextMenuItem className="cursor-pointer" onSelect={handleListSubeler}>
           <HomeIcon className="mr-2 h-4 w-4 text-green-500" />

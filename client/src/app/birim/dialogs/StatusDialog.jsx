@@ -2,7 +2,7 @@ import { useDialogStore } from '@/stores/dialogStore';
 import { UpdateStatusDialog } from '@/components/dialogs/UpdateStatusDialog';
 import { EntityStatusOptions } from '@/constants/statusOptions';
 import { useBirimStore } from '../constants/store';
-import { ENTITY_TYPE, EntityHuman } from '../constants/api';
+import { EntityType, EntityHuman } from '../constants/api';
 
 export const StatusDialog = () => {
   const updateStatusAction = useBirimStore(state => state.UpdateStatus);
@@ -28,7 +28,7 @@ export const StatusDialog = () => {
             if (!open) closeDialog();
           }}
           item={dialogItem}
-          entityType={ENTITY_TYPE} // Veya dialogItem'dan alınabilir
+          entityType={EntityType} // Veya dialogItem'dan alınabilir
           entityHumanName={EntityHuman} // Veya dialogItem'dan alınabilir
           currentStatus={dialogItem?.status}
           availableStatuses={EntityStatusOptions} // Veya dialogItem'dan alınabilir

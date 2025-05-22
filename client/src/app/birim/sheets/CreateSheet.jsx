@@ -5,11 +5,10 @@ import { BaseCreateSheet } from '@/components/sheet/BaseCreateSheet';
 
 import { useBirimStore } from '../constants/store'; 
 import { Birim_CreateSchema as EntityCreateSchema } from '../constants/schema'; 
-import { ENTITY_TYPE ,EntityHuman} from '../constants/api';
+import { EntityType ,EntityHuman} from '../constants/api';
 
 
 const renderFormInputs = ({ formData, setFieldValue, errors }) => (
-  // JSX için React importu gerekli
   <div className="space-y-4">
     <FormFieldInput
       label="Birim Adı"
@@ -32,12 +31,7 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => (
       placeholder="Birim ile ilgili kısa bir açıklama (opsiyonel)"
       rows={3}
       />
-    {/*
-      <FormFieldSelect
-      label="Bağlı Şubeler"
-      name="subeIds"
-      />
-      */}
+    
   </div>
 );
 
@@ -45,9 +39,10 @@ export const BirimCreateSheet = (props) => {
   const createAction = useBirimStore(state => state.Create);
   const loadingCreate = useBirimStore(state => state.loadingAction);
 
+  
   return (
     <BaseCreateSheet
-      entityType={ENTITY_TYPE}
+      entityType={EntityType}
       title={`Yeni ${EntityHuman} Ekle`}
       schema={EntityCreateSchema}
       createAction={createAction}

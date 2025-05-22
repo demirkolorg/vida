@@ -2,7 +2,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { BaseDeleteSheet } from "@/components/sheet/BaseDeleteSheet";
 import { useBirimStore } from "../constants/store"; // .js uzantısı eklenebilir
-import {ENTITY_TYPE, EntityHuman} from '../constants/api'; 
+import {EntityType, EntityHuman} from '../constants/api'; 
 
 const renderBirimDetails = (itemData) => (
   // JSX için React importu gerekli
@@ -72,7 +72,7 @@ export const BirimDeleteSheet = (props) => { // React.FC kaldırıldı, props do
 
   return (
     <BaseDeleteSheet
-      entityType={ENTITY_TYPE}
+      entityType={EntityType}
       title={`${EntityHuman} Sil`}
       deleteAction={deleteAction}
       loadingAction={loadingAction}

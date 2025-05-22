@@ -2,6 +2,7 @@
 
 import { type Row, type FilterFn } from '@tanstack/react-table';
 import { useEffect, useState, type ReactNode } from 'react';
+
  export const statusStyles = {
   Aktif: 'bg-green-500 hover:bg-green-600',
   Pasif: 'bg-yellow-500 hover:bg-yellow-600',
@@ -52,10 +53,26 @@ export function useDebounce<T>(value: T, delay?: number): T {
 
 export const normalizeTurkishString = (str: string | undefined | null): string => {
   if (!str) return '';
-  let result = str.toLocaleLowerCase('tr-TR');
-  
-  return result;
+  return str.toLocaleLowerCase('tr-TR');
 };
+// const normalizeTurkishString = (str) => {
+//   if (!str) return "";
+//   return str
+//     .normalize("NFD")
+//     .replace(/[\u0300-\u036f]/g, "")
+//     .replace(/ı/g, "i")
+//     .replace(/İ/g, "I")
+//     .replace(/ğ/g, "g")
+//     .replace(/Ğ/g, "G")
+//     .replace(/ü/g, "u")
+//     .replace(/Ü/g, "U")
+//     .replace(/ş/g, "s")
+//     .replace(/Ş/g, "S")
+//     .replace(/ö/g, "o")
+//     .replace(/Ö/g, "O")
+//     .replace(/ç/g, "c")
+//     .replace(/Ç/g, "C");
+// };
 
 export const customGlobalFilterFn: FilterFn<any> = (row: Row<any>, columnId: string, filterValue: any): boolean => {
   const normalizedSearchTerm = normalizeTurkishString(filterValue);

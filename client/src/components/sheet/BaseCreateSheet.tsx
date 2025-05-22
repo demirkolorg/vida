@@ -1,12 +1,20 @@
-'use client';
-import { ZodSchema } from 'zod';
-import React, { useEffect } from 'react';
-import { PlusCircle } from 'lucide-react';
-import { Spinner } from '@/components/general/Spinner';
-import { Button } from '@/components/ui/button';
-import { useSheetStore, selectIsSheetOpen } from '@/stores/sheetStore';
-import { useEditForm, FormErrors } from '@/components/table/useEditForm';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+"use client";
+import { ZodSchema } from "zod";
+import React, { useEffect } from "react";
+import { PlusCircle } from "lucide-react";
+import { Spinner } from "@/components/general/Spinner";
+import { Button } from "@/components/ui/button";
+import { useSheetStore, selectIsSheetOpen } from "@/stores/sheetStore";
+import { useEditForm, FormErrors } from "@/components/table/useEditForm";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 interface CreateFormRenderProps<TPayload> {
   formData: Partial<TPayload>;
@@ -24,18 +32,30 @@ interface BaseCreateSheetProps<TItem, TPayload> {
   children: (props: CreateFormRenderProps<TPayload>) => React.ReactNode;
 }
 
-export function BaseCreateSheet<TItem, TPayload extends object>({ entityType, title, description, schema, createAction, loadingCreate, children }: BaseCreateSheetProps<TItem, TPayload>) {
-  const isOpen = useSheetStore(selectIsSheetOpen('create', entityType));
-  const closeSheet = useSheetStore(state => state.closeSheet);
+export function BaseCreateSheet<TItem, TPayload extends object>({
+  entityType,
+  title,
+  description,
+  schema,
+  createAction,
+  loadingCreate,
+  children,
+}: BaseCreateSheetProps<TItem, TPayload>) {
+  const isOpen = useSheetStore(selectIsSheetOpen("create", entityType));
+  const closeSheet = useSheetStore((state) => state.closeSheet);
 
-  const { formData, errors, setFieldValue, submit, resetForm } = useEditForm<TItem, any, TPayload>({
+  const { formData, errors, setFieldValue, submit, resetForm } = useEditForm<
+    TItem,
+    any,
+    TPayload
+  >({
     initialData: undefined,
     schema: schema,
     createFn: createAction,
-    onSuccess: createdData => {
+    onSuccess: () => {
       closeSheet();
     },
-    onError: error => {
+    onError: (error) => {
       console.error(`Create Sheet (${entityType}) error:`, error);
     },
   });
@@ -52,8 +72,6 @@ export function BaseCreateSheet<TItem, TPayload extends object>({ entityType, ti
     }
   }, [isOpen, resetForm]);
 
-  const sheetDescription = typeof description === 'function' ? description(formData) : (description ?? 'Seçili kaydın bilgilerini güncelleyin. * ile işaretli alanlar zorunludur.'); // Default description
-
   return (
     <Sheet open={isOpen} onOpenChange={handleInternalOpenChange}>
       <SheetContent className="sm:max-w-lg overflow-y-auto p-6" side="right">
@@ -61,11 +79,23 @@ export function BaseCreateSheet<TItem, TPayload extends object>({ entityType, ti
           <SheetTitle className="flex items-center gap-2 text-xl">
             <PlusCircle className="h-5 w-5" /> {title}
           </SheetTitle>
-          <SheetDescription>{description ? description : 'Yeni bir kayıt oluşturmak için gerekli alanları doldurun. * ile işaretli alanlar zorunludur.'}</SheetDescription>
+          <SheetDescription>
+            {description
+              ? description
+              : "Yeni bir kayıt oluşturmak için gerekli alanları doldurun. * ile işaretli alanlar zorunludur."}
+          </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-6">
-          {children({ formData, setFieldValue, errors: errors as FormErrors<TPayload> })}
-          {errors._general && <p className="col-span-full text-center text-sm font-medium text-destructive p-2 bg-destructive/10 rounded-md">{errors._general}</p>}
+          {children({
+            formData,
+            setFieldValue,
+            errors: errors as FormErrors<TPayload>,
+          })}
+          {errors._general && (
+            <p className="col-span-full text-center text-sm font-medium text-destructive p-2 bg-destructive/10 rounded-md">
+              {errors._general}
+            </p>
+          )}
         </div>
         <SheetFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-4">
           <SheetClose asChild>
@@ -80,7 +110,7 @@ export function BaseCreateSheet<TItem, TPayload extends object>({ entityType, ti
                 Kaydediliyor...
               </span>
             ) : (
-              'Kaydı Oluştur' // Veya bu da prop olabilir: submitButtonText
+              "Kaydı Oluştur" // Veya bu da prop olabilir: submitButtonText
             )}
           </Button>
         </SheetFooter>

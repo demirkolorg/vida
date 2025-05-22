@@ -1,18 +1,9 @@
 "use client";
 import * as React from "react";
-import { Input } from "../ui/input";
-import { Spinner } from "../general/Spinner";
-import { Button } from "../ui/button";
-import { DataTableFacetedFilter } from "./Filter";
+import { ToolbarIndex } from "@/components/table/toolbar/ToolbarIndex";
+
 import { DataTablePagination } from "./Pagination";
-import {
-  Search,
-  XIcon,
-  RefreshCw,
-  Plus,
-  ChevronDown,
-  EyeIcon,
-} from "lucide-react";
+
 import {
   Table,
   TableBody,
@@ -21,20 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "./Table";
-import {
-  customGlobalFilterFn,
-  useDebounce,
-  normalizeTurkishString,
-  createOptionsFromValues,
-} from "./Functions";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+
+import { customGlobalFilterFn, useDebounce } from "./Functions";
+
 import {
   getSortedRowModel,
   SortingState,
@@ -53,15 +33,8 @@ import { cn } from "@/lib/utils";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useSheetStore } from "@/stores/sheetStore";
 import { Badge } from "../ui/badge";
-import { ScrollArea } from "../ui/scroll-area";
 import { getAuditColumns } from "@/components/table/auditColumns"; // Yeni import
-import { ChevronRight, ChevronsUpDown, Settings2 } from "lucide-react"; // Settings2 ikonu "Ek İşlemler" için
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Separator } from "@/components/ui/separator"; // Opsiyonel: Ayırıcı için
+
 import { EntityStatusOptions } from "@/constants/statusOptions";
 
 interface SummarySetup<TData> {
@@ -110,7 +83,7 @@ interface DataTableProps<TData extends { id: string }, TValue> {
   includeAuditColumns?: boolean; // Denetim kolonlarını ekleyip eklememeyi kontrol etmek için yeni prop
   collapsibleToolbarTitle?: string;
   renderCollapsibleToolbarContent?: () => React.ReactNode;
-  currentDataListType: EntityStatusOptions; // Yeni prop
+  displayStatusFilter: EntityStatusOptions; // Yeni prop
 }
 
 export function DataTable<TData extends { id: string }, TValue>({
@@ -134,7 +107,7 @@ export function DataTable<TData extends { id: string }, TValue>({
   includeAuditColumns = true,
   collapsibleToolbarTitle = "Diğer Araçlar", // Varsayılan başlık
   renderCollapsibleToolbarContent,
-  currentDataListType,
+  displayStatusFilter,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>(
     initialSortingState
@@ -183,7 +156,8 @@ export function DataTable<TData extends { id: string }, TValue>({
     columns: allColumns, // Birleştirilmiş kolonları kullan
     autoResetPageIndex: false,
     enableRowSelection,
-    getRowId,
+    getRowId: (originalRow) => originalRow.id, // BU ÇOK ÖNEMLİ!
+
     globalFilterFn: customGlobalFilterFn,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -268,205 +242,31 @@ export function DataTable<TData extends { id: string }, TValue>({
   const visibleColumnsCount = table.getVisibleLeafColumns().length;
 
   // ... (diğer kodlar aynı) ...
-  const facetedFilterComponents = React.useMemo(() => {
-    const rows = table.getRowModel().rows;
-
-    return facetedFilterSetup
-      .map((setup) => {
-        const columnIdStr = setup.columnId;
-        const column = table.getColumn(columnIdStr); // Sütun tanımını almak için table gerekli
-
-        if (!column) {
-          console.warn(
-            `Faceted filter setup: Column with ID '${columnIdStr}' not found.`
-          );
-          return null;
-        }
-
-        // 1. Adım: ORİJİNAL 'data' dizisindeki TÜM öğeler için değerleri al
-        // 'getValue' metodu doğrudan satır objesi üzerinde tanımlı değil,
-        // bu yüzden sütunun 'accessorFn'ini manuel olarak çağırmalı veya
-        // Tanstack'in yardımcı fonksiyonlarını kullanmalıyız.
-        // En temiz yol, sütunun accessorFn'ini kullanmak olabilir.
-        // Dikkat: accessorFn tanımlı değilse (accessorKey varsa) farklı bir yol izlenmeli.
-
-        let columnValues: unknown[] = [];
-        // Sütun için tanımlanmış bir accessorFn var mı kontrol et
-        const accessorFn = column.accessorFn;
-
-        if (accessorFn) {
-          // Eğer accessorFn varsa, orijinal veri üzerinde manuel olarak çalıştır
-          columnValues = data.map((row, index) => accessorFn(row, index));
-        } else {
-          // Eğer accessorFn yoksa, columnId'nin doğrudan bir anahtar olduğunu varsay
-          // (Bu kısım orijinal createOptionsFromData'ya benzer)
-          columnValues = data.map((row) => {
-            if (columnIdStr in row) {
-              return (row as any)[columnIdStr];
-            }
-            return undefined; // Anahtar yoksa undefined dön
-          });
-        }
-
-        // 2. Adım: Bu değerlerden filtre seçeneklerini oluştur
-        const options = createOptionsFromValues(columnValues); // as any[] kaldırılabilir
-
-        if (options.length === 0) {
-          return null;
-        }
-
-        // Filtre component'ini oluştur
-        return (
-          <DataTableFacetedFilter
-            key={columnIdStr}
-            column={column} // Filtreleme işlemi için Tanstack column objesi hala gerekli
-            title={setup.title}
-            options={options}
-          />
-        );
-      })
-      .filter(Boolean);
-
-    // Bağımlılıklara table.getRowModel().rows eklemek önemli,
-    // çünkü veri veya filtreler değiştiğinde seçeneklerin yeniden hesaplanması gerekir.
-  }, [facetedFilterSetup, table, table.getRowModel().rows]);
 
   return (
     <div className="w-full space-y-4">
-      {/* ... (Toolbar ve Table render kısmı aynı kalır) ... */}
-      <div className="flex items-center py-4 gap-2 flex-wrap">
-        {/* ... (Toolbar içeriği aynı kalır) ... */}
-        <div className="relative flex-grow sm:flex-grow-0">
-          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={globalFilterPlaceholder}
-            value={globalFilter}
-            onChange={handleGlobalFilterChange}
-            className="max-w-xs h-8 pl-8"
-            aria-label="Global Search"
-          />
-        </div>
-        {facetedFilterComponents} {/* Hesaplanan filtreleri render et */}
-        {isFiltered && (
-          <Button
-            variant="destructive"
-            onClick={() => {
-              table.resetColumnFilters();
-              setGlobalFilter("");
-            }}
-            className="h-8 cursor-pointer "
-            aria-label="Filtreleri Temizle"
-          >
-            <XIcon className="mr-1 h-3 w-3" />
-            Temizle
-          </Button>
-        )}
-        <div className="flex items-center gap-2 ml-auto">
-          {moreButtonRendered}
-          {onRefresh && ( // onRefresh varsa butonu göster
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRefresh}
-              disabled={isLoading}
-              aria-label="Verileri Yenile"
-              className="h-8 cursor-pointer"
-            >
-              {isLoading ? (
-                <Spinner size={"small"} className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="mr-2 h-4 w-4" />
-              )}
-              Yenile
-            </Button>
-          )}
-          {!hideNewButton && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 cursor-pointer"
-              onClick={handleCreate}
-            >
-              <Plus className="h-4 w-4 mr-1" /> Yeni Ekle
-            </Button>
-          )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="h-8 cursor-pointer">
-                Sütunlar <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Sütunları Göster/Gizle</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {/* Başlık olarak column.id kullanmak daha güvenilir olabilir */}
-                    {typeof column.columnDef.header === "string"
-                      ? column.columnDef.header
-                      : column.id}
-                  </DropdownMenuCheckboxItem>
-                ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+      <ToolbarIndex
+        table={table}
+        setGlobalFilter={setGlobalFilter}
+        isFiltered={isFiltered}
+        facetedFilterSetup={facetedFilterSetup}
+        data={data}
+        moreButtonRendered={moreButtonRendered}
+        onRefresh={onRefresh}
+        isLoading={isLoading}
+        hideNewButton={hideNewButton}
+        handleCreate={handleCreate}
+        isCollapsibleToolbarOpen={isCollapsibleToolbarOpen}
+        setIsCollapsibleToolbarOpen={setIsCollapsibleToolbarOpen}
+        globalFilter={globalFilter}
+        handleGlobalFilterChange={handleGlobalFilterChange}
+        globalFilterPlaceholder={globalFilterPlaceholder}
+        renderCollapsibleToolbarContent={renderCollapsibleToolbarContent}
+        entityType={entityType}
+        displayStatusFilter={displayStatusFilter}
+        onToggleStatus={onToggleStatus}
+      />
 
-          <Collapsible
-            open={isCollapsibleToolbarOpen}
-            onOpenChange={setIsCollapsibleToolbarOpen}
-            className="w-full" // Veya duruma göre farklı bir stil
-          >
-            <CollapsibleTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 cursor-pointer"
-              >
-                {collapsibleToolbarTitle}
-                <ChevronsUpDown
-                  className={cn(
-                    "ml-2 h-4 w-4 transition-transform",
-                    isCollapsibleToolbarOpen && "rotate-180"
-                  )}
-                />
-              </Button>
-            </CollapsibleTrigger>
-          </Collapsible>
-        </div>
-        {renderCollapsibleToolbarContent && (
-          <Collapsible
-            open={isCollapsibleToolbarOpen}
-            onOpenChange={setIsCollapsibleToolbarOpen}
-            className="w-full" // Veya duruma göre farklı bir stil
-          >
-            <CollapsibleContent className="mt-2 pt-2">
-              <div className="p-2 bg-muted/20 rounded-md flex items-center justify-end gap-2">
-                {renderCollapsibleToolbarContent()}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 cursor-pointer"
-                  onClick={onToggleStatus}
-                >
-                  <EyeIcon className="mr-2 h-4 w-4" />
-                  {currentDataListType === EntityStatusOptions.Aktif
-                    ? "Pasif Kayıtları Göster"
-                    : "Aktif Kayıtları Göster"}
-                </Button>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        )}
-      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

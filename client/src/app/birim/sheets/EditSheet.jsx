@@ -4,7 +4,7 @@ import { FormFieldTextarea } from '@/components/table/FormFieldTextarea';
 import { BaseEditSheet } from '@/components/sheet/BaseEditSheet';
 import { useBirimStore } from '../constants/store'; // .js uzantısı eklenebilir
 import {  Birim_FormInputSchema as EntityFormUpdateSchema } from '../constants/schema'; // .js uzantısı eklenebilir
-import {EntityHuman, ENTITY_TYPE} from '../constants/api'; 
+import {EntityHuman, EntityType} from '../constants/api'; 
 
 export const BirimEditSheet = (props) => { // React.FC kaldırıldı
   const updateAction = useBirimStore(state => state.Update);
@@ -79,7 +79,7 @@ export const BirimEditSheet = (props) => { // React.FC kaldırıldı
 
   return (
     <BaseEditSheet
-      entityType={ ENTITY_TYPE}
+      entityType={ EntityType}
       title={`${EntityHuman} Düzenle`}
       description={generateBirimDescription}
       schema={EntityFormUpdateSchema} // Zod şeması doğrudan kullanılır
