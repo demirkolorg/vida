@@ -274,6 +274,8 @@ model Personel {
   auditLoglarOlusturan        AuditLog[]       @relation("AuditLogCreatedBy")
   kendiKaydiniOlusturan       Personel[]       @relation("PersonelCreatedBy")
   kendiKaydiniGuncelleyen     Personel[]       @relation("PersonelUpdatedBy")
+  filtrelerOlusturan          SavedFilter[]    @relation("FilterCreatedBy")
+  filtrelerGuncelleyen        SavedFilter[]    @relation("FilterUpdatedBy")
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
@@ -282,6 +284,22 @@ model Personel {
   updatedAt   DateTime        @updatedAt
   updatedById String? // String FK
   updatedBy   Personel?       @relation("PersonelUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model SavedFilter {
+  id          String  @id
+  filterName  String // "Aktif Birimler", "İstanbul Şubeleri Malzemeleri"
+  entityType  String // "birim", "malzeme", "personel", "sube" vb. (istemcideki tableId ile eşleşebilir)
+  filterState Json // TanStack Table'dan { columnFilters: [], globalFilter: "", sorting: [], pagination: {}, columnVisibility: {} }
+  description String? // Filtre hakkında opsiyonel açıklama
+
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String // Personel ID'si (String)
+  createdBy   Personel        @relation("FilterCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String? // Personel ID'si (String)
+  updatedBy   Personel?       @relation("FilterUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model AuditLog {
