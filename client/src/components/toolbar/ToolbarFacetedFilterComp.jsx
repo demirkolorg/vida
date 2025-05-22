@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { CheckIcon, PlusCircledIcon } from '@radix-ui/react-icons'; // Veya lucide
-import { Column } from '@tanstack/react-table';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,22 +7,12 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 
-interface DataTableFacetedFilterProps<TData, TValue> {
-  column?: Column<TData, TValue>;
-  title?: string;
-  options: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }>;
-  }[];
-}
-
-export function DataTableFacetedFilter<TData, TValue>({ column, title, options }: DataTableFacetedFilterProps<TData, TValue>) {
+export function ToolbarFacetedFilterComp({ column, title, options }) {
   const facets = column?.getFacetedUniqueValues();
-  const selectedValues = new Set(column?.getFilterValue() as string[]);
+  const selectedValues = new Set(column?.getFilterValue());
 
   return (
-    <Popover >
+    <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 border-dashed cursor-pointer ml-2">
           <PlusCircledIcon className="mr-2 h-4 w-4" />
@@ -63,7 +52,7 @@ export function DataTableFacetedFilter<TData, TValue>({ column, title, options }
                 const isSelected = selectedValues.has(option.value);
                 return (
                   <CommandItem
-                  className='cursor-pointer'
+                    className="cursor-pointer"
                     key={option.value}
                     onSelect={() => {
                       if (isSelected) {

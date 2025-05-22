@@ -1,13 +1,12 @@
-import { ToolbarSearch } from "@/components/table/toolbar/ToolbarSearch";
-import { ToolbarFacetedFilter } from "@/components/table/toolbar/ToolbarFacetedFilter";
-import { ToolbarGeneral } from "@/components/table/toolbar/ToolbarGeneral";
-import { ToolbarDigerAraclarContent } from "@/components/table/toolbar/ToolbarDigerAraclarContent";
+import { ToolbarSearch } from "@/components/toolbar/ToolbarSearch";
+import { ToolbarFacetedFilter } from "@/components/toolbar/ToolbarFacetedFilter";
+import { ToolbarGeneral } from "@/components/toolbar/ToolbarGeneral";
+import { ToolbarDigerAraclarContent } from "@/components/toolbar/ToolbarDigerAraclarContent";
 
 export const ToolbarIndex = props => {
   const {
     table,
     setGlobalFilter,
-    isFiltered,
     facetedFilterSetup,
     data,
     moreButtonRendered,
@@ -17,9 +16,7 @@ export const ToolbarIndex = props => {
     handleCreate,
     isCollapsibleToolbarOpen,
     setIsCollapsibleToolbarOpen,
-    globalFilter,
-    handleGlobalFilterChange,
-    globalFilterPlaceholder,
+    globalFilter,    
     renderCollapsibleToolbarContent,
     entityType,
     displayStatusFilter,
@@ -28,9 +25,9 @@ export const ToolbarIndex = props => {
 
   return (
     <div className="flex items-center py-4 gap-2 flex-wrap">
-      <ToolbarSearch globalFilter={globalFilter} handleGlobalFilterChange={handleGlobalFilterChange} globalFilterPlaceholder={globalFilterPlaceholder} />
+      <ToolbarSearch globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
 
-      <ToolbarFacetedFilter data={data} table={table} setGlobalFilter={setGlobalFilter} facetedFilterSetup={facetedFilterSetup} isFiltered={isFiltered} />
+      <ToolbarFacetedFilter data={data} table={table} setGlobalFilter={setGlobalFilter} facetedFilterSetup={facetedFilterSetup} />
 
       <ToolbarGeneral
         moreButtonRendered={moreButtonRendered}

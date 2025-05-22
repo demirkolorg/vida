@@ -16,7 +16,7 @@ export const ToolbarDigerAraclarContent = props => {
           className="w-full" // Veya duruma göre farklı bir stil
         >
           <CollapsibleContent className="">
-            <div className="rounded-md flex items-center justify-end gap-2">
+            <div className="rounded-md flex items-center justify-end gap-2 mt-2">
               {renderCollapsibleToolbarContent()}
 
               <Button variant="outline" size="sm" className="h-8" onClick={() => exportTableToExcel(table, entityType)}>

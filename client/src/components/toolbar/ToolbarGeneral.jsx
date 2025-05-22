@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/general/Spinner';
 import { Plus, RefreshCw } from 'lucide-react';
-import { ToolbarDigerAraclarButton } from '@/components/table/toolbar/ToolbarDigerAraclarButton';
+import { ToolbarDigerAraclarButton } from '@/components/toolbar/ToolbarDigerAraclarButton';
 
 export const ToolbarGeneral = props => {
   const { moreButtonRendered, onRefresh, isLoading, hideNewButton,handleCreate, isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen } = props;

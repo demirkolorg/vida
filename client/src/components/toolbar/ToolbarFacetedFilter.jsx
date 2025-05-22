@@ -1,11 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { XIcon } from 'lucide-react';
 import { createOptionsFromValues } from '@/components/table/Functions';
-import { DataTableFacetedFilter } from '@/components/table/Filter';
+import { ToolbarFacetedFilterComp } from '@/components/toolbar/ToolbarFacetedFilterComp';
 import { useMemo } from 'react';
 
 export const ToolbarFacetedFilter = props => {
-  const { table, setGlobalFilter, isFiltered, facetedFilterSetup, data } = props;
+  const { table, setGlobalFilter, facetedFilterSetup, data } = props;
+  const isFiltered = table.getState().columnFilters.length > 0 || !!table.getState().globalFilter;
 
   const facetedFilterComponents = useMemo(() => {
     // const rows = table.getRowModel().rows;
@@ -54,7 +55,7 @@ export const ToolbarFacetedFilter = props => {
 
         // Filtre component'ini oluştur
         return (
-          <DataTableFacetedFilter
+          <ToolbarFacetedFilterComp
             key={columnIdStr}
             column={column} // Filtreleme işlemi için Tanstack column objesi hala gerekli
             title={setup.title}

@@ -1,15 +1,14 @@
 // src/components/tables/mia-table/Functions.ts
 
-import { type Row, type FilterFn } from '@tanstack/react-table';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 
- export const statusStyles = {
+export const statusStyles = {
   Aktif: 'bg-green-500 hover:bg-green-600',
   Pasif: 'bg-yellow-500 hover:bg-yellow-600',
   Silindi: 'bg-red-500 hover:bg-red-600',
 };
 
-export const getInitials = (name?: string | null): string => {
+export const getInitials = name => {
   if (!name) return '?';
   const names = name.trim().split(' ');
   if (names.length === 0 || !names[0]) return '?';
@@ -18,16 +17,16 @@ export const getInitials = (name?: string | null): string => {
   return `${names[0][0].toUpperCase()}${lastNameInitial ?? ''}`;
 };
 
-export const exactArrayMatchFilterFn: FilterFn<any> = (row: Row<any>, columnId: string, filterValue: any): boolean => {
+export const exactArrayMatchFilterFn = (row, columnId, filterValue) => {
   if (!Array.isArray(filterValue) || filterValue.length === 0) {
     return true;
   }
   const rowValue = row.getValue(columnId);
-  const isMatch = filterValue.includes(rowValue as string | number);
+  const isMatch = filterValue.includes(rowValue);
   return isMatch;
 };
 
-export const turkishCaseInsensitiveFilterFn: FilterFn<any> = (row: Row<any>, columnId: string, filterValue: any): boolean => {
+export const turkishCaseInsensitiveFilterFn = (row, columnId, filterValue) => {
   const rowValue = row.getValue(columnId);
   const filterString = String(filterValue);
   if (rowValue == null || filterString === '') {
@@ -37,8 +36,8 @@ export const turkishCaseInsensitiveFilterFn: FilterFn<any> = (row: Row<any>, col
   return rowString.toLocaleLowerCase('tr').includes(filterString.toLocaleLowerCase('tr'));
 };
 
-export function useDebounce<T>(value: T, delay?: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+export function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState < T > value;
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
@@ -51,7 +50,7 @@ export function useDebounce<T>(value: T, delay?: number): T {
   return debouncedValue;
 }
 
-export const normalizeTurkishString = (str: string | undefined | null): string => {
+export const normalizeTurkishString = str => {
   if (!str) return '';
   return str.toLocaleLowerCase('tr-TR');
 };
@@ -74,7 +73,7 @@ export const normalizeTurkishString = (str: string | undefined | null): string =
 //     .replace(/Ç/g, "C");
 // };
 
-export const customGlobalFilterFn: FilterFn<any> = (row: Row<any>, columnId: string, filterValue: any): boolean => {
+export const customGlobalFilterFn = (row, columnId, filterValue) => {
   const normalizedSearchTerm = normalizeTurkishString(filterValue);
   if (!normalizedSearchTerm) {
     return true;
@@ -90,7 +89,7 @@ export const customGlobalFilterFn: FilterFn<any> = (row: Row<any>, columnId: str
   return false;
 };
 
-export const highlightMatch = (text: any, searchTerm: string): ReactNode => {
+export const highlightMatch = (text, searchTerm) => {
   const normalizedText = normalizeTurkishString(text);
   const index = normalizedText.indexOf(searchTerm);
   if (typeof text !== 'string' || !searchTerm || index === -1) {
@@ -108,7 +107,7 @@ export const highlightMatch = (text: any, searchTerm: string): ReactNode => {
   );
 };
 
-export function createOptionsFromData<TData, K extends keyof TData>(data: TData[] | undefined | null, key: K): { label: string; value: string }[] {
+export function createOptionsFromData(data, key) {
   // Eğer veri yoksa boş dizi döndür
   if (!data) {
     return [];
@@ -130,14 +129,8 @@ export function createOptionsFromData<TData, K extends keyof TData>(data: TData[
     .map(value => ({ label: value, value: value }));
 }
 
-interface FacetedFilterOption {
-  label: string;
-  value: string;
-  icon?: React.ComponentType<{ className?: string }>;
-}
-
-export function createOptionsFromValues(values: unknown[]): FacetedFilterOption[] {
-  const uniqueValues = new Set<string>();
+export function createOptionsFromValues(values) {
+  const uniqueValues = new Set();
 
   values.forEach(value => {
     const stringValue = value != null ? String(value).trim() : '';
