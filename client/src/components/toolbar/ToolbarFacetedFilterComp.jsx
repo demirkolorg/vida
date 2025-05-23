@@ -7,7 +7,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 
-export function ToolbarFacetedFilterComp({ column, title, options }) {
+export const ToolbarFacetedFilterComp = ({ column, title, options }) => {
   const facets = column?.getFacetedUniqueValues();
   const selectedValues = new Set(column?.getFilterValue());
 
@@ -89,4 +89,4 @@ export function ToolbarFacetedFilterComp({ column, title, options }) {
       </PopoverContent>
     </Popover>
   );
-}
+};
