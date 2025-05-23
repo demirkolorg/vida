@@ -37,7 +37,7 @@ export const turkishCaseInsensitiveFilterFn = (row, columnId, filterValue) => {
 };
 
 export function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = useState (value);
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
@@ -50,10 +50,6 @@ export function useDebounce(value, delay) {
   return debouncedValue;
 }
 
-export const normalizeTurkishString = str => {
-  if (!str) return '';
-  return str.toLocaleLowerCase('tr-TR');
-};
 // const normalizeTurkishString = (str) => {
 //   if (!str) return "";
 //   return str
@@ -73,21 +69,192 @@ export const normalizeTurkishString = str => {
 //     .replace(/Ç/g, "C");
 // };
 
-export const customGlobalFilterFn = (row, columnId, filterValue) => {
-  const normalizedSearchTerm = normalizeTurkishString(filterValue);
-  if (!normalizedSearchTerm) {
+export const normalizeTurkishString = str => {
+  if (!str) return '';
+  return str.toLocaleLowerCase('tr-TR');
+};
+
+// export const customGlobalFilterFn = (row, columnId, filterValue) => {
+//   const normalizedSearchTerm = normalizeTurkishString(filterValue);
+//   if (!normalizedSearchTerm) {
+//     return true;
+//   }
+//   const cells = row.getAllCells();
+//   for (const cell of cells) {
+//     const cellValue = cell.getValue();
+//     const normalizedCellValue = normalizeTurkishString(cellValue);
+//     if (normalizedCellValue.includes(normalizedSearchTerm)) {
+//       return true;
+//     }
+//   }
+//   return false;
+// };
+
+// client/src/components/table/Functions.jsx
+
+
+const evaluateRule = (rowValue, operator, ruleValue, ruleValue2, filterVariant) => {
+  // rowValue'nun null veya undefined olma durumlarını kontrol et
+  // ve sayısal/tarihsel karşılaştırmalar için ham değeri koru
+  let valForCompare = rowValue;
+  let filterValForCompare = ruleValue;
+  let filterVal2ForCompare = ruleValue2;
+
+  if (filterVariant === 'text' || filterVariant === 'select' || !filterVariant) { // Varsayılan olarak metin karşılaştırması
+    valForCompare = rowValue === null || rowValue === undefined ? '' : String(rowValue).toLocaleLowerCase('tr-TR');
+    filterValForCompare = ruleValue === null || ruleValue === undefined ? '' : String(ruleValue).toLocaleLowerCase('tr-TR');
+    filterVal2ForCompare = ruleValue2 === null || ruleValue2 === undefined ? '' : String(ruleValue2).toLocaleLowerCase('tr-TR');
+  } else if (filterVariant === 'number') {
+    valForCompare = parseFloat(rowValue);
+    filterValForCompare = parseFloat(ruleValue);
+    // ruleValue2 sayısal aralık için gerekirse burada parse edilebilir.
+  } else if (filterVariant === 'date') {
+    // Gelen değerler ISO string veya Date objesi olabilir.
+    // Karşılaştırma için Date objesine çevirelim.
+    try {
+        valForCompare = rowValue ? new Date(rowValue) : null;
+        filterValForCompare = ruleValue ? new Date(ruleValue) : null;
+        filterVal2ForCompare = ruleValue2 ? new Date(ruleValue2) : null;
+    } catch (e) { // Geçersiz tarih formatı
+        return false; // veya true, duruma göre
+    }
+  } else if (filterVariant === 'boolean') {
+    valForCompare = rowValue === true || String(rowValue).toLowerCase() === 'true';
+    filterValForCompare = ruleValue === true || String(ruleValue).toLowerCase() === 'true';
+  }
+
+
+  switch (operator) {
+    case 'contains':
+      return filterVariant === 'text' && valForCompare.includes(filterValForCompare);
+    case 'equals':
+      if (filterVariant === 'date') {
+        if (!valForCompare || !filterValForCompare) return valForCompare === filterValForCompare; // İkisi de null/undefined ise eşit
+        // Sadece gün, ay, yıl karşılaştırması için (saat/dk/sn hariç)
+        return valForCompare.getFullYear() === filterValForCompare.getFullYear() &&
+               valForCompare.getMonth() === filterValForCompare.getMonth() &&
+               valForCompare.getDate() === filterValForCompare.getDate();
+      }
+      return valForCompare === filterValForCompare;
+    case 'startsWith':
+      return filterVariant === 'text' && valForCompare.startsWith(filterValForCompare);
+    case 'endsWith':
+      return filterVariant === 'text' && valForCompare.endsWith(filterValForCompare);
+    case 'notContains':
+      return filterVariant === 'text' && !valForCompare.includes(filterValForCompare);
+    case 'notEquals':
+      if (filterVariant === 'date') {
+        if (!valForCompare || !filterValForCompare) return valForCompare !== filterValForCompare;
+         return valForCompare.getFullYear() !== filterValForCompare.getFullYear() ||
+               valForCompare.getMonth() !== filterValForCompare.getMonth() ||
+               valForCompare.getDate() !== filterValForCompare.getDate();
+      }
+      return valForCompare !== filterValForCompare;
+    case 'isEmpty':
+      return rowValue === null || rowValue === undefined || String(rowValue).trim() === '';
+    case 'isNotEmpty':
+      return rowValue !== null && rowValue !== undefined && String(rowValue).trim() !== '';
+    case 'gt':
+      if (filterVariant !== 'number' && filterVariant !== 'date') return false;
+      if (isNaN(valForCompare) || isNaN(filterValForCompare)) return false;
+      return valForCompare > filterValForCompare;
+    case 'gte':
+      if (filterVariant !== 'number' && filterVariant !== 'date') return false;
+      if (isNaN(valForCompare) || isNaN(filterValForCompare)) return false;
+      return valForCompare >= filterValForCompare;
+    case 'lt':
+      if (filterVariant !== 'number' && filterVariant !== 'date') return false;
+      if (isNaN(valForCompare) || isNaN(filterValForCompare)) return false;
+      return valForCompare < filterValForCompare;
+    case 'lte':
+      if (filterVariant !== 'number' && filterVariant !== 'date') return false;
+      if (isNaN(valForCompare) || isNaN(filterValForCompare)) return false;
+      return valForCompare <= filterValForCompare;
+    case 'after':
+      if (filterVariant !== 'date' || !valForCompare || !filterValForCompare) return false;
+      return valForCompare > filterValForCompare;
+    case 'before':
+      if (filterVariant !== 'date' || !valForCompare || !filterValForCompare) return false;
+      return valForCompare < filterValForCompare;
+    case 'between':
+      if (filterVariant !== 'date' || !valForCompare || !filterValForCompare || !filterVal2ForCompare) return false;
+      return valForCompare >= filterValForCompare && valForCompare <= filterVal2ForCompare;
+    case 'isAnyOf':
+      if (filterVariant !== 'select') return valForCompare === filterValForCompare; // Fallback
+      if (!Array.isArray(ruleValue)) return String(rowValue).toLocaleLowerCase('tr-TR') === String(ruleValue).toLocaleLowerCase('tr-TR');
+      return ruleValue.map(v => String(v).toLocaleLowerCase('tr-TR')).includes(String(rowValue).toLocaleLowerCase('tr-TR'));
+    case 'isNoneOf':
+      if (filterVariant !== 'select') return valForCompare !== filterValForCompare; // Fallback
+      if (!Array.isArray(ruleValue)) return String(rowValue).toLocaleLowerCase('tr-TR') !== String(ruleValue).toLocaleLowerCase('tr-TR');
+      return !ruleValue.map(v => String(v).toLocaleLowerCase('tr-TR')).includes(String(rowValue).toLocaleLowerCase('tr-TR'));
+    default:
+      return true;
+  }
+};
+
+export const customGlobalFilterFn = (row, columnId, filterLogic, addMeta) => {
+  // filterLogic artık { condition: 'AND'/'OR', rules: [...] } yapısında veya basit string
+  if (typeof filterLogic !== 'object' || !filterLogic || !filterLogic.rules || !filterLogic.condition) {
+    // Gelişmiş filtre objesi değilse, eski global string arama gibi davran
+    const searchTerm = String(filterLogic).toLocaleLowerCase('tr-TR');
+    if (!searchTerm) return true;
+
+    // Tüm hücrelerde ara (eski davranış) - Bu kısım, tüm sütunlarda arama yapar.
+    // Eğer sadece belirli sütunlarda arama yapmak istiyorsanız, table instance'ına ihtiyacınız olacak.
+    // Ya da bu global aramayı sadece TanStack'in kendi columnFilter'ları için bir fallback olarak bırakın.
+    // Şimdilik, filterLogic obje değilse, bu satırın filtrelenmeyeceğini varsayalım (true dönerek).
+    // Veya, eski global arama mantığını korumak için:
+    // return Object.values(row.original).some(value =>
+    //     String(value).toLocaleLowerCase('tr-TR').includes(searchTerm)
+    // );
+    // Gelişmiş filtre kullanılmıyorsa ve globalFilter bir string ise,
+    // TanStack Table'ın kendi globalFilter mekanizması devreye girmeli.
+    // Bu customGlobalFilterFn sadece gelişmiş filtre objesi geldiğinde aktif olmalı.
+    // Bu yüzden, obje değilse true dönerek TanStack'in diğer filtrelerini engellemeyelim.
     return true;
   }
-  const cells = row.getAllCells();
-  for (const cell of cells) {
-    const cellValue = cell.getValue();
-    const normalizedCellValue = normalizeTurkishString(cellValue);
-    if (normalizedCellValue.includes(normalizedSearchTerm)) {
-      return true;
+
+  const { condition, rules } = filterLogic;
+
+  if (!rules || rules.length === 0) return true;
+
+  // addMeta üzerinden table instance'ını ve dolayısıyla columnDef'leri almayı deneyelim.
+  // Bu, TanStack Table'ın filterFn'lerine meta verisi geçirme şekline bağlıdır.
+  // Genellikle addMeta.table.getColumn(rule.field).columnDef şeklinde erişilebilir.
+  // Eğer addMeta.table yoksa, bu yaklaşım çalışmaz ve filterVariant'ı başka bir yolla almamız gerekir.
+  const table = addMeta?.table;
+
+
+  const ruleResults = rules.map(rule => {
+    if (!rule.field || !rule.operator) return true; // Eksik kural, filtreleme yapma
+
+    const rowValue = row.original[rule.field];
+    let valueToEvaluate = rule.value;
+    let value2ToEvaluate = rule.value2; // AdvancedFilterSheet'ten value2 gelebilir
+
+    let filterVariant = 'text'; // Varsayılan
+    if (table) {
+        const column = table.getColumn(rule.field);
+        filterVariant = column?.columnDef?.meta?.filterVariant || 'text';
+    } else {
+        // table instance'ı yoksa, filterVariant'ı rule objesinden almayı deneyebiliriz
+        // (AdvancedFilterSheet'te rule'a eklendiyse)
+        filterVariant = rule.filterVariant || 'text';
     }
+    
+    // 'isAnyOf' veya 'isNoneOf' için rule.value'nun bir dizi olması beklenir
+    // Diğer durumlar için evaluateRule içinde handle ediliyor.
+
+    return evaluateRule(rowValue, rule.operator, valueToEvaluate, value2ToEvaluate, filterVariant);
+  });
+
+  if (condition === 'AND') {
+    return ruleResults.every(result => result);
+  } else { // OR
+    return ruleResults.some(result => result);
   }
-  return false;
 };
+
 
 export const highlightMatch = (text, searchTerm) => {
   const normalizedText = normalizeTurkishString(text);

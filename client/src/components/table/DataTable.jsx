@@ -10,6 +10,7 @@ import { customGlobalFilterFn, useDebounce } from '@/components/table/Functions'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getSortedRowModel, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 import { FilterManagementSheet } from '@/app/filter/sheet/FilterManagementSheet';
+import { AdvancedFilterSheet } from '@/app/filter/sheet/AdvancedFilterSheet';
 
 export function DataTable({
   entityType,
@@ -130,13 +131,8 @@ export function DataTable({
 
   return (
     <div className="w-full space-y-2">
-      <FilterManagementSheet
-        sheetTypeIdentifier="filterManagement"
-        entityType={entityType}
-        entityHuman={entityHuman}
-        table={table}
-      />
-
+      <FilterManagementSheet sheetTypeIdentifier="filterManagement" entityType={entityType} entityHuman={entityHuman} table={table} />
+      <AdvancedFilterSheet sheetTypeIdentifier="advancedFilter" entityType={entityType} entityHuman={entityHuman} table={table} />
       <ToolbarIndex
         table={table}
         setGlobalFilter={setGlobalFilter}

@@ -12,6 +12,7 @@ export const Birim_Columns = () => [
     size: 250,
     meta: {
       exportHeader: 'Birim Adı',
+      filterVariant: 'text',
     },
   },
   {
@@ -24,6 +25,7 @@ export const Birim_Columns = () => [
     size: 300,
     meta: {
       exportHeader: 'Açıklama',
+      filterVariant: 'text',
     },
   },
   {
@@ -39,6 +41,7 @@ export const Birim_Columns = () => [
     enableColumnFilter: false,
     meta: {
       exportHeader: 'Şube Sayısı',
+    filterVariant: 'number',
     },
   },
   {
@@ -54,6 +57,7 @@ export const Birim_Columns = () => [
     enableColumnFilter: false,
     meta: {
       exportHeader: 'Malzeme Sayısı',
+    filterVariant: 'number',
     },
   },
 ];

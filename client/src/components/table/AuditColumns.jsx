@@ -27,6 +27,7 @@ export const AuditColumns = () => [
     enableSorting: true,
     meta: {
       exportHeader: "Durum",
+      filterVariant: 'select',
     },
   },
   {
@@ -50,6 +51,7 @@ export const AuditColumns = () => [
     enableHiding: true,
     meta: {
       exportHeader: "Oluşturan",
+    filterVariant: 'text',
     },
   },
   {
@@ -76,6 +78,7 @@ export const AuditColumns = () => [
     enableHiding: true,
     meta: {
       exportHeader: "Oluşturulma Tarihi",
+      filterVariant: 'date',
     },
   },
   {
@@ -99,6 +102,7 @@ export const AuditColumns = () => [
     enableHiding: true,
     meta: {
       exportHeader: "Düzenleyen",
+    filterVariant: 'text',
     },
   },
   {
@@ -125,6 +129,7 @@ export const AuditColumns = () => [
     enableHiding: true,
     meta: {
       exportHeader: "Düzenleme Tarihi",
+      filterVariant: 'date',
     },
   },
 ];
