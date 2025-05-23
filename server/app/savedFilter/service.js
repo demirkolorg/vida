@@ -1,12 +1,9 @@
-// server/app/savedfilter/service.js (Yeni dosya)
-
-import { prisma } from '../../config/db.js'; // Veritabanı bağlantısı
-import helper from '../../utils/helper.js'; // ID üretimi gibi yardımcı fonksiyonlar
-import { HizmetName, PrismaName, HumanName } from './base.js'; // savedfilter için base.js'den gelecek
-import { AuditStatusEnum } from '@prisma/client'; // Prisma'dan AuditStatusEnum
+import { prisma } from '../../config/db.js';
+import helper from '../../utils/helper.js';
+import { HizmetName, PrismaName, HumanName } from './base.js';
+import { AuditStatusEnum } from '@prisma/client';
 
 const service = {
-
   checkExistsById: async id => {
     const result = await prisma[PrismaName].findUnique({ where: { id } });
     if (!result || result.status === AuditStatusEnum.Silindi) {
@@ -15,25 +12,51 @@ const service = {
     return result;
   },
 
-  getAllByEntityType: async (data = {}) => {
-    const { entityType } = data; // userRole yetkilendirme için kullanılabilir
-
-    if (!entityType) {
-      throw new Error('Filtreleri listelemek için entityType zorunludur.');
-    }
-
+  getAll: async () => {
     try {
-      const whereClause = {
-        entityType
-      };
+      return await prisma[PrismaName].findMany({
+        where: { status: AuditStatusEnum.Aktif },
+        orderBy: { filterName: 'asc' },
+        include: {
+          createdBy: { select: { id: true, ad: true } }, // Personel modelindeki ad/soyad alanlarına göre
+          updatedBy: { select: { id: true, ad: true } },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  },
 
+  getByQuery: async (data = {}) => {
+    try {
+      const whereClause = {};
+      if (data.status) whereClause.status = data.status;
+      if (data.filterName) whereClause.filterName = data.filterName;
+      if (data.entityType) whereClause.entityType = data.entityType;
+      if (data.filterState) whereClause.filterState = data.filterState;
+      if (data.description) whereClause.description = data.description;
 
       return await prisma[PrismaName].findMany({
         where: whereClause,
         orderBy: { filterName: 'asc' },
         include: {
-          createdBy: { select: { id: true, ad: true} }, // Personel modelindeki ad/soyad alanlarına göre
-          updatedBy: { select: { id: true, ad: true} },
+          createdBy: { select: { id: true, ad: true } },
+          updatedBy: { select: { id: true, ad: true } },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getByEntityType: async data => {
+    try {
+      return await prisma[PrismaName].findMany({
+        where: { entityType: data.entityType,status: AuditStatusEnum.Aktif },
+        orderBy: { filterName: 'asc' },
+        include: {
+          createdBy: { select: { id: true, ad: true } },
+          updatedBy: { select: { id: true, ad: true } },
         },
       });
     } catch (error) {
@@ -50,8 +73,8 @@ const service = {
       return await prisma[PrismaName].findFirst({
         where: { id, status: AuditStatusEnum.Aktif },
         include: {
-          createdBy: { select: { id: true, ad: true} },
-          updatedBy: { select: { id: true, ad: true} },
+          createdBy: { select: { id: true, ad: true } },
+          updatedBy: { select: { id: true, ad: true } },
         },
       });
     } catch (error) {
@@ -59,7 +82,6 @@ const service = {
       throw error;
     }
   },
-
 
   create: async data => {
     const { filterName, entityType, filterState, description, islemYapanKullanici } = data;
@@ -69,7 +91,7 @@ const service = {
     }
 
     try {
-            const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(HizmetName);
 
       const createPayload = {
         id: yeniId,
@@ -84,12 +106,13 @@ const service = {
       return await prisma[PrismaName].create({
         data: createPayload,
         include: {
-          createdBy: { select: { id: true, ad: true} },
+          createdBy: { select: { id: true, ad: true } },
         },
       });
     } catch (error) {
       // Prisma unique constraint hatasını yakalama (örn: aynı isimde filtre)
-      if (error.code === 'P2002') { // Prisma unique constraint violation kodu
+      if (error.code === 'P2002') {
+        // Prisma unique constraint violation kodu
         // Hangi alanların çakıştığını error.meta.target içinde bulabilirsiniz
         const target = error.meta?.target || ['bilinmeyen alan'];
         throw new Error(`${HumanName} oluşturulurken benzersizlik kısıtlaması ihlal edildi (${target.join(', ')}). Lütfen farklı bir filtre adı deneyin.`);
@@ -98,7 +121,6 @@ const service = {
       throw error;
     }
   },
-
 
   update: async data => {
     const { id, filterName, entityType, filterState, description, islemYapanKullanici } = data;
@@ -128,8 +150,8 @@ const service = {
         where: { id },
         data: updatePayload,
         include: {
-          createdBy: { select: { id: true, ad: true} },
-          updatedBy: { select: { id: true, ad: true} },
+          createdBy: { select: { id: true, ad: true } },
+          updatedBy: { select: { id: true, ad: true } },
         },
       });
     } catch (error) {
@@ -141,7 +163,6 @@ const service = {
       throw error;
     }
   },
-
 
   updateStatus: async data => {
     const { id, status, islemYapanKullanici } = data;
@@ -164,8 +185,8 @@ const service = {
           updatedById: islemYapanKullanici,
         },
         include: {
-          createdBy: { select: { id: true, ad: true} },
-          updatedBy: { select: { id: true, ad: true} },
+          createdBy: { select: { id: true, ad: true } },
+          updatedBy: { select: { id: true, ad: true } },
         },
       });
     } catch (error) {
@@ -174,8 +195,8 @@ const service = {
     }
   },
 
-
-  delete: async data => { // Fonksiyon adını delete'ten deleteSoft'a değiştirdim.
+  delete: async data => {
+    // Fonksiyon adını delete'ten deleteSoft'a değiştirdim.
     const { id, islemYapanKullanici } = data;
 
     if (!id || !islemYapanKullanici) {
@@ -209,12 +230,9 @@ const service = {
       }
 
       if (searchTerm) {
-        whereClause.OR = [
-          { filterName: { contains: searchTerm, mode: 'insensitive' } },
-          { description: { contains: searchTerm, mode: 'insensitive' } },
-        ];
+        whereClause.OR = [{ filterName: { contains: searchTerm, mode: 'insensitive' } }, { description: { contains: searchTerm, mode: 'insensitive' } }];
       }
-      
+
       // Yetkilendirme (Örnek - getAllByEntityType'daki gibi detaylandırılabilir)
       // if (userRole !== 'ADMIN' && currentUserId) {
       //   whereClause.createdById = currentUserId;
@@ -224,8 +242,8 @@ const service = {
         where: whereClause,
         orderBy: { filterName: 'asc' },
         include: {
-          createdBy: { select: { id: true, ad: true} },
-          updatedBy: { select: { id: true, ad: true} },
+          createdBy: { select: { id: true, ad: true } },
+          updatedBy: { select: { id: true, ad: true } },
         },
       });
     } catch (error) {

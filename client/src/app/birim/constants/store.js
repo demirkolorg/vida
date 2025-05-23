@@ -1,19 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { createCrudStore } from '@/stores/crudStoreFactory';
-import { getAllQuery,  getById, create, update, search, updateStatus, deleteEntity } from './api';
+import { getAll, getByQuery, getById, create, update, deleteEntity, updateStatus, search } from './api';
 import { EntityHuman } from './api';
 
 export const useBirimStore = createCrudStore(
   EntityHuman,
   {
-    getAllQuery: getAllQuery,
+    getAll: getAll,
+    getByQuery: getByQuery,
     getById: getById,
     create: create,
     update: update,
     delete: deleteEntity,
-    search: search,
     updateStatus: updateStatus,
+    search: search,
   },
   (set, get, baseStore) => {
     // Eğer özel state/action yoksa bu fonksiyon tamamen kaldırılabilir
@@ -25,7 +26,7 @@ export const useBirimStore = createCrudStore(
       // ornekOzelAction: () => {
       //   set({ ornekOzelAlan: "Birim için özel bir değer" });
       //   console.log("Birim için özel action çağrıldı. Mevcut Birim sayısı:", get().datas.length);
-      //   baseStore.FetchAll(); // Temel store action'larını da çağırabiliriz
+      //   baseStore.GetAll(); // Temel store action'larını da çağırabiliriz
       // },
       // --- Özel State ve Action'lar Sonu ---
     };

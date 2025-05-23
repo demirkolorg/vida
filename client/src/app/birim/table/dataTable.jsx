@@ -4,7 +4,7 @@ import { Birim_Columns as EntityColumns } from './columns';
 import { BirimContextMenu as EntityContextMenu } from './contextMenu';
 import { useBirimStore as useEntityStore } from '../constants/store';
 import { BirimSpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
-import { EntityType , EntityHuman} from '../constants/api';
+import { EntityType, EntityHuman } from '../constants/api';
 
 const columnVisibilityData = {};
 const sorting = [{ id: 'ad', desc: false }];
@@ -15,7 +15,7 @@ const facesFilterData = [
 
 export function BirimDataTable() {
   const datas = useEntityStore(state => state.datas);
-  const fetchData = useEntityStore(state => state.FetchAll);
+  const fetchData = useEntityStore(state => state.GetByQuery);
   const isLoading = useEntityStore(state => state.loadingList);
   const toggleDisplayStatusFilter = useEntityStore(state => state.ToggleDisplayStatusFilter);
   const displayStatusFilter = useEntityStore(state => state.displayStatusFilter);
@@ -45,8 +45,7 @@ export function BirimDataTable() {
         onRefresh={handleRefreshData}
         onToggleStatus={toggleDisplayStatusFilter}
         entityType={EntityType}
-        EntityHuman={EntityHuman}
-        // onRowClick={onRowClick}
+        entityHuman={EntityHuman}
         rowContextMenu={contextMenu}
         facetedFilterSetup={facesFilterData}
         initialSortingState={sorting}

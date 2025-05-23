@@ -1,33 +1,40 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { toast } from 'sonner';
 
 import { createCrudStore } from '@/stores/crudStoreFactory';
-import { getAllByEntityType,  getById, create, update, search, updateStatus, deleteEntity } from './api';
+import { getAll, getByQuery, getByEntityType, getById, create, update, search, updateStatus, deleteEntity } from './api';
 import { EntityHuman } from './api';
 
 export const useSavedFilterStore = createCrudStore(
   EntityHuman,
   {
-    getAllQuery: getAllByEntityType,
+    getAll: getAll,
+    getByQuery: getByQuery,
     getById: getById,
     create: create,
     update: update,
     delete: deleteEntity,
-    search: search,
     updateStatus: updateStatus,
+    search: search,
   },
   (set, get, baseStore) => {
-    // Eğer özel state/action yoksa bu fonksiyon tamamen kaldırılabilir
-    // veya boş bir nesne döndürebilir.
-    // JavaScript'te extender fonksiyonu hala aynı şekilde çalışır.
     return {
-      // --- Örnek Özel State ve Action'lar (Birim için gerekirse) ---
-      // ornekOzelAlan: null,
-      // ornekOzelAction: () => {
-      //   set({ ornekOzelAlan: "Birim için özel bir değer" });
-      //   console.log("Birim için özel action çağrıldı. Mevcut Birim sayısı:", get().datas.length);
-      //   baseStore.FetchAll(); // Temel store action'larını da çağırabiliriz
-      // },
-      // --- Özel State ve Action'lar Sonu ---
+      GetByEntityType: async (data, options) => {
+        const showSuccessToast = options?.showToast ?? true;
+        if (get().loadingList || get().loadingSearch) return;
+
+        set({ loadingList: true, isSearchResult: false, error: null, datas: [] });
+        try {
+          const fetchedData = await getByEntityType(data);
+          set({ datas: fetchedData, loadingList: false });
+          if (showSuccessToast) toast.success(`${EntityHuman} listesi başarıyla getirildi.`);
+          return fetchedData;
+        } catch (error) {
+          const message = error?.response?.data?.message || error.message || `${EntityHuman} listesi getirilemedi.`;
+          toast.error(`${EntityHuman} listesi getirilirken hata: ${message}`);
+          set({ error: message, loadingList: false, datas: [], isSearchResult: false, lastFetchAllTime: null });
+        }
+      },
     };
   },
 );

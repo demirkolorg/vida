@@ -11,7 +11,7 @@ export const ToolbarDigerAraclarButton = ({ isCollapsibleToolbarOpen, setIsColla
       className="w-full" // Veya duruma göre farklı bir stil
     >
       <CollapsibleTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 cursor-pointer">
+        <Button variant="outline" size="sm" className="h-8 ">
           {title}
           <ChevronsUpDown className={cn('ml-2 h-4 w-4 transition-transform', isCollapsibleToolbarOpen && 'rotate-180')} />
         </Button>

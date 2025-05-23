@@ -3,9 +3,9 @@ import { axiosInstance } from '@/api/index';
 export const EntityType = 'birim';
 export const EntityHuman = 'Birim';
 
-export const getAllQuery = async (data = {}) => {
+export const getAll = async () => {
   try {
-    const response = await axiosInstance('post', `${EntityType}/getAllQuery`, data);
+    const response = await axiosInstance('get', `${EntityType}/getAll`);
     return response?.data?.data || [];
   } catch (error) {
     console.error('API hatası (Birim getAll):', error?.response?.data || error.message || error);
@@ -13,6 +13,15 @@ export const getAllQuery = async (data = {}) => {
   }
 };
 
+export const getByQuery = async (data = {}) => {
+  try {
+    const response = await axiosInstance('post', `${EntityType}/getByQuery`, data);
+    return response?.data?.data || [];
+  } catch (error) {
+    console.error('API hatası (Birim getAll):', error?.response?.data || error.message || error);
+    return [];
+  }
+};
 export const getById = async id => {
   try {
     const response = await axiosInstance('post', `${EntityType}/getById`, { id });

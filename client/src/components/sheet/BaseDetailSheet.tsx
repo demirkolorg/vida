@@ -49,7 +49,7 @@ export function BaseDetailSheet<TItem extends { id: string }>({ title, entityTyp
           {itemData && footerContent && footerContent(itemData, closeSheet)}
 
           <Button
-            className="cursor-pointer"
+            className=""
             onClick={() => {
               closeSheet();
               setTimeout(() => {
@@ -61,7 +61,7 @@ export function BaseDetailSheet<TItem extends { id: string }>({ title, entityTyp
           </Button>
 
           <SheetClose asChild>
-            <Button className="cursor-pointer" variant="outline">
+            <Button className="" variant="outline">
               {closeButtonText}
             </Button>
           </SheetClose>

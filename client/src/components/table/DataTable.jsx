@@ -9,14 +9,11 @@ import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { customGlobalFilterFn, useDebounce } from '@/components/table/Functions';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getSortedRowModel, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
-
-import { BaseFilterManagementSheet } from '@/components/sheet/BaseFilterManagementSheet'; // Yeni oluşturduğumuz base sheet
-
-
+import { FilterManagementSheet } from '@/app/filter/sheet/FilterManagementSheet';
 
 export function DataTable({
   entityType,
-  EntityHuman,
+  entityHuman,
   columns: specificColumns,
   data,
   isLoading,
@@ -94,7 +91,7 @@ export function DataTable({
 
   const handleCreate = useCallback(() => {
     openSheet('create', null, entityType);
-  }, [openSheet, entityType]); // entityType'ı bağımlılıklara ekle
+  }, [openSheet, entityType]);
 
   const allSummaries = useMemo(() => {
     // summarySetup verilmediyse veya veri yoksa null dön
@@ -133,14 +130,12 @@ export function DataTable({
 
   return (
     <div className="w-full space-y-2">
-
-      <BaseFilterManagementSheet
-                  sheetTypeIdentifier="filterManagement" // sheetStore'da tanımladığımız tip
-                  entityType={entityType} // Bu sayfanın varlık tipi (örn: "birim")
-                  table={table} // DataTable'dan gelen table instance'ı
-                  title={`'${EntityHuman}' İçin Kayıtlı Filtreler`} // EntityHumanName, store veya api dosyasından gelebilir
-                  description="Kaydedilmiş filtrelerinizi yönetebilir, yenisini ekleyebilir veya uygulayabilirsiniz."
-              />
+      <FilterManagementSheet
+        sheetTypeIdentifier="filterManagement"
+        entityType={entityType}
+        entityHuman={entityHuman}
+        table={table}
+      />
 
       <ToolbarIndex
         table={table}
@@ -196,7 +191,7 @@ export function DataTable({
                   return (
                     <ContextMenu key={`context-${row.id}`}>
                       <ContextMenuTrigger asChild>
-                        <TableRow data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => onRowClick?.(rowData)} className={cn('cursor-default', onRowClick && 'hover:bg-muted/50 cursor-pointer')}>
+                        <TableRow data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => onRowClick?.(rowData)} className={cn('cursor-default', onRowClick && 'hover:bg-muted/50 ')}>
                           {renderRowContent()}
                         </TableRow>
                       </ContextMenuTrigger>
@@ -205,7 +200,7 @@ export function DataTable({
                   );
                 } else {
                   return (
-                    <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => onRowClick?.(rowData)} className={cn(onRowClick && 'hover:bg-muted/50 cursor-pointer')}>
+                    <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => onRowClick?.(rowData)} className={cn(onRowClick && 'hover:bg-muted/50 ')}>
                       {renderRowContent()}
                     </TableRow>
                   );

@@ -15,7 +15,7 @@ export function BirimContextMenu({ item }) {
   return (
     <BaseContextMenu item={item} entityType={EntityType} entityHuman={EntityHuman} menuTitle={menuTitle}>
       {item?.subeler && item.subeler.length > 0 && (
-        <ContextMenuItem className="cursor-pointer" onSelect={handleListSubeler}>
+        <ContextMenuItem className="" onSelect={handleListSubeler}>
           <HomeIcon className="mr-2 h-4 w-4 text-green-500" />
           <span>Bağlı Şubeleri Listele ({item.subeler.length})</span>
         </ContextMenuItem>

@@ -35,13 +35,12 @@ const service = {
     }
   },
 
-  getAllQuery: async (data = {}) => {
+  getByQuery: async (data = {}) => {
     try {
       const whereClause = {};
       if (data.status) whereClause.status = data.status;
       if (data.ad) whereClause.ad = data.ad;
       if (data.aciklama) whereClause.aciklama = data.aciklama;
-console.log('getAllQuery whereClause:', whereClause);
 
       return await prisma[PrismaName].findMany({
         where: whereClause,
@@ -63,8 +62,6 @@ console.log('getAllQuery whereClause:', whereClause);
       throw error;
     }
   },
-
- 
 
   getById: async data => {
     try {

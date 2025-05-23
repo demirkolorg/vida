@@ -27,5 +27,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "src/components/sheet/BaseFilterManagementSheet.jsx"]
+  "include": ["src", "src/app/filter/sheet/BaseFilterManagementSheet.jsx"]
 }

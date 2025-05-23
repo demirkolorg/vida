@@ -72,11 +72,11 @@ export function UpdateStatusDialog({ item, entityHumanName, entityType, currentS
               if (onOpenChange) onOpenChange(false);
             }}
             disabled={isLoading}
-            className="cursor-pointer"
+            className=""
           >
             İptal
           </Button>
-          <Button className="cursor-pointer" onClick={handleSubmit} disabled={isLoading || selectedStatus === (item.status || currentStatus)}>
+          <Button className="" onClick={handleSubmit} disabled={isLoading || selectedStatus === (item.status || currentStatus)}>
             {isLoading ? 'Kaydediliyor...' : 'Kaydet'}
           </Button>
         </DialogFooter>

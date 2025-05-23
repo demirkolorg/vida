@@ -94,7 +94,7 @@ export const FormFieldCombobox = ({
                           setSearchValue('');
                           setOpen(false);
                         }}
-                        className="cursor-pointer"
+                        className=""
                       >
                         <Check className={cn('mr-2 h-4 w-4', value === option.value ? 'opacity-100' : 'opacity-0')} />
                         {option.label}

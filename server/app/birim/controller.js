@@ -4,16 +4,6 @@ import response from '../../utils/response.js';
 import { HizmetName, HumanName } from './base.js';
 
 const controller = {
-  getAllQuery: async (req, res) => {
-    const rota = 'getAllQuery';
-    try {
-      const data = req.body;
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.list.ok, result);
-    } catch (error) {
-      response.error(req, res, HizmetName, rota, message.list.error, error.message);
-    }
-  },
   getAll: async (req, res) => {
     const rota = 'getAll';
     try {
@@ -23,10 +13,11 @@ const controller = {
       response.error(req, res, HizmetName, rota, message.list.error, error.message);
     }
   },
-  getAllPasif: async (req, res) => {
-    const rota = 'getAllPasif';
+  getByQuery: async (req, res) => {
+    const rota = 'getByQuery';
     try {
-      const result = await service[rota]();
+      const data = req.body;
+      const result = await service[rota](data);
       response.success(req, res, HizmetName, rota, message.list.ok, result);
     } catch (error) {
       response.error(req, res, HizmetName, rota, message.list.error, error.message);

@@ -5,7 +5,9 @@ import { authToken, authRoles } from '../../middlewares/auth.js';
 import { RoleEnum } from '@prisma/client';
 
 r.get('/health', c.health);
-r.post('/getAllByEntityType', authToken, authRoles(RoleEnum.Superadmin), c.getAllByEntityType);
+r.get('/getAll', authToken, authRoles(RoleEnum.Superadmin), c.getAll);
+r.post('/getByQuery', authToken, authRoles(RoleEnum.Superadmin), c.getByQuery);
+r.post('/getByEntityType', authToken, authRoles(RoleEnum.Superadmin), c.getByEntityType);
 r.post('/getById', authToken, authRoles(RoleEnum.Superadmin), c.getById);
 r.post('/create', authToken, authRoles(RoleEnum.Superadmin), c.create);
 r.post('/update', authToken, authRoles(RoleEnum.Superadmin), c.update);

@@ -12,7 +12,7 @@ export const NotFoundPage = () => {
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl ">Böyle bir sayfa bulunamadı</h1>
             <p className="text-primary/40">Bilinmeyen dijital aleme adım atmış gibi görünüyorsunuz.</p>
           </div>
-          <Button className="cursor-pointer inline-flex h-10 items-center rounded-mdfocus-visible:outline-none focus-visible:ring-1  disabled:pointer-events-none disabled:opacity-50" onClick={() => navigate('/')}>
+          <Button className=" inline-flex h-10 items-center rounded-mdfocus-visible:outline-none focus-visible:ring-1  disabled:pointer-events-none disabled:opacity-50" onClick={() => navigate('/')}>
           Web sitesine geri dön
           </Button>
         </div>

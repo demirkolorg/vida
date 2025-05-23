@@ -20,28 +20,38 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
     };
 
     const baseActions = {
-      FetchAll: async (data,options) => {
+      GetAll: async options => {
         const showSuccessToast = options?.showToast ?? true;
         if (get().loadingList || get().loadingSearch) return;
 
         set({ loadingList: true, isSearchResult: false, error: null, datas: [] });
         try {
-          const fetchedData = await api.getAllQuery(data);
-          set({
-            datas: fetchedData, // DOĞRU: Mevcut datas'ı fetchedData ile tamamen değiştir
-            loadingList: false,
-          });
-          if (showSuccessToast) {
-            toast.success(`${entityName} listesi başarıyla getirildi.`);
-          }
+          const fetchedData = await api.getAll();
+          set({ datas: fetchedData, loadingList: false });
+          if (showSuccessToast) toast.success(`${entityName} listesi başarıyla getirildi.`);
         } catch (error) {
           const message = error?.response?.data?.message || error.message || `${entityName} listesi getirilemedi.`;
           toast.error(`${entityName} listesi getirilirken hata: ${message}`);
           set({ error: message, loadingList: false, datas: [], isSearchResult: false, lastFetchAllTime: null });
         }
       },
-      
-      FetchById: async id => {
+
+      GetByQuery: async (data, options) => {
+        const showSuccessToast = options?.showToast ?? true;
+        if (get().loadingList || get().loadingSearch) return;
+
+        set({ loadingList: true, isSearchResult: false, error: null, datas: [] });
+        try {
+          const fetchedData = await api.getByQuery(data);
+          set({ datas: fetchedData, loadingList: false });
+          if (showSuccessToast) toast.success(`${entityName} listesi başarıyla getirildi.`);
+        } catch (error) {
+          const message = error?.response?.data?.message || error.message || `${entityName} listesi getirilemedi.`;
+          toast.error(`${entityName} listesi getirilirken hata: ${message}`);
+          set({ error: message, loadingList: false, datas: [], isSearchResult: false, lastFetchAllTime: null });
+        }
+      },
+      GetById: async id => {
         if (get().loadingDetail || get().loadingList || get().loadingSearch) return null;
         set({ loadingDetail: true, currentData: null, error: null });
         try {
@@ -69,7 +79,7 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
 
         if (isParamsEmpty) {
           toast.info('Arama kriterleri boş, tüm liste getiriliyor.');
-          await get().FetchAll({ showToast: false });
+          await get().GetAll({ showToast: false });
           return;
         }
 
@@ -110,7 +120,6 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
             currentData: createdData, // İsteğe bağlı olarak yeni oluşturulanı current yap
           }));
 
-          await get().FetchAll({ showToast: false });
           return createdData;
         } catch (error) {
           const apiError = error?.response?.data?.errors || error?.response?.data?.message;
@@ -142,7 +151,6 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           if (showSuccessToast) {
             toast.success(`'${updatedData.ad || id}' (${entityName}) başarıyla güncellendi.`);
           }
-          await get().FetchAll({ showToast: false });
           return updatedData;
         } catch (error) {
           const apiError = error?.response?.data?.errors || error?.response?.data?.message;
@@ -175,7 +183,6 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           if (showSuccessToast) {
             toast.success(`'${updatedItemWithNewStatus.ad || id}' (${entityName}) durumu başarıyla güncellendi..`);
           }
-          await get().FetchAll({ showToast: false });
           return updatedItemWithNewStatus;
         } catch (error) {
           const apiError = error?.response?.data?.errors || error?.response?.data?.message;
@@ -208,7 +215,6 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           if (showSuccessToast) {
             toast.success(`'${itemToDelete?.ad || id}' (${entityName}) başarıyla silindi.`);
           }
-          await get().FetchAll({ showToast: false });
 
           return true;
         } catch (error) {
@@ -228,9 +234,8 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
           }
           return;
         }
-        await get().FetchAll({ showToast: false }); // Tüm listeyi yeniden çek
         set({ isSearchResult: false, loadingSearch: false, error: null });
-        await get().FetchAll({ showToast: false, force: true });
+        await get().GetAll({ showToast: false, force: true });
         if (showSuccessToast) {
           toast.info('Arama temizlendi, tüm liste gösteriliyor.');
         }

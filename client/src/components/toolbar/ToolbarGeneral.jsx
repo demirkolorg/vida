@@ -9,13 +9,13 @@ export const ToolbarGeneral = props => {
     <div className="flex items-center gap-2 ml-auto">
       {moreButtonRendered}
       {onRefresh && ( // onRefresh varsa butonu göster
-        <Button variant="outline" size="sm" onClick={onRefresh} disabled={isLoading} aria-label="Verileri Yenile" className="h-8 cursor-pointer">
+        <Button variant="outline" size="sm" onClick={onRefresh} disabled={isLoading} aria-label="Verileri Yenile" className="h-8 ">
           {isLoading ? <Spinner size={'small'} className="h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
           Yenile
         </Button>
       )}
       {!hideNewButton && (
-        <Button variant="outline" size="sm" className="h-8 cursor-pointer" onClick={handleCreate}>
+        <Button variant="outline" size="sm" className="h-8 " onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-1" /> Yeni Ekle
         </Button>
       )}

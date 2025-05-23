@@ -14,7 +14,7 @@ export function ToolbarFacetedFilterComp({ column, title, options }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 border-dashed cursor-pointer ml-2">
+        <Button variant="outline" size="sm" className="h-8 border-dashed  ml-2">
           <PlusCircledIcon className="mr-2 h-4 w-4" />
           {title}
           {selectedValues?.size > 0 && (
@@ -52,7 +52,7 @@ export function ToolbarFacetedFilterComp({ column, title, options }) {
                 const isSelected = selectedValues.has(option.value);
                 return (
                   <CommandItem
-                    className="cursor-pointer"
+                    className=""
                     key={option.value}
                     onSelect={() => {
                       if (isSelected) {
@@ -78,7 +78,7 @@ export function ToolbarFacetedFilterComp({ column, title, options }) {
               <>
                 <CommandSeparator />
                 <CommandGroup>
-                  <CommandItem onSelect={() => column?.setFilterValue(undefined)} className="justify-center text-center cursor-pointer">
+                  <CommandItem onSelect={() => column?.setFilterValue(undefined)} className="justify-center text-center ">
                     Filtreleri temizle
                   </CommandItem>
                 </CommandGroup>

@@ -51,7 +51,7 @@ export const VidaHeader = () => {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="icon" className="rounded-full cursor-pointer">
+            <Button variant="secondary" size="icon" className="rounded-full ">
               <Avatar>
                 <AvatarImage
                   src="https://github.com/shadcn.png"

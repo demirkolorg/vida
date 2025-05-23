@@ -65,22 +65,22 @@ export function BaseContextMenu({
             {children}
             {showSeparatorAfterChildren && <ContextMenuSeparator />}
 
-            <ContextMenuItem className="cursor-pointer" onSelect={handleDetail}>
+            <ContextMenuItem className="" onSelect={handleDetail}>
                 <Eye className="mr-2 h-4 w-4" />
                 <span>Detayları Göster</span>
             </ContextMenuItem>
 
-            <ContextMenuItem className="cursor-pointer" onSelect={handleCopyId}>
+            <ContextMenuItem className="" onSelect={handleCopyId}>
                 <Copy className="mr-2 h-4 w-4" />
                 <span>ID Kopyala</span>
             </ContextMenuItem>
 
-            <ContextMenuItem className="cursor-pointer" onSelect={handleUpdateStatus}>
+            <ContextMenuItem className="" onSelect={handleUpdateStatus}>
                 <ShuffleIcon className="mr-2 h-4 w-4 " />
                 <span>Durum Güncelle</span>
             </ContextMenuItem>
 
-            <ContextMenuItem className="cursor-pointer" onSelect={handleEdit}>
+            <ContextMenuItem className="" onSelect={handleEdit}>
                 <Pencil className="mr-2 h-4 w-4" />
                 <span>Düzenle</span>
             </ContextMenuItem>
@@ -90,7 +90,7 @@ export function BaseContextMenu({
                     <ContextMenuSeparator />
                     <ContextMenuItem
                         variant="destructive" // Bu prop ContextMenuItem bileşenine aittir
-                        className="cursor-pointer"
+                        className=""
                         onSelect={handleDelete}
                     >
                         <Trash2 className="mr-2 h-4 w-4" />
