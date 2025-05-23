@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { Badge } from '@/components/ui/badge';
 import { statusStyles } from '@/components/table/Functions';
+import { EntityStatusOptionsArray } from '@/constants/statusOptions';
 
 const StatusCell = ({ status }) => {
   return (
@@ -28,6 +29,7 @@ export const AuditColumns = () => [
     meta: {
       exportHeader: "Durum",
       filterVariant: 'select',
+      filterOptions: EntityStatusOptionsArray
     },
   },
   {
@@ -51,7 +53,7 @@ export const AuditColumns = () => [
     enableHiding: true,
     meta: {
       exportHeader: "Oluşturan",
-    filterVariant: 'text',
+      filterVariant: 'text',
     },
   },
   {
@@ -73,7 +75,6 @@ export const AuditColumns = () => [
         return <div className="text-sm text-red-500">Geçersiz Tarih</div>;
       }
     },
-    enableColumnFilter: false,
     size: 180,
     enableHiding: true,
     meta: {
@@ -102,7 +103,7 @@ export const AuditColumns = () => [
     enableHiding: true,
     meta: {
       exportHeader: "Düzenleyen",
-    filterVariant: 'text',
+      filterVariant: 'text',
     },
   },
   {
@@ -124,7 +125,6 @@ export const AuditColumns = () => [
         return <div className="text-sm text-red-500">Geçersiz Tarih</div>;
       }
     },
-    enableColumnFilter: false,
     size: 180,
     enableHiding: true,
     meta: {

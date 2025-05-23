@@ -6,7 +6,7 @@ import { ToolbarIndex } from '@/components/toolbar/ToolbarIndex';
 import { AuditColumns } from '@/components/table/AuditColumns';
 import { DataTablePagination } from '@/components/table/Pagination';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
-import { customGlobalFilterFn, useDebounce } from '@/components/table/Functions';
+import { getStartOfDay, customGlobalFilterFn, useDebounce } from '@/components/table/Functions';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getSortedRowModel, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 import { FilterManagementSheet } from '@/app/filter/sheet/FilterManagementSheet';
@@ -48,11 +48,11 @@ export function DataTable({
   const initialVisibility = useMemo(() => {
     const auditColumnDefaultVisibility = includeAuditColumns
       ? {
-          createdBy: false,
-          createdAt: false,
-          updatedBy: false,
-          updatedAt: false,
-        }
+        createdBy: false,
+        createdAt: false,
+        updatedBy: false,
+        updatedAt: false,
+      }
       : {};
     return { ...auditColumnDefaultVisibility, ...columnVisibilityData };
   }, [columnVisibilityData, includeAuditColumns]);

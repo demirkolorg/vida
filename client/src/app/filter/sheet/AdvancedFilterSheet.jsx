@@ -18,6 +18,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Spinner } from '@/components/general/Spinner';
 import DatePicker from '@/components/ui/date-picker'; // Shadcn Date Picker (Calendar + Popover)
 import { Textarea } from '@/components/ui/textarea';
+import EditableDatePicker from '@/components/ui/editable-date-picker'; // YENİ EditableDatePicker'ı import edin
+import { isValid } from 'date-fns'; // <<< isValid'ı buraya ekleyin
 
 const OPERATORS = {
   text: [
@@ -54,11 +56,18 @@ const OPERATORS = {
   ],
   boolean: [{ value: 'equals', label: 'Eşittir' }],
 };
-
+const getStartOfDay = (dateInput) => {
+  if (!dateInput) return null;
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return null; // Geçersiz tarih kontrolü
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
 const getOperatorsForColumn = column => {
-  const filterVariant = column?.columnDef?.meta?.filterVariant || 'text';
+  const filterVariant = column?.filterVariant;
+
   // filterVariant: 'text', 'number', 'date', 'select', 'boolean'
-  return OPERATORS[filterVariant] || OPERATORS.text;
+  return OPERATORS[filterVariant] || [];
 };
 
 const initialRule = () => ({
@@ -92,7 +101,7 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
         .filter(col => col.getCanFilter() && col.id !== 'actions' && col.columnDef.meta?.filterVariant) // meta.filterVariant olanları al
         .map(col => ({
           value: col.id,
-          label: typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id,
+          label: col.columnDef.meta?.exportHeader,
           filterVariant: col.columnDef.meta?.filterVariant || 'text',
           filterOptions: col.columnDef.meta?.filterOptions || [], // Select için seçenekler
         }));
@@ -155,48 +164,55 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
   };
 
   const handleSheetApplyFilters = useCallback(() => {
-    // Renamed to avoid confusion with prop
     if (onApplyFilters) {
-      // Validate rules: ensure field and operator are set, and value is present unless operator is 'isEmpty'/'isNotEmpty'
-      const validRules = filterLogic.rules.filter(
-        rule =>
-          rule.field &&
-          rule.operator &&
-          (rule.operator === 'isEmpty' ||
-            rule.operator === 'isNotEmpty' ||
-            rule.value !== '' ||
-            typeof rule.value === 'boolean' || // boolean can be true/false explicitly
-            (rule.operator === 'between' && (rule.value !== '' || rule.value2 !== ''))), // For 'between', at least one value might be ok depending on logic
-      );
+      const processedRules = filterLogic.rules
+        .map(rule => {
+          const selectedCol = availableColumns.find(c => c.value === rule.field);
+          return {
+            ...rule,
+            filterVariant: selectedCol?.filterVariant || 'text', // <<< filterVariant'ı kurala ekle
+          };
+        })
+        .filter(
+          rule =>
+            rule.field &&
+            rule.operator &&
+            (rule.operator === 'isEmpty' ||
+              rule.operator === 'isNotEmpty' ||
+              rule.value !== '' ||
+              typeof rule.value === 'boolean' ||
+              (rule.operator === 'between' && (rule.value !== '' || rule.value2 !== ''))),
+        );
 
-      if (validRules.length > 0) {
-        onApplyFilters({ ...filterLogic, rules: validRules });
+      if (processedRules.length > 0) {
+        onApplyFilters({ ...filterLogic, rules: processedRules });
       } else {
-        // If no valid rules (e.g., user cleared everything), send null to clear advanced filters
         onApplyFilters(null);
       }
     }
-    // toast.success('Filtreler tabloya geçici olarak uygulandı.'); // Toast is better handled in DataTable
-    // closeSheet(); // Optional: close sheet after applying
-  }, [onApplyFilters, filterLogic]);
+  }, [onApplyFilters, filterLogic, availableColumns]); // availableColumns'ı bağımlılıklara ekle
 
   const handleSaveFilterSubmit = async formData => {
-    // table prop'una burada ihtiyacımız yok, çünkü sadece UI'daki filterLogic'i kullanıyoruz.
-    // Gelişmiş filtre objesini oluştur
-    const advancedFilterObjectToSave = {
-      condition: filterLogic.condition,
-      rules: filterLogic.rules.filter(
+
+    const advancedFilterObjectToSave = filterLogic.rules
+      .map(rule => {
+        const selectedCol = availableColumns.find(c => c.value === rule.field);
+        return {
+          ...rule,
+          filterVariant: selectedCol?.filterVariant || 'text', // <<< filterVariant'ı kurala ekle
+        };
+      })
+      .filter(
         rule =>
           rule.field &&
           rule.operator &&
           (rule.operator === 'isEmpty' ||
             rule.operator === 'isNotEmpty' ||
-            (typeof rule.value === 'boolean' ? true : rule.value !== '') || // boolean için value true/false olabilir, boş string kontrolü yetmez
+            (typeof rule.value === 'boolean' ? true : rule.value !== '') ||
             (rule.operator === 'between' && (rule.value !== '' || rule.value2 !== ''))),
-      ),
-    };
+      );
 
-    if (advancedFilterObjectToSave.rules.length === 0) {
+    if (processedRulesForSave.length === 0) {
       toast.error('Kaydedilecek geçerli bir filtre kuralı bulunmuyor.');
       return;
     }
@@ -304,13 +320,29 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
                         <>
                           {selectedColumn?.filterVariant === 'text' && <Input placeholder="Değer girin" value={rule.value} onChange={e => handleRuleChange(rule.id, 'value', e.target.value)} />}
                           {selectedColumn?.filterVariant === 'number' && <Input type="number" placeholder="Sayısal değer" value={rule.value} onChange={e => handleRuleChange(rule.id, 'value', e.target.value)} />}
+
+
+
                           {selectedColumn?.filterVariant === 'date' && rule.operator !== 'between' && (
-                            <DatePicker value={rule.value ? new Date(rule.value) : undefined} onChange={date => handleRuleChange(rule.id, 'value', date ? date.toISOString() : '')} placeholderText="Tarih Seçin" />
+                            <EditableDatePicker
+                              value={rule.value && isValid(new Date(rule.value)) ? new Date(rule.value) : undefined}
+                              onChange={date => handleRuleChange(rule.id, 'value', date)}
+                              placeholderText="Tarih (gg.aa.yyyy)"
+                            />
                           )}
                           {selectedColumn?.filterVariant === 'date' && rule.operator === 'between' && (
-                            <div className="flex space-x-1">
-                              <DatePicker value={rule.value ? new Date(rule.value) : undefined} onChange={date => handleRuleChange(rule.id, 'value', date ? date.toISOString() : '')} placeholderText="Başlangıç" />
-                              <DatePicker value={rule.value2 ? new Date(rule.value2) : undefined} onChange={date => handleRuleChange(rule.id, 'value2', date ? date.toISOString() : '')} placeholderText="Bitiş" />
+                            <div className="flex flex-col space-y-2">
+                              <EditableDatePicker
+                                value={rule.value && isValid(new Date(rule.value)) ? new Date(rule.value) : undefined}
+                                onChange={date => handleRuleChange(rule.id, 'value', date)}
+                                placeholderText="Başlangıç"
+                              />
+
+                              <EditableDatePicker
+                                value={rule.value2 && isValid(new Date(rule.value2)) ? new Date(rule.value2) : undefined}
+                                onChange={date => handleRuleChange(rule.id, 'value2', date)}
+                                placeholderText="Bitiş"
+                              />
                             </div>
                           )}
                           {selectedColumn?.filterVariant === 'select' && (

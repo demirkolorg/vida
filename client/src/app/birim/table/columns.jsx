@@ -38,10 +38,9 @@ export const Birim_Columns = () => [
     },
     size: 100,
     enableSorting: true,
-    enableColumnFilter: false,
     meta: {
       exportHeader: 'Şube Sayısı',
-    filterVariant: 'number',
+      filterVariant: 'number',
     },
   },
   {
@@ -54,10 +53,9 @@ export const Birim_Columns = () => [
     },
     size: 120,
     enableSorting: true,
-    enableColumnFilter: false,
     meta: {
       exportHeader: 'Malzeme Sayısı',
-    filterVariant: 'number',
+      filterVariant: 'number',
     },
   },
 ];

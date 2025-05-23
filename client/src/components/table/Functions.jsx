@@ -35,7 +35,13 @@ export const turkishCaseInsensitiveFilterFn = (row, columnId, filterValue) => {
   const rowString = String(rowValue);
   return rowString.toLocaleLowerCase('tr').includes(filterString.toLocaleLowerCase('tr'));
 };
-
+export const getStartOfDay = (dateInput) => {
+  if (!dateInput) return null;
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return null;
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
 export function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 

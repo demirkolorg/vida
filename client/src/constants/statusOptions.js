@@ -8,3 +8,7 @@ import { AuditStatusEnum } from '@prisma/client';
 // export const EntityStatusOptions ={Aktif: 'Aktif', Pasif: 'Pasif', Silindi: 'Silindi'};
 
 export const EntityStatusOptions = AuditStatusEnum;
+export const EntityStatusOptionsArray = Object.values(AuditStatusEnum).map(val => ({
+    label: val,
+    value: val
+}));
