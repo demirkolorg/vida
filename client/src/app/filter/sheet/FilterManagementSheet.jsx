@@ -29,6 +29,7 @@ export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement'
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [filterToDelete, setFilterToDelete] = useState(null); // { id, filterName }
   const [formLoading, setFormLoading] = useState(false);
+
   const title = `${entityHuman} İçin Kayıtlı Filtreler`;
 
   const columnFilters = table.getState().columnFilters;
