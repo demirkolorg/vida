@@ -106,7 +106,6 @@ export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement'
     if (isEditMode && editingFilter) {
       filterStateToSave = editingFilter.filterState; // Düzenlemede state'i koru
     } else if (editingFilter?.filterState) {
-      // Yeni kayıt sırasında handleAddNewFilter'dan gelen state
       filterStateToSave = editingFilter.filterState;
     } else {
       toast.error('Filtre durumu alınamadı.');

@@ -175,61 +175,71 @@ const normalizeSearchableString = str => {
   return String(str).toLocaleLowerCase('tr-TR'); // Using your existing normalization
 };
 
-export const customGlobalFilterFn = (row, columnId, filterLogic, addMeta) => {
+
+// @/components/table/Functions.js (veya benzeri)
+
+// ... (getStartOfDay, normalizeSearchableString, evaluateRule yukarıda) ...
+
+export const customGlobalFilterFn = (row, columnIdAsPassed, filterLogic, addMeta) => {
   // Case 1: Simple string global search
   if (typeof filterLogic === 'string') {
     const searchTerm = normalizeSearchableString(filterLogic);
-    if (!searchTerm) return true; // No search term, so all rows match
+    if (!searchTerm) return true;
 
-    // Search in all cell values of the row
-    const cells = row.getAllCells();
-    for (const cell of cells) {
+    // Sadece `id`'si olan (yani accessorKey'i olan) ve görünür sütunlarda ara
+    return row.getVisibleCells().some(cell => {
+      // accessorFn varsa onu kullanır, yoksa accessorKey ile değeri alır.
       const cellValue = cell.getValue();
       const normalizedCellValue = normalizeSearchableString(cellValue);
-      if (normalizedCellValue.includes(searchTerm)) {
-        return true; // Row matches if any cell contains the search term
-      }
-    }
-    return false; // Row does not match
+      return normalizedCellValue.includes(searchTerm);
+    });
   }
 
   // Case 2: Advanced filter object
   if (typeof filterLogic === 'object' && filterLogic && filterLogic.rules && filterLogic.condition) {
     const { condition, rules } = filterLogic;
+    if (!rules || rules.length === 0) return true;
 
-    if (!rules || rules.length === 0) return true; // No rules, so all rows match
-
-    const table = addMeta?.table;
+    const table = addMeta?.table; // TanStack Table instance
 
     const ruleResults = rules.map(rule => {
-      if (!rule.field || !rule.operator) return true; // Incomplete rule, treat as match or handle as error
+      if (!rule.field || !rule.operator) return true;
 
-      const rowValue = row.original[rule.field];
-      let valueToEvaluate = rule.value;
-      let value2ToEvaluate = rule.value2;
+      // ÖNEMLİ: Satırın değerini `row.getValue(rule.field)` ile al.
+      // Bu, eğer sütun için bir `accessorFn` tanımlıysa onu kullanır.
+      // Eğer `accessorFn` yoksa, `row.original[rule.field]` gibi çalışır.
+      const actualRowValue = row.getValue(rule.field);
 
-      let filterVariant = 'text';
+      let filterVariant = 'text'; // Varsayılan
+
+      // Sütunun filterVariant'ını al
       if (table) {
-        const column = table.getColumn(rule.field);
-        filterVariant = column?.columnDef?.meta?.filterVariant || 'text';
-      } else {
-        filterVariant = rule.filterVariant || 'text'; // Fallback if table instance is not available
+        const column = table.getColumn(rule.field); // `rule.field` sütun ID'si olmalı
+        if (column && column.columnDef && column.columnDef.meta) {
+          filterVariant = column.columnDef.meta.filterVariant || 'text';
+        }
+      } else if (rule.filterVariant) {
+        // Eğer table instance yoksa ama kurala filterVariant eklenmişse onu kullan
+        // (Bu, AdvancedFilterSheet'te kurala filterVariant eklediğimiz senaryo)
+        filterVariant = rule.filterVariant;
       }
+      // Eğer yukarıdakilerden hiçbiri filterVariant'ı bulamazsa, 'text' olarak kalır.
 
-      return evaluateRule(rowValue, rule.operator, valueToEvaluate, value2ToEvaluate, filterVariant);
+      // `rule.value` ve `rule.value2` zaten AdvancedFilterSheet'ten doğru formatta gelmeli
+      // (tarihler için ISO string, sayılar için string, boolean için true/false veya 'true'/'false')
+      return evaluateRule(actualRowValue, rule.operator, rule.value, rule.value2, filterVariant);
     });
 
     if (condition === 'AND') {
       return ruleResults.every(result => result);
-    } else {
-      // OR
+    } else { // OR
       return ruleResults.some(result => result);
     }
   }
 
-  // Default: if filterLogic is neither a string nor a valid advanced filter object, don't filter
-  return true;
+  return true; // Varsayılan olarak filtreleme yapma
 };
+
 export const highlightMatch = (text, searchTerm) => {
   const normalizedText = normalizeTurkishString(text);
   const index = normalizedText.indexOf(searchTerm);

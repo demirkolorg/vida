@@ -19,6 +19,9 @@ export const useSavedFilterStore = createCrudStore(
   },
   (set, get, baseStore) => {
     return {
+      
+     
+      
       GetByEntityType: async (data, options) => {
         const showSuccessToast = options?.showToast ?? true;
         if (get().loadingList || get().loadingSearch) return;
