@@ -50,7 +50,24 @@ export function useDebounce(value, delay) {
   return debouncedValue;
 }
 
-
+export const normalizeTurkishString = str => {
+  if (!str) return '';
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ı/g, 'i')
+    .replace(/İ/g, 'I')
+    .replace(/ğ/g, 'g')
+    .replace(/Ğ/g, 'G')
+    .replace(/ü/g, 'u')
+    .replace(/Ü/g, 'U')
+    .replace(/ş/g, 's')
+    .replace(/Ş/g, 'S')
+    .replace(/ö/g, 'o')
+    .replace(/Ö/g, 'O')
+    .replace(/ç/g, 'c')
+    .replace(/Ç/g, 'C');
+};
 const evaluateRule = (rowValue, operator, ruleValue, ruleValue2, filterVariant) => {
   // rowValue'nun null veya undefined olma durumlarını kontrol et
   // ve sayısal/tarihsel karşılaştırmalar için ham değeri koru
@@ -58,7 +75,8 @@ const evaluateRule = (rowValue, operator, ruleValue, ruleValue2, filterVariant) 
   let filterValForCompare = ruleValue;
   let filterVal2ForCompare = ruleValue2;
 
-  if (filterVariant === 'text' || filterVariant === 'select' || !filterVariant) { // Varsayılan olarak metin karşılaştırması
+  if (filterVariant === 'text' || filterVariant === 'select' || !filterVariant) {
+    // Varsayılan olarak metin karşılaştırması
     valForCompare = rowValue === null || rowValue === undefined ? '' : String(rowValue).toLocaleLowerCase('tr-TR');
     filterValForCompare = ruleValue === null || ruleValue === undefined ? '' : String(ruleValue).toLocaleLowerCase('tr-TR');
     filterVal2ForCompare = ruleValue2 === null || ruleValue2 === undefined ? '' : String(ruleValue2).toLocaleLowerCase('tr-TR');
@@ -70,17 +88,17 @@ const evaluateRule = (rowValue, operator, ruleValue, ruleValue2, filterVariant) 
     // Gelen değerler ISO string veya Date objesi olabilir.
     // Karşılaştırma için Date objesine çevirelim.
     try {
-        valForCompare = rowValue ? new Date(rowValue) : null;
-        filterValForCompare = ruleValue ? new Date(ruleValue) : null;
-        filterVal2ForCompare = ruleValue2 ? new Date(ruleValue2) : null;
-    } catch (e) { // Geçersiz tarih formatı
-        return false; // veya true, duruma göre
+      valForCompare = rowValue ? new Date(rowValue) : null;
+      filterValForCompare = ruleValue ? new Date(ruleValue) : null;
+      filterVal2ForCompare = ruleValue2 ? new Date(ruleValue2) : null;
+    } catch (e) {
+      // Geçersiz tarih formatı
+      return false; // veya true, duruma göre
     }
   } else if (filterVariant === 'boolean') {
     valForCompare = rowValue === true || String(rowValue).toLowerCase() === 'true';
     filterValForCompare = ruleValue === true || String(ruleValue).toLowerCase() === 'true';
   }
-
 
   switch (operator) {
     case 'contains':
@@ -89,9 +107,7 @@ const evaluateRule = (rowValue, operator, ruleValue, ruleValue2, filterVariant) 
       if (filterVariant === 'date') {
         if (!valForCompare || !filterValForCompare) return valForCompare === filterValForCompare; // İkisi de null/undefined ise eşit
         // Sadece gün, ay, yıl karşılaştırması için (saat/dk/sn hariç)
-        return valForCompare.getFullYear() === filterValForCompare.getFullYear() &&
-               valForCompare.getMonth() === filterValForCompare.getMonth() &&
-               valForCompare.getDate() === filterValForCompare.getDate();
+        return valForCompare.getFullYear() === filterValForCompare.getFullYear() && valForCompare.getMonth() === filterValForCompare.getMonth() && valForCompare.getDate() === filterValForCompare.getDate();
       }
       return valForCompare === filterValForCompare;
     case 'startsWith':
@@ -103,9 +119,7 @@ const evaluateRule = (rowValue, operator, ruleValue, ruleValue2, filterVariant) 
     case 'notEquals':
       if (filterVariant === 'date') {
         if (!valForCompare || !filterValForCompare) return valForCompare !== filterValForCompare;
-         return valForCompare.getFullYear() !== filterValForCompare.getFullYear() ||
-               valForCompare.getMonth() !== filterValForCompare.getMonth() ||
-               valForCompare.getDate() !== filterValForCompare.getDate();
+        return valForCompare.getFullYear() !== filterValForCompare.getFullYear() || valForCompare.getMonth() !== filterValForCompare.getMonth() || valForCompare.getDate() !== filterValForCompare.getDate();
       }
       return valForCompare !== filterValForCompare;
     case 'isEmpty':
@@ -150,7 +164,7 @@ const evaluateRule = (rowValue, operator, ruleValue, ruleValue2, filterVariant) 
   }
 };
 
-const normalizeSearchableString = (str) => {
+const normalizeSearchableString = str => {
   if (str === null || typeof str === 'undefined') return '';
   return String(str).toLocaleLowerCase('tr-TR'); // Using your existing normalization
 };
@@ -195,13 +209,14 @@ export const customGlobalFilterFn = (row, columnId, filterLogic, addMeta) => {
       } else {
         filterVariant = rule.filterVariant || 'text'; // Fallback if table instance is not available
       }
-      
+
       return evaluateRule(rowValue, rule.operator, valueToEvaluate, value2ToEvaluate, filterVariant);
     });
 
     if (condition === 'AND') {
       return ruleResults.every(result => result);
-    } else { // OR
+    } else {
+      // OR
       return ruleResults.some(result => result);
     }
   }

@@ -73,28 +73,27 @@ export function DataTable({
 
   const table = useReactTable({
     data,
-    columns: allColumns,
+    columns: allColumns, // your specificColumns + auditColumns
     autoResetPageIndex: false,
     enableRowSelection,
     getRowId: originalRow => originalRow.id,
-    globalFilterFn: customGlobalFilterFn,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    initialState: { pagination: { pageSize: 10 } },
+    globalFilterFn: customGlobalFilterFn, // Your custom function
     state: {
       sorting,
       columnFilters,
-      globalFilter: activeGlobalFilter,
+      globalFilter: activeGlobalFilter, // This is the crucial part
       columnVisibility,
       rowSelection,
     },
+    initialState: { pagination: { pageSize: 10 } },
   });
 
   const visibleColumnsCount = table.getVisibleLeafColumns().length;
@@ -138,8 +137,8 @@ export function DataTable({
     return summaries;
   }, [data, summarySetup]);
 
-   const handleGlobalSearchInputChange = useCallback(
-    (value) => {
+  const handleGlobalSearchInputChange = useCallback(
+    value => {
       const newSearchTerm = value || '';
       setGlobalSearchInput(newSearchTerm);
 
@@ -149,11 +148,11 @@ export function DataTable({
         toast.info('Gelişmiş filtre temizlendi, basit arama uygulanıyor.');
       }
     },
-    [advancedFilterObject] // Dependency
+    [advancedFilterObject], // Dependency
   );
 
-   const applyAdvancedFiltersToTable = useCallback(
-    (newAdvancedFilterLogic) => {
+  const applyAdvancedFiltersToTable = useCallback(
+    newAdvancedFilterLogic => {
       // Check if newAdvancedFilterLogic is valid (not null and has rules)
       if (newAdvancedFilterLogic && newAdvancedFilterLogic.rules && newAdvancedFilterLogic.rules.length > 0) {
         setAdvancedFilterObject(newAdvancedFilterLogic);
@@ -169,16 +168,73 @@ export function DataTable({
         // toast.info('Gelişmiş filtreler temizlendi.');
       }
     },
-    [globalSearchInput] // Dependency
+    [globalSearchInput], // Dependency
+  );
+
+  const handleClearAllFilters = useCallback(() => {
+    table.resetColumnFilters(); // Sütun filtrelerini (faceted filters) temizle
+    // DataTable içindeki global arama input state'ini temizle
+    if (typeof setGlobalSearchInput === 'function') {
+      // Eğer setGlobalSearchInput varsa
+      setGlobalSearchInput('');
+    }
+    // DataTable içindeki gelişmiş filtre state'ini temizle
+    if (typeof setAdvancedFilterObject === 'function') {
+      // Eğer setAdvancedFilterObject varsa
+      setAdvancedFilterObject(null);
+    }
+    // Alternatif olarak, eğer globalFilter state'ini doğrudan set ediyorsanız:
+    // table.setGlobalFilter(''); // Bu, activeGlobalFilter'ın yeniden hesaplanmasıyla otomatik olmalı
+
+    toast.info('Tüm filtreler temizlendi.');
+  }, [table /* setGlobalSearchInput, setAdvancedFilterObject */]); // Bağımlılıkları kendi DataTable'ınızdaki state setter'larına göre ayarlayın
+
+  const handleApplySavedFilter = useCallback(
+    savedFilterState => {
+      if (!savedFilterState) {
+        toast.error('Kaydedilmiş filtre durumu bulunamadı.');
+        return;
+      }
+
+      const {
+        columnFilters: savedColumnFilters,
+        globalFilter: savedGlobalFilter, // Bu, string veya {condition, rules} objesi olabilir
+        sorting: savedSorting,
+      } = savedFilterState;
+
+      // 1. Sütun Filtrelerini Uygula
+      table.setColumnFilters(savedColumnFilters || []);
+
+      // 2. Global Filtreyi Uygula
+      if (typeof savedGlobalFilter === 'string') {
+        console.log('Applying saved simple global filter:', savedGlobalFilter);
+        setGlobalSearchInput(savedGlobalFilter);
+        setAdvancedFilterObject(null);
+      } else if (typeof savedGlobalFilter === 'object' && savedGlobalFilter !== null && savedGlobalFilter.rules) {
+        // ÖNEMLİ: savedGlobalFilter.rules kontrolü eklendi
+        console.log('Applying saved advanced global filter:', savedGlobalFilter);
+        setAdvancedFilterObject(savedGlobalFilter);
+        setGlobalSearchInput('');
+      } else {
+        // Hiçbiri değilse (null, undefined, veya rules içermeyen obje)
+        console.log('Clearing global filters from saved state.');
+        setGlobalSearchInput('');
+        setAdvancedFilterObject(null);
+      }
+
+      // 3. Sıralamayı Uygula
+      table.setSorting(savedSorting || []);
+    },
+    [table, setGlobalSearchInput, setAdvancedFilterObject],
   );
 
   return (
     <div className="w-full space-y-2">
-      <FilterManagementSheet sheetTypeIdentifier="filterManagement" entityType={entityType} entityHuman={entityHuman} table={table} />
+      <FilterManagementSheet sheetTypeIdentifier="filterManagement" entityType={entityType} entityHuman={entityHuman} table={table} onClearAllFilters={handleClearAllFilters} onApplySavedFilter={handleApplySavedFilter} />
       <AdvancedFilterSheet sheetTypeIdentifier="advancedFilter" entityType={entityType} entityHuman={entityHuman} table={table} onApplyFilters={applyAdvancedFiltersToTable} />
       <ToolbarIndex
         table={table}
-        globalSearchTerm={globalSearchInput} 
+        globalSearchTerm={globalSearchInput}
         onGlobalSearchChange={handleGlobalSearchInputChange}
         facetedFilterSetup={facetedFilterSetup}
         data={data}
@@ -190,7 +246,7 @@ export function DataTable({
         handleCreate={handleCreate}
         isCollapsibleToolbarOpen={isCollapsibleToolbarOpen}
         setIsCollapsibleToolbarOpen={setIsCollapsibleToolbarOpen}
-        globalFilter={globalFilter}
+        onClearAllFilters={handleClearAllFilters}
         renderCollapsibleToolbarContent={renderCollapsibleToolbarContent}
         entityType={entityType}
         displayStatusFilter={displayStatusFilter}

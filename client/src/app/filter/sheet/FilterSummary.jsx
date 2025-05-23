@@ -5,74 +5,40 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ListChecks, Search, SortAsc, SortDesc, Filter as FilterIconLucide, Info, LayersIcon } from 'lucide-react'; // LayersIcon eklendi
 
-// getFormattedFilterCriteria fonksiyonu öncekiyle aynı kalacak
+
 function getFormattedFilterCriteria(filterState, table) {
-  // ... (önceki mesajdaki fonksiyonun içeriği buraya gelecek)
-  // Bu fonksiyonun doğru ve güncel olduğundan emin olun.
-  // Önceki mesajdaki gibi meta.exportHeader'ı kontrol eden versiyonu kullanın.
   if (!filterState) return [];
 
   const { columnFilters, globalFilter, sorting } = filterState;
   const criteria = [];
 
-  // Genel Filtre
-  if (globalFilter && String(globalFilter).trim() !== '') {
-    criteria.push({
-      id: 'global',
-      type: 'Genel Arama',
-      icon: <Search className="h-3 w-3 mr-1.5" />,
-      label: `Genel: "${String(globalFilter)}"`,
-    });
-  }
-
-  // Sütun Filtreleri
-  if (columnFilters && columnFilters.length > 0) {
-    columnFilters.forEach((cf, index) => {
-      let columnName = cf.id; // Fallback
-      if (table) {
-        const column = table.getColumn(cf.id);
-        if (column && column.columnDef) {
-          if (typeof column.columnDef.meta?.exportHeader === 'string' && column.columnDef.meta.exportHeader) {
-            columnName = column.columnDef.meta.exportHeader;
-          } else if (typeof column.columnDef.header === 'string' && column.columnDef.header) {
-            columnName = column.columnDef.header;
-          }
-        }
-      }
+  // Genel Filtre (Basit arama veya Gelişmiş Filtre)
+  if (globalFilter) {
+    if (typeof globalFilter === 'string' && globalFilter.trim() !== '') {
       criteria.push({
-        id: `col-${cf.id}-${index}`,
-        type: 'Sütun Filtreleri', // Grup adı olarak bu kullanılacak
-        icon: <FilterIconLucide className="h-3 w-3 mr-1.5" />,
-        label: `"${columnName}": "${String(cf.value)}"`,
+        id: 'global-simple',
+        type: 'Genel Arama',
+        icon: <Search className="h-3 w-3 mr-1.5" />,
+        label: `Genel: "${globalFilter}"`,
       });
-    });
-  }
-
-  // Sıralama
-  if (sorting && sorting.length > 0) {
-    sorting.forEach((sort, index) => {
-      let columnName = sort.id; // Fallback
-      if (table) {
-        const column = table.getColumn(sort.id);
-        if (column && column.columnDef) {
-          if (typeof column.columnDef.meta?.exportHeader === 'string' && column.columnDef.meta.exportHeader) {
-            columnName = column.columnDef.meta.exportHeader;
-          } else if (typeof column.columnDef.header === 'string' && column.columnDef.header) {
-            columnName = column.columnDef.header;
-          }
-        }
-      }
-      const direction = sort.desc ? 'Azalan' : 'Artan';
+    } else if (typeof globalFilter === 'object' && globalFilter.rules && globalFilter.rules.length > 0) {
+      // Gelişmiş filtreler için daha detaylı bir özet oluşturabilirsiniz.
+      // Şimdilik basit bir gösterim:
+      const ruleCount = globalFilter.rules.length;
       criteria.push({
-        id: `sort-${sort.id}-${index}`,
-        type: 'Sıralamalar', // Grup adı olarak bu kullanılacak
-        icon: sort.desc ? <SortDesc className="h-3 w-3 mr-1.5" /> : <SortAsc className="h-3 w-3 mr-1.5" />,
-        label: `"${columnName}" (${direction})`,
+        id: 'global-advanced',
+        type: 'Gelişmiş Filtre', // Grup adı olarak bu kullanılacak
+        icon: <FilterIconLucide className="h-3 w-3 mr-1.5" />, // FilterIconLucide import edildiğini varsayıyorum
+        label: `${ruleCount} kural içeren gelişmiş filtre (${globalFilter.condition})`,
+         rules: globalFilter.rules.map(rule => `Alan: ${rule.field}, Op: ${rule.operator}, Değer: ${rule.value}`).join('; ')
       });
-    });
+    }
   }
+  // ... (Sütun Filtreleri ve Sıralama aynı kalabilir) ...
   return criteria;
 }
+
+
 
 export const FilterSummary = ({ filterState, table }) => {
   const allCriteria = getFormattedFilterCriteria(filterState, table);

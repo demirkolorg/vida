@@ -5,16 +5,17 @@ import { ToolbarFacetedFilterComp } from '@/components/toolbar/ToolbarFacetedFil
 import { useMemo } from 'react';
 
 export const ToolbarFacetedFilter = props => {
-  const { table, onGlobalSearchChange, facetedFilterSetup, data } = props;
+  const { table, onClearAllFilters, facetedFilterSetup, data } = props;
+
   const columnFilters = table.getState().columnFilters;
-  const globalFilterState = table.getState().globalFilter; // Global filtre durumunu da ekleyebiliriz, isFiltered için kullanılıyor
-  const isFiltered = columnFilters.length > 0 || !!globalFilterState;
+  const globalFilterState = table.getState().globalFilter;
+  const isFiltered = columnFilters.length > 0 || (globalFilterState && (typeof globalFilterState === 'string' ? globalFilterState.length > 0 : true));
 
   const facetedFilterComponents = useMemo(() => {
     return facetedFilterSetup
       .map(setup => {
         const columnIdStr = setup.columnId;
-        const column = table.getColumn(columnIdStr); // Sütun tanımını almak için table gerekli
+        const column = table.getColumn(columnIdStr);
 
         if (!column) {
           console.warn(`Faceted filter setup: Column with ID '${columnIdStr}' not found.`);
@@ -38,24 +39,12 @@ export const ToolbarFacetedFilter = props => {
         return <ToolbarFacetedFilterComp key={columnIdStr} column={column} title={setup.title} options={options} />;
       })
       .filter(Boolean);
-
-    // Bağımlılıklara table.getRowModel().rows eklemek önemli,
-    // çünkü veri veya filtreler değiştiğinde seçeneklerin yeniden hesaplanması gerekir.
-  }, [data, facetedFilterSetup, table, columnFilters]);
-
+  }, [data, facetedFilterSetup, table]);
   return (
     <div className="relative flex-grow sm:flex-grow-0 gap-2">
       {facetedFilterComponents}
       {isFiltered && (
-        <Button
-          variant="destructive"
-          onClick={() => {
-            table.resetColumnFilters();
-            onGlobalSearchChange('');
-          }}
-          className="h-8  ml-2 "
-          aria-label="Filtreleri Temizle"
-        >
+        <Button variant="destructive" onClick={onClearAllFilters} className="h-8  ml-2 " aria-label="Filtreleri Temizle">
           <XIcon className="mr-1 h-3 w-3" />
           Temizle
         </Button>

@@ -1,12 +1,12 @@
-import { ToolbarSearch } from "@/components/toolbar/ToolbarSearch";
-import { ToolbarFacetedFilter } from "@/components/toolbar/ToolbarFacetedFilter";
-import { ToolbarGeneral } from "@/components/toolbar/ToolbarGeneral";
-import { ToolbarDigerAraclarContent } from "@/components/toolbar/ToolbarDigerAraclarContent";
+import { ToolbarSearch } from '@/components/toolbar/ToolbarSearch';
+import { ToolbarFacetedFilter } from '@/components/toolbar/ToolbarFacetedFilter';
+import { ToolbarGeneral } from '@/components/toolbar/ToolbarGeneral';
+import { ToolbarDigerAraclarContent } from '@/components/toolbar/ToolbarDigerAraclarContent';
 
 export const ToolbarIndex = props => {
   const {
     table,
-    globalSearchTerm,    
+    globalSearchTerm,
     onGlobalSearchChange,
     facetedFilterSetup,
     data,
@@ -21,13 +21,14 @@ export const ToolbarIndex = props => {
     entityType,
     displayStatusFilter,
     onToggleStatus,
+    onClearAllFilters,
   } = props;
 
   return (
     <div className="flex items-center py-4 gap-2 flex-wrap">
       <ToolbarSearch globalSearchTerm={globalSearchTerm} onGlobalSearchChange={onGlobalSearchChange} />
 
-      <ToolbarFacetedFilter data={data} table={table} onGlobalSearchChange={onGlobalSearchChange} facetedFilterSetup={facetedFilterSetup} />
+      <ToolbarFacetedFilter data={data} table={table} onClearAllFilters={onClearAllFilters} facetedFilterSetup={facetedFilterSetup} />
 
       <ToolbarGeneral
         moreButtonRendered={moreButtonRendered}

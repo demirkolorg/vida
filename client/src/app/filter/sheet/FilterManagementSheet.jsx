@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,11 +14,11 @@ import { useSavedFilterStore } from '@/app/filter/constants/store';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { PlusCircle, PlayIcon, ListFilter, Edit3Icon, Trash2Icon } from 'lucide-react';
+import { PlusCircle, PlayIcon, ListFilter, Edit3Icon, Trash2Icon, XIcon } from 'lucide-react';
 import { Spinner } from '@/components/general/Spinner'; // BaseCreateSheet'ten alındı
 import { useAuthStore } from '@/stores/authStore';
 
-export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement', entityType, table, entityHuman }) {
+export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement', entityType, table, entityHuman, onClearAllFilters, onApplySavedFilter }) {
   const user = useAuthStore(state => state.user);
   const isOpen = useSheetStore(selectIsSheetOpen(sheetTypeIdentifier, entityType));
   const closeSheet = useSheetStore(state => state.closeSheet);
@@ -30,6 +30,11 @@ export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement'
   const [filterToDelete, setFilterToDelete] = useState(null); // { id, filterName }
   const [formLoading, setFormLoading] = useState(false);
   const title = `${entityHuman} İçin Kayıtlı Filtreler`;
+
+  const columnFilters = table.getState().columnFilters;
+  const globalFilterState = table.getState().globalFilter;
+  const isFiltered = columnFilters.length > 0 || (globalFilterState && (typeof globalFilterState === 'string' ? globalFilterState.length > 0 : true));
+
   const form = useForm({
     resolver: zodResolver(SavedFilter_FormInputSchema),
     defaultValues: {
@@ -74,7 +79,7 @@ export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement'
     }
     const currentTableState = {
       columnFilters: table.getState().columnFilters,
-      globalFilter: table.getState().globalFilter,
+      globalFilter: table.getState().globalFilter, // Bu, string veya gelişmiş filtre objesi olabilir
       sorting: table.getState().sorting,
     };
     if (currentTableState.columnFilters.length === 0 && !currentTableState.globalFilter && currentTableState.sorting.length === 0) {
@@ -151,18 +156,20 @@ export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement'
     }
   };
 
-  const applyFilterAndClose = filter => {
-    if (table && filter.filterState) {
-      const { columnFilters, globalFilter: gf, sorting } = filter.filterState;
-      table.setColumnFilters(columnFilters || []);
-      table.setGlobalFilter(gf !== undefined ? gf : '');
-      table.setSorting(sorting || []);
-      toast.success(`"${filter.filterName}" filtresi uygulandı.`);
-      closeSheet();
-    } else {
-      toast.error('Filtre uygulanamadı. Tablo referansı veya filtre durumu eksik.');
-    }
-  };
+  const applyFilterAndClose = useCallback(
+    filterToApply => {
+      if (onApplySavedFilter && filterToApply && filterToApply.filterState) {
+        // `filterState` objesi, kaydedilmiş filtreleri içerir.
+        // Bu obje, { columnFilters: [], globalFilter: '' | {}, sorting: [] } yapısında olmalı.
+        onApplySavedFilter(filterToApply.filterState);
+        toast.success(`"${filterToApply.filterName}" filtresi uygulandı.`);
+        closeSheet(); // Sheet'i kapat
+      } else {
+        toast.error('Filtre uygulanamadı. Gerekli fonksiyon veya filtre durumu eksik.');
+      }
+    },
+    [onApplySavedFilter, closeSheet],
+  );
 
   const handleInternalOpenChange = open => {
     if (!open) {
@@ -246,6 +253,12 @@ export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement'
               <Button onClick={handleAddNewFilter} size="sm" disabled={!table} className="">
                 <PlusCircle className="mr-2 h-4 w-4 " /> Geçerli Filtreyi Kaydet
               </Button>
+              {isFiltered && (
+                <Button variant="destructive" onClick={onClearAllFilters} className="h-8  ml-2 " aria-label="Filtreleri Temizle">
+                  <XIcon className="mr-1 h-3 w-3" />
+                  Geçerli Filtreyi Temizle
+                </Button>
+              )}
             </div>
             <ScrollArea className="flex-grow pr-3 mb-4">
               {storeIsLoading && datas.length === 0 ? (

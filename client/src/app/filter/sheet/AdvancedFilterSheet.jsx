@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'; // Kaydetme dialoğu için
 import { Spinner } from '@/components/general/Spinner';
 import DatePicker from '@/components/ui/date-picker'; // Shadcn Date Picker (Calendar + Popover)
+import { Textarea } from '@/components/ui/textarea';
 
 const OPERATORS = {
   text: [
@@ -153,7 +154,8 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
     }));
   };
 
- const handleSheetApplyFilters = useCallback(() => { // Renamed to avoid confusion with prop
+  const handleSheetApplyFilters = useCallback(() => {
+    // Renamed to avoid confusion with prop
     if (onApplyFilters) {
       // Validate rules: ensure field and operator are set, and value is present unless operator is 'isEmpty'/'isNotEmpty'
       const validRules = filterLogic.rules.filter(
@@ -162,8 +164,9 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
           rule.operator &&
           (rule.operator === 'isEmpty' ||
             rule.operator === 'isNotEmpty' ||
-            (rule.value !== '' || typeof rule.value === 'boolean') || // boolean can be true/false explicitly
-            (rule.operator === 'between' && (rule.value !== '' || rule.value2 !== ''))) // For 'between', at least one value might be ok depending on logic
+            rule.value !== '' ||
+            typeof rule.value === 'boolean' || // boolean can be true/false explicitly
+            (rule.operator === 'between' && (rule.value !== '' || rule.value2 !== ''))), // For 'between', at least one value might be ok depending on logic
       );
 
       if (validRules.length > 0) {
@@ -176,25 +179,43 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
     // toast.success('Filtreler tabloya geçici olarak uygulandı.'); // Toast is better handled in DataTable
     // closeSheet(); // Optional: close sheet after applying
   }, [onApplyFilters, filterLogic]);
+
   const handleSaveFilterSubmit = async formData => {
-    if (!table) return;
-    const currentFilterStateForSaving = {
-      // TanStack Table'ın state'i değil, bizim UI state'imiz
+    // table prop'una burada ihtiyacımız yok, çünkü sadece UI'daki filterLogic'i kullanıyoruz.
+    // Gelişmiş filtre objesini oluştur
+    const advancedFilterObjectToSave = {
       condition: filterLogic.condition,
-      rules: filterLogic.rules.filter(rule => rule.field && rule.operator && (rule.operator === 'isEmpty' || rule.operator === 'isNotEmpty' || rule.value !== '')),
+      rules: filterLogic.rules.filter(
+        rule =>
+          rule.field &&
+          rule.operator &&
+          (rule.operator === 'isEmpty' ||
+            rule.operator === 'isNotEmpty' ||
+            (typeof rule.value === 'boolean' ? true : rule.value !== '') || // boolean için value true/false olabilir, boş string kontrolü yetmez
+            (rule.operator === 'between' && (rule.value !== '' || rule.value2 !== ''))),
+      ),
     };
 
-    if (currentFilterStateForSaving.rules.length === 0) {
+    if (advancedFilterObjectToSave.rules.length === 0) {
       toast.error('Kaydedilecek geçerli bir filtre kuralı bulunmuyor.');
       return;
     }
+
+    // Standart filterState yapısını oluşturuyoruz.
+    // Gelişmiş filtreden gelen bilgiler `globalFilter` altına yerleştirilecek.
+    const filterStatePayload = {
+      columnFilters: [], // AdvancedFilterSheet'te columnFilters yönetilmiyor
+      globalFilter: advancedFilterObjectToSave, // DİKKAT: Gelişmiş filtre objesi buraya geliyor
+      sorting: [], // AdvancedFilterSheet'te sorting yönetilmiyor
+    };
 
     const payload = {
       filterName: formData.filterName,
       description: formData.description || null,
       entityType: entityType,
-      filterState: currentFilterStateForSaving, // Gelişmiş filtre yapısını kaydet
+      filterState: filterStatePayload, // Standartlaştırılmış yapıyı kaydet
     };
+
     setFormLoading(true);
     const result = await CreateSavedFilter(payload, entityType);
     setFormLoading(false);
