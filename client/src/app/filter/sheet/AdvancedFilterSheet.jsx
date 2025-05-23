@@ -68,15 +68,16 @@ const initialRule = () => ({
   value2: '', // Tarih aralığı için ikinci değer
 });
 
-export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', entityType,entityHuman, table, title: propTitle="" }) {
+export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', entityType, entityHuman, table, onApplyFilters, title: propTitle = '' }) {
   const isOpen = useSheetStore(selectIsSheetOpen(sheetTypeIdentifier, entityType));
   const closeSheet = useSheetStore(state => state.closeSheet);
+  const [formLoading, setFormLoading] = useState(false);
 
   const [filterLogic, setFilterLogic] = useState({ condition: 'AND', rules: [initialRule()] });
   const [availableColumns, setAvailableColumns] = useState([]);
 
   // Kaydetme özelliği için state'ler
-  const { Create: CreateSavedFilter, isLoading: isSavingFilter } = useSavedFilterStore();
+  const { Create: CreateSavedFilter, isLoading: storeIsLoading } = useSavedFilterStore();
   const [showSaveFilterDialog, setShowSaveFilterDialog] = useState(false);
   const saveFilterForm = useForm({
     resolver: zodResolver(SavedFilter_FormInputSchema),
@@ -152,50 +153,29 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
     }));
   };
 
-  const handleApplyFilters = useCallback(() => {
-    if (!table) return;
+ const handleSheetApplyFilters = useCallback(() => { // Renamed to avoid confusion with prop
+    if (onApplyFilters) {
+      // Validate rules: ensure field and operator are set, and value is present unless operator is 'isEmpty'/'isNotEmpty'
+      const validRules = filterLogic.rules.filter(
+        rule =>
+          rule.field &&
+          rule.operator &&
+          (rule.operator === 'isEmpty' ||
+            rule.operator === 'isNotEmpty' ||
+            (rule.value !== '' || typeof rule.value === 'boolean') || // boolean can be true/false explicitly
+            (rule.operator === 'between' && (rule.value !== '' || rule.value2 !== ''))) // For 'between', at least one value might be ok depending on logic
+      );
 
-    const newColumnFilters = filterLogic.rules
-      .filter(rule => rule.field && rule.operator && (rule.operator === 'isEmpty' || rule.operator === 'isNotEmpty' || rule.value !== '')) // Değeri olanları veya isEmpty/isNotEmpty'i al
-      .map(rule => {
-        let filterValue = rule.value;
-        const column = availableColumns.find(c => c.value === rule.field);
-        if (column?.filterVariant === 'number' && filterValue !== '') {
-          filterValue = parseFloat(filterValue);
-          if (isNaN(filterValue)) return null; // Geçersiz sayı
-        }
-        if (column?.filterVariant === 'date' && rule.operator === 'between') {
-          if (!rule.value || !rule.value2) return null; // İki tarih de gerekli
-          filterValue = [new Date(rule.value).toISOString(), new Date(rule.value2).toISOString()];
-        } else if (column?.filterVariant === 'date' && filterValue !== '') {
-          filterValue = new Date(filterValue).toISOString();
-        }
-
-        // TanStack Table için filtre objesi. Özel operatörleri burada handle etmemiz gerekecek.
-        // Şimdilik basit bir "equals" veya "contains" gibi varsayıyoruz.
-        // Gerçek filtreleme customGlobalFilterFn veya sunucu tarafında yapılacak.
-        // Bu yüzden `columnFilters`'a bu detaylı yapıyı olduğu gibi aktarabiliriz.
-        return {
-          id: rule.field,
-          value: {
-            // Değeri bir obje olarak sakla ki operatörü de içersin
-            operator: rule.operator,
-            value: filterValue,
-            // value2: column?.filterVariant === 'date' && rule.operator === 'between' ? rule.value2 : undefined,
-            condition: filterLogic.condition, // Ana koşul (VE/VEYA)
-          },
-        };
-      })
-      .filter(Boolean); // null olanları çıkar
-
-    // table.setColumnFilters(newColumnFilters); // Bu, TanStack'in kendi filterFn'lerini tetikler.
-    // Bunun yerine tüm filterLogic'i globalFilter'a atayıp customGlobalFilterFn'de işleyebiliriz.
-    table.setGlobalFilter(filterLogic); // customGlobalFilterFn bu yapıyı işlemeli
-
-    toast.success('Filtreler tabloya geçici olarak uygulandı.');
-    // closeSheet(); // İsteğe bağlı: uygulayınca kapat
-  }, [table, filterLogic, availableColumns]);
-
+      if (validRules.length > 0) {
+        onApplyFilters({ ...filterLogic, rules: validRules });
+      } else {
+        // If no valid rules (e.g., user cleared everything), send null to clear advanced filters
+        onApplyFilters(null);
+      }
+    }
+    // toast.success('Filtreler tabloya geçici olarak uygulandı.'); // Toast is better handled in DataTable
+    // closeSheet(); // Optional: close sheet after applying
+  }, [onApplyFilters, filterLogic]);
   const handleSaveFilterSubmit = async formData => {
     if (!table) return;
     const currentFilterStateForSaving = {
@@ -250,10 +230,10 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
           <div className="mb-4 flex items-center justify-between">
             <ToggleGroup type="single" value={filterLogic.condition} onValueChange={value => value && setFilterLogic(prev => ({ ...prev, condition: value }))} className="my-2">
               <ToggleGroupItem value="AND" aria-label="Tüm koşullar (VE)">
-                Tümü (VE)
+                VE
               </ToggleGroupItem>
               <ToggleGroupItem value="OR" aria-label="Herhangi bir koşul (VEYA)">
-                Herhangi Biri (VEYA)
+                VEYA
               </ToggleGroupItem>
             </ToggleGroup>
             <Button onClick={addRule} size="sm" variant="outline">
@@ -360,7 +340,7 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
                 Vazgeç
               </Button>
             </SheetClose>
-            <Button onClick={handleApplyFilters} disabled={formLoading || storeIsLoading || filterLogic.rules.every(r => !r.field || !r.operator)}>
+            <Button onClick={handleSheetApplyFilters} disabled={formLoading || storeIsLoading || filterLogic.rules.every(r => !r.field || !r.operator)}>
               <PlayIcon className="mr-2 h-4 w-4" />
               Filtreleri Uygula
             </Button>
@@ -405,8 +385,8 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
                 <Button type="button" variant="outline" onClick={() => setShowSaveFilterDialog(false)} disabled={formLoading}>
                   İptal
                 </Button>
-                <Button type="submit" disabled={formLoading || isSavingFilter}>
-                  {formLoading || isSavingFilter ? <Spinner size="small" className="mr-2" /> : null}
+                <Button type="submit" disabled={formLoading || storeIsLoading}>
+                  {formLoading || storeIsLoading ? <Spinner size="small" className="mr-2" /> : null}
                   Kaydet
                 </Button>
               </DialogFooter>

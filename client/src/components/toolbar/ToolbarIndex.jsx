@@ -6,7 +6,8 @@ import { ToolbarDigerAraclarContent } from "@/components/toolbar/ToolbarDigerAra
 export const ToolbarIndex = props => {
   const {
     table,
-    setGlobalFilter,
+    globalSearchTerm,    
+    onGlobalSearchChange,
     facetedFilterSetup,
     data,
     moreButtonRendered,
@@ -16,7 +17,6 @@ export const ToolbarIndex = props => {
     handleCreate,
     isCollapsibleToolbarOpen,
     setIsCollapsibleToolbarOpen,
-    globalFilter,    
     renderCollapsibleToolbarContent,
     entityType,
     displayStatusFilter,
@@ -25,9 +25,9 @@ export const ToolbarIndex = props => {
 
   return (
     <div className="flex items-center py-4 gap-2 flex-wrap">
-      <ToolbarSearch globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+      <ToolbarSearch globalSearchTerm={globalSearchTerm} onGlobalSearchChange={onGlobalSearchChange} />
 
-      <ToolbarFacetedFilter data={data} table={table} setGlobalFilter={setGlobalFilter} facetedFilterSetup={facetedFilterSetup} />
+      <ToolbarFacetedFilter data={data} table={table} onGlobalSearchChange={onGlobalSearchChange} facetedFilterSetup={facetedFilterSetup} />
 
       <ToolbarGeneral
         moreButtonRendered={moreButtonRendered}

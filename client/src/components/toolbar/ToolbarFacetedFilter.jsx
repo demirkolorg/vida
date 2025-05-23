@@ -5,7 +5,7 @@ import { ToolbarFacetedFilterComp } from '@/components/toolbar/ToolbarFacetedFil
 import { useMemo } from 'react';
 
 export const ToolbarFacetedFilter = props => {
-  const { table, setGlobalFilter, facetedFilterSetup, data } = props;
+  const { table, onGlobalSearchChange, facetedFilterSetup, data } = props;
   const columnFilters = table.getState().columnFilters;
   const globalFilterState = table.getState().globalFilter; // Global filtre durumunu da ekleyebiliriz, isFiltered için kullanılıyor
   const isFiltered = columnFilters.length > 0 || !!globalFilterState;
@@ -51,7 +51,7 @@ export const ToolbarFacetedFilter = props => {
           variant="destructive"
           onClick={() => {
             table.resetColumnFilters();
-            setGlobalFilter('');
+            onGlobalSearchChange('');
           }}
           className="h-8  ml-2 "
           aria-label="Filtreleri Temizle"

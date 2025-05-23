@@ -50,48 +50,6 @@ export function useDebounce(value, delay) {
   return debouncedValue;
 }
 
-// const normalizeTurkishString = (str) => {
-//   if (!str) return "";
-//   return str
-//     .normalize("NFD")
-//     .replace(/[\u0300-\u036f]/g, "")
-//     .replace(/ı/g, "i")
-//     .replace(/İ/g, "I")
-//     .replace(/ğ/g, "g")
-//     .replace(/Ğ/g, "G")
-//     .replace(/ü/g, "u")
-//     .replace(/Ü/g, "U")
-//     .replace(/ş/g, "s")
-//     .replace(/Ş/g, "S")
-//     .replace(/ö/g, "o")
-//     .replace(/Ö/g, "O")
-//     .replace(/ç/g, "c")
-//     .replace(/Ç/g, "C");
-// };
-
-export const normalizeTurkishString = str => {
-  if (!str) return '';
-  return str.toLocaleLowerCase('tr-TR');
-};
-
-// export const customGlobalFilterFn = (row, columnId, filterValue) => {
-//   const normalizedSearchTerm = normalizeTurkishString(filterValue);
-//   if (!normalizedSearchTerm) {
-//     return true;
-//   }
-//   const cells = row.getAllCells();
-//   for (const cell of cells) {
-//     const cellValue = cell.getValue();
-//     const normalizedCellValue = normalizeTurkishString(cellValue);
-//     if (normalizedCellValue.includes(normalizedSearchTerm)) {
-//       return true;
-//     }
-//   }
-//   return false;
-// };
-
-// client/src/components/table/Functions.jsx
-
 
 const evaluateRule = (rowValue, operator, ruleValue, ruleValue2, filterVariant) => {
   // rowValue'nun null veya undefined olma durumlarını kontrol et
@@ -192,70 +150,65 @@ const evaluateRule = (rowValue, operator, ruleValue, ruleValue2, filterVariant) 
   }
 };
 
-export const customGlobalFilterFn = (row, columnId, filterLogic, addMeta) => {
-  // filterLogic artık { condition: 'AND'/'OR', rules: [...] } yapısında veya basit string
-  if (typeof filterLogic !== 'object' || !filterLogic || !filterLogic.rules || !filterLogic.condition) {
-    // Gelişmiş filtre objesi değilse, eski global string arama gibi davran
-    const searchTerm = String(filterLogic).toLocaleLowerCase('tr-TR');
-    if (!searchTerm) return true;
-
-    // Tüm hücrelerde ara (eski davranış) - Bu kısım, tüm sütunlarda arama yapar.
-    // Eğer sadece belirli sütunlarda arama yapmak istiyorsanız, table instance'ına ihtiyacınız olacak.
-    // Ya da bu global aramayı sadece TanStack'in kendi columnFilter'ları için bir fallback olarak bırakın.
-    // Şimdilik, filterLogic obje değilse, bu satırın filtrelenmeyeceğini varsayalım (true dönerek).
-    // Veya, eski global arama mantığını korumak için:
-    // return Object.values(row.original).some(value =>
-    //     String(value).toLocaleLowerCase('tr-TR').includes(searchTerm)
-    // );
-    // Gelişmiş filtre kullanılmıyorsa ve globalFilter bir string ise,
-    // TanStack Table'ın kendi globalFilter mekanizması devreye girmeli.
-    // Bu customGlobalFilterFn sadece gelişmiş filtre objesi geldiğinde aktif olmalı.
-    // Bu yüzden, obje değilse true dönerek TanStack'in diğer filtrelerini engellemeyelim.
-    return true;
-  }
-
-  const { condition, rules } = filterLogic;
-
-  if (!rules || rules.length === 0) return true;
-
-  // addMeta üzerinden table instance'ını ve dolayısıyla columnDef'leri almayı deneyelim.
-  // Bu, TanStack Table'ın filterFn'lerine meta verisi geçirme şekline bağlıdır.
-  // Genellikle addMeta.table.getColumn(rule.field).columnDef şeklinde erişilebilir.
-  // Eğer addMeta.table yoksa, bu yaklaşım çalışmaz ve filterVariant'ı başka bir yolla almamız gerekir.
-  const table = addMeta?.table;
-
-
-  const ruleResults = rules.map(rule => {
-    if (!rule.field || !rule.operator) return true; // Eksik kural, filtreleme yapma
-
-    const rowValue = row.original[rule.field];
-    let valueToEvaluate = rule.value;
-    let value2ToEvaluate = rule.value2; // AdvancedFilterSheet'ten value2 gelebilir
-
-    let filterVariant = 'text'; // Varsayılan
-    if (table) {
-        const column = table.getColumn(rule.field);
-        filterVariant = column?.columnDef?.meta?.filterVariant || 'text';
-    } else {
-        // table instance'ı yoksa, filterVariant'ı rule objesinden almayı deneyebiliriz
-        // (AdvancedFilterSheet'te rule'a eklendiyse)
-        filterVariant = rule.filterVariant || 'text';
-    }
-    
-    // 'isAnyOf' veya 'isNoneOf' için rule.value'nun bir dizi olması beklenir
-    // Diğer durumlar için evaluateRule içinde handle ediliyor.
-
-    return evaluateRule(rowValue, rule.operator, valueToEvaluate, value2ToEvaluate, filterVariant);
-  });
-
-  if (condition === 'AND') {
-    return ruleResults.every(result => result);
-  } else { // OR
-    return ruleResults.some(result => result);
-  }
+const normalizeSearchableString = (str) => {
+  if (str === null || typeof str === 'undefined') return '';
+  return String(str).toLocaleLowerCase('tr-TR'); // Using your existing normalization
 };
 
+export const customGlobalFilterFn = (row, columnId, filterLogic, addMeta) => {
+  // Case 1: Simple string global search
+  if (typeof filterLogic === 'string') {
+    const searchTerm = normalizeSearchableString(filterLogic);
+    if (!searchTerm) return true; // No search term, so all rows match
 
+    // Search in all cell values of the row
+    const cells = row.getAllCells();
+    for (const cell of cells) {
+      const cellValue = cell.getValue();
+      const normalizedCellValue = normalizeSearchableString(cellValue);
+      if (normalizedCellValue.includes(searchTerm)) {
+        return true; // Row matches if any cell contains the search term
+      }
+    }
+    return false; // Row does not match
+  }
+
+  // Case 2: Advanced filter object
+  if (typeof filterLogic === 'object' && filterLogic && filterLogic.rules && filterLogic.condition) {
+    const { condition, rules } = filterLogic;
+
+    if (!rules || rules.length === 0) return true; // No rules, so all rows match
+
+    const table = addMeta?.table;
+
+    const ruleResults = rules.map(rule => {
+      if (!rule.field || !rule.operator) return true; // Incomplete rule, treat as match or handle as error
+
+      const rowValue = row.original[rule.field];
+      let valueToEvaluate = rule.value;
+      let value2ToEvaluate = rule.value2;
+
+      let filterVariant = 'text';
+      if (table) {
+        const column = table.getColumn(rule.field);
+        filterVariant = column?.columnDef?.meta?.filterVariant || 'text';
+      } else {
+        filterVariant = rule.filterVariant || 'text'; // Fallback if table instance is not available
+      }
+      
+      return evaluateRule(rowValue, rule.operator, valueToEvaluate, value2ToEvaluate, filterVariant);
+    });
+
+    if (condition === 'AND') {
+      return ruleResults.every(result => result);
+    } else { // OR
+      return ruleResults.some(result => result);
+    }
+  }
+
+  // Default: if filterLogic is neither a string nor a valid advanced filter object, don't filter
+  return true;
+};
 export const highlightMatch = (text, searchTerm) => {
   const normalizedText = normalizeTurkishString(text);
   const index = normalizedText.indexOf(searchTerm);

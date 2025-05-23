@@ -12,14 +12,18 @@ export const ToolbarDigerAraclarContent = props => {
   const openSheet = useSheetStore(state => state.openSheet);
 
   const handleOpenFilterSheet = () => {
-    // Yeni bir sheet tipi tanımlayacağız: 'filterManagement'
-    // Bu sheet'e tablo instance'ını ve entityType'ı prop olarak geçebiliriz.
     openSheet('filterManagement', { table, entityType }, entityType, {
       title: `${entityType} İçin Kayıtlı Filtreler`, // Sheet başlığı
-      size: 'lg', // veya 'md', 'sm'
+      size: 'lg',
     });
   };
 
+  const handleOpenAdvencedSheet = () => {
+    openSheet('advancedFilter', { table, entityType }, entityType, {
+      title: `${entityType} İçin Kayıtlı Filtreler`,
+      size: 'lg',
+    });
+  };
   return (
     <>
       {renderCollapsibleToolbarContent && (
@@ -32,11 +36,15 @@ export const ToolbarDigerAraclarContent = props => {
             <div className="rounded-md flex items-center justify-end gap-2 mt-2">
               {renderCollapsibleToolbarContent()}
 
+              <Button variant="outline" size="sm" onClick={handleOpenAdvencedSheet} className="h-8">
+                <ListFilter className="mr-2 h-4 w-4" />
+                Gelişmiş Filtre
+              </Button>
+
               <Button variant="outline" size="sm" onClick={handleOpenFilterSheet} className="h-8">
                 <ListFilter className="mr-2 h-4 w-4" />
                 Filtreleri Yönet
               </Button>
-
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="h-8">

@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getSortedRowModel, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 import { FilterManagementSheet } from '@/app/filter/sheet/FilterManagementSheet';
 import { AdvancedFilterSheet } from '@/app/filter/sheet/AdvancedFilterSheet';
+import { toast } from 'sonner'; // Assuming you use sonner for toasts
 
 export function DataTable({
   entityType,
@@ -36,10 +37,13 @@ export function DataTable({
 }) {
   const openSheet = useSheetStore(state => state.openSheet);
   const [columnFilters, setColumnFilters] = useState([]);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalSearchInput, setGlobalSearchInput] = useState('');
+  const [advancedFilterObject, setAdvancedFilterObject] = useState(null);
+
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState(initialSortingState);
   const [isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen] = useState(false);
+  const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
   const initialVisibility = useMemo(() => {
     const auditColumnDefaultVisibility = includeAuditColumns
@@ -55,7 +59,12 @@ export function DataTable({
 
   const [columnVisibility, setColumnVisibility] = useState(initialVisibility);
 
-  const debouncedGlobalFilter = useDebounce(globalFilter, 300);
+  const activeGlobalFilter = useMemo(() => {
+    if (advancedFilterObject && advancedFilterObject.rules && advancedFilterObject.rules.length > 0) {
+      return advancedFilterObject;
+    }
+    return debouncedGlobalSearchTerm || ''; // Use debounced simple search or empty string
+  }, [advancedFilterObject, debouncedGlobalSearchTerm]);
 
   const allColumns = useMemo(() => {
     const auditCols = includeAuditColumns ? AuditColumns() : [];
@@ -82,7 +91,7 @@ export function DataTable({
     state: {
       sorting,
       columnFilters,
-      globalFilter: debouncedGlobalFilter,
+      globalFilter: activeGlobalFilter,
       columnVisibility,
       rowSelection,
     },
@@ -129,13 +138,48 @@ export function DataTable({
     return summaries;
   }, [data, summarySetup]);
 
+   const handleGlobalSearchInputChange = useCallback(
+    (value) => {
+      const newSearchTerm = value || '';
+      setGlobalSearchInput(newSearchTerm);
+
+      // If user types in simple search, clear advanced filters
+      if (newSearchTerm.trim() !== '' && advancedFilterObject) {
+        setAdvancedFilterObject(null);
+        toast.info('Gelişmiş filtre temizlendi, basit arama uygulanıyor.');
+      }
+    },
+    [advancedFilterObject] // Dependency
+  );
+
+   const applyAdvancedFiltersToTable = useCallback(
+    (newAdvancedFilterLogic) => {
+      // Check if newAdvancedFilterLogic is valid (not null and has rules)
+      if (newAdvancedFilterLogic && newAdvancedFilterLogic.rules && newAdvancedFilterLogic.rules.length > 0) {
+        setAdvancedFilterObject(newAdvancedFilterLogic);
+        // If advanced filters are applied, clear simple search input
+        if (globalSearchInput) {
+          setGlobalSearchInput('');
+        }
+        toast.success('Gelişmiş filtreler uygulandı.');
+      } else {
+        // If null or empty rules, clear advanced filters
+        setAdvancedFilterObject(null);
+        // Potentially show a toast if filters were cleared explicitly
+        // toast.info('Gelişmiş filtreler temizlendi.');
+      }
+    },
+    [globalSearchInput] // Dependency
+  );
+
   return (
     <div className="w-full space-y-2">
       <FilterManagementSheet sheetTypeIdentifier="filterManagement" entityType={entityType} entityHuman={entityHuman} table={table} />
-      <AdvancedFilterSheet sheetTypeIdentifier="advancedFilter" entityType={entityType} entityHuman={entityHuman} table={table} />
+      <AdvancedFilterSheet sheetTypeIdentifier="advancedFilter" entityType={entityType} entityHuman={entityHuman} table={table} onApplyFilters={applyAdvancedFiltersToTable} />
       <ToolbarIndex
         table={table}
-        setGlobalFilter={setGlobalFilter}
+        globalSearchTerm={globalSearchInput} 
+        onGlobalSearchChange={handleGlobalSearchInputChange}
         facetedFilterSetup={facetedFilterSetup}
         data={data}
         moreButtonRendered={moreButtonRendered}
