@@ -10,8 +10,13 @@ import { customGlobalFilterFn, useDebounce } from '@/components/table/Functions'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getSortedRowModel, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 
+import { BaseFilterManagementSheet } from '@/components/sheet/BaseFilterManagementSheet'; // Yeni oluşturduğumuz base sheet
+
+
+
 export function DataTable({
   entityType,
+  EntityHuman,
   columns: specificColumns,
   data,
   isLoading,
@@ -128,6 +133,15 @@ export function DataTable({
 
   return (
     <div className="w-full space-y-2">
+
+      <BaseFilterManagementSheet
+                  sheetTypeIdentifier="filterManagement" // sheetStore'da tanımladığımız tip
+                  entityType={entityType} // Bu sayfanın varlık tipi (örn: "birim")
+                  table={table} // DataTable'dan gelen table instance'ı
+                  title={`'${EntityHuman}' İçin Kayıtlı Filtreler`} // EntityHumanName, store veya api dosyasından gelebilir
+                  description="Kaydedilmiş filtrelerinizi yönetebilir, yenisini ekleyebilir veya uygulayabilirsiniz."
+              />
+
       <ToolbarIndex
         table={table}
         setGlobalFilter={setGlobalFilter}

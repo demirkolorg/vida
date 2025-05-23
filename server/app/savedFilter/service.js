@@ -24,8 +24,7 @@ const service = {
 
     try {
       const whereClause = {
-        entityType,
-        status: AuditStatusEnum.Aktif,
+        entityType
       };
 
 
@@ -33,8 +32,8 @@ const service = {
         where: whereClause,
         orderBy: { filterName: 'asc' },
         include: {
-          createdBy: { select: { id: true, ad: true, soyad: true } }, // Personel modelindeki ad/soyad alanlarına göre
-          updatedBy: { select: { id: true, ad: true, soyad: true } },
+          createdBy: { select: { id: true, ad: true} }, // Personel modelindeki ad/soyad alanlarına göre
+          updatedBy: { select: { id: true, ad: true} },
         },
       });
     } catch (error) {
@@ -51,8 +50,8 @@ const service = {
       return await prisma[PrismaName].findFirst({
         where: { id, status: AuditStatusEnum.Aktif },
         include: {
-          createdBy: { select: { id: true, ad: true, soyad: true } },
-          updatedBy: { select: { id: true, ad: true, soyad: true } },
+          createdBy: { select: { id: true, ad: true} },
+          updatedBy: { select: { id: true, ad: true} },
         },
       });
     } catch (error) {
@@ -70,7 +69,8 @@ const service = {
     }
 
     try {
-      const yeniId = helper.generateIdString(HizmetName); // String ID üretiyoruz
+            const yeniId = helper.generateId(HizmetName);
+
       const createPayload = {
         id: yeniId,
         filterName,
@@ -84,7 +84,7 @@ const service = {
       return await prisma[PrismaName].create({
         data: createPayload,
         include: {
-          createdBy: { select: { id: true, ad: true, soyad: true } },
+          createdBy: { select: { id: true, ad: true} },
         },
       });
     } catch (error) {
@@ -128,8 +128,8 @@ const service = {
         where: { id },
         data: updatePayload,
         include: {
-          createdBy: { select: { id: true, ad: true, soyad: true } },
-          updatedBy: { select: { id: true, ad: true, soyad: true } },
+          createdBy: { select: { id: true, ad: true} },
+          updatedBy: { select: { id: true, ad: true} },
         },
       });
     } catch (error) {
@@ -164,8 +164,8 @@ const service = {
           updatedById: islemYapanKullanici,
         },
         include: {
-          createdBy: { select: { id: true, ad: true, soyad: true } },
-          updatedBy: { select: { id: true, ad: true, soyad: true } },
+          createdBy: { select: { id: true, ad: true} },
+          updatedBy: { select: { id: true, ad: true} },
         },
       });
     } catch (error) {
@@ -224,8 +224,8 @@ const service = {
         where: whereClause,
         orderBy: { filterName: 'asc' },
         include: {
-          createdBy: { select: { id: true, ad: true, soyad: true } },
-          updatedBy: { select: { id: true, ad: true, soyad: true } },
+          createdBy: { select: { id: true, ad: true} },
+          updatedBy: { select: { id: true, ad: true} },
         },
       });
     } catch (error) {

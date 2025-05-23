@@ -7,7 +7,7 @@ const controller = {
   getAllByEntityType: async (req, res) => {
     const rota = 'getAllByEntityType';
     try {
-      const data = req.query;
+      const data = req.body;
       data.currentUserId = req.user.id;
       data.userRole = req.user.rol;
 

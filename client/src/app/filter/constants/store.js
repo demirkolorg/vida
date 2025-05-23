@@ -4,7 +4,7 @@ import { createCrudStore } from '@/stores/crudStoreFactory';
 import { getAllByEntityType,  getById, create, update, search, updateStatus, deleteEntity } from './api';
 import { EntityHuman } from './api';
 
-export const useBirimStore = createCrudStore(
+export const useSavedFilterStore = createCrudStore(
   EntityHuman,
   {
     getAllQuery: getAllByEntityType,

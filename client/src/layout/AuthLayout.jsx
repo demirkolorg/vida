@@ -3,6 +3,8 @@ import { Outlet } from 'react-router-dom'; // react-router-dom'dan importlar
 import { VidaHeader } from '@/components/layout/VidaHeader'; // VidaHeader bileşeni
 import { VidaFooter } from '@/components/layout/VidaFooter'; // VidaFooter bileşeni
 
+
+
 export function AuthLayout() {
   // children prop'u kaldırıldı
   return (

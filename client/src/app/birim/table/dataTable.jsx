@@ -4,7 +4,7 @@ import { Birim_Columns as EntityColumns } from './columns';
 import { BirimContextMenu as EntityContextMenu } from './contextMenu';
 import { useBirimStore as useEntityStore } from '../constants/store';
 import { BirimSpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
-import { EntityType } from '../constants/api';
+import { EntityType , EntityHuman} from '../constants/api';
 
 const columnVisibilityData = {};
 const sorting = [{ id: 'ad', desc: false }];
@@ -37,20 +37,23 @@ export function BirimDataTable() {
   }, [datas, displayStatusFilter]);
 
   return (
-    <DataTable
-      data={filteredDatas}
-      columns={columns}
-      isLoading={isLoading}
-      onRefresh={handleRefreshData}
-      onToggleStatus={toggleDisplayStatusFilter}
-      entityType={EntityType}
-      // onRowClick={onRowClick}
-      rowContextMenu={contextMenu}
-      facetedFilterSetup={facesFilterData}
-      initialSortingState={sorting}
-      columnVisibilityData={columnVisibilityData}
-      renderCollapsibleToolbarContent={() => <EntitySpecificToolbar  />}
-      displayStatusFilter={displayStatusFilter}
-    />
+    <>
+      <DataTable
+        data={filteredDatas}
+        columns={columns}
+        isLoading={isLoading}
+        onRefresh={handleRefreshData}
+        onToggleStatus={toggleDisplayStatusFilter}
+        entityType={EntityType}
+        EntityHuman={EntityHuman}
+        // onRowClick={onRowClick}
+        rowContextMenu={contextMenu}
+        facetedFilterSetup={facesFilterData}
+        initialSortingState={sorting}
+        columnVisibilityData={columnVisibilityData}
+        renderCollapsibleToolbarContent={() => <EntitySpecificToolbar />}
+        displayStatusFilter={displayStatusFilter}
+      />
+    </>
   );
 }

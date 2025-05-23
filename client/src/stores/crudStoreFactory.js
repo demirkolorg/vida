@@ -20,13 +20,13 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
     };
 
     const baseActions = {
-      FetchAll: async options => {
+      FetchAll: async (data,options) => {
         const showSuccessToast = options?.showToast ?? true;
         if (get().loadingList || get().loadingSearch) return;
 
         set({ loadingList: true, isSearchResult: false, error: null, datas: [] });
         try {
-          const fetchedData = await api.getAllQuery();
+          const fetchedData = await api.getAllQuery(data);
           set({
             datas: fetchedData, // DOĞRU: Mevcut datas'ı fetchedData ile tamamen değiştir
             loadingList: false,

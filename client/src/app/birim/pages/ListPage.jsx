@@ -8,6 +8,7 @@ import { BirimDataTable } from '../table/dataTable';
 import { StatusDialog } from '../dialogs/StatusDialog';
 import { EntityHuman } from '../constants/api';
 
+
 export function BirimListPage() {
   return (
     <div className="container mx-auto">
