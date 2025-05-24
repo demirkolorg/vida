@@ -2,11 +2,13 @@
 import { Outlet } from 'react-router-dom'; // react-router-dom'dan importlar
 import { VidaHeader } from '@/components/layout/VidaHeader'; // VidaHeader bileşeni
 import { VidaFooter } from '@/components/layout/VidaFooter'; // VidaFooter bileşeni
-
-
+import { useThemeStore } from '@/stores/useThemeStore';
+import { useEffect } from 'react';
 
 export function AuthLayout() {
-  // children prop'u kaldırıldı
+  useEffect(() => {
+    useThemeStore.getState().hydrateTheme();
+  }, []);
   return (
     <div className="flex min-h-screen w-full flex-col">
       <VidaHeader />

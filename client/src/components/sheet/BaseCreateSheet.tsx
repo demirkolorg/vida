@@ -104,7 +104,7 @@ export function BaseCreateSheet<TItem, TPayload extends object>({
               Vazgeç
             </Button>
           </SheetClose>
-          <Button type="button" onClick={submit} disabled={loadingCreate}>
+          <Button variant={"default"}  onClick={submit} disabled={loadingCreate}>
             {loadingCreate ? (
               <span className="flex items-center gap-2">
                 <Spinner size="small" className="text-primary-foreground" />
