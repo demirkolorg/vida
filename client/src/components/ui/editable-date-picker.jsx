@@ -1,28 +1,22 @@
-// @/components/ui/editable-date-picker.jsx
-"use client"
+'use client';
 
-import * as React from "react"
-import { format, parse, isValid, startOfDay } from "date-fns" // startOfDay eklendi
-import { Calendar as CalendarIcon } from "lucide-react"
-import { tr } from "date-fns/locale" // Türkçe yerelleştirme
-
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Button } from "@/components/ui/button"
+import * as React from 'react';
+import { format, parse, isValid, startOfDay } from 'date-fns'; // startOfDay eklendi
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { tr } from 'date-fns/locale'; // Türkçe yerelleştirme
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 
 export default function EditableDatePicker({
-  value,                // Dışarıdan gelen Date nesnesi veya undefined
-  onChange,             // (Date | undefined) => void tipinde bir callback
+  value, // Dışarıdan gelen Date nesnesi veya undefined
+  onChange, // (Date | undefined) => void tipinde bir callback
   placeholderText,
   className,
-  inputFormat = "dd.MM.yyyy", // Kullanıcının göreceği ve yazacağı format
-  popoverAlign = "start",     // Popover hizalaması için ekledim
+  inputFormat = 'dd.MM.yyyy', // Kullanıcının göreceği ve yazacağı format
+  popoverAlign = 'start', // Popover hizalaması için ekledim
 }) {
   // Değerin her zaman günün başlangıcı olmasını sağla (eğer bir Date ise)
   const normalizedValue = React.useMemo(() => {
@@ -30,19 +24,17 @@ export default function EditableDatePicker({
   }, [value]);
 
   const [selectedDate, setSelectedDate] = React.useState(normalizedValue);
-  const [inputValue, setInputValue] = React.useState(
-    normalizedValue ? format(normalizedValue, inputFormat, { locale: tr }) : ""
-  );
+  const [inputValue, setInputValue] = React.useState(normalizedValue ? format(normalizedValue, inputFormat, { locale: tr }) : '');
   const [popoverOpen, setPopoverOpen] = React.useState(false);
 
   React.useEffect(() => {
     // Dışarıdan 'value' prop'u değişirse iç state'leri güncelle
     const newNormalizedValue = value instanceof Date && isValid(value) ? startOfDay(value) : undefined;
     setSelectedDate(newNormalizedValue);
-    setInputValue(newNormalizedValue ? format(newNormalizedValue, inputFormat, { locale: tr }) : "");
+    setInputValue(newNormalizedValue ? format(newNormalizedValue, inputFormat, { locale: tr }) : '');
   }, [value, inputFormat]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = e => {
     const text = e.target.value;
     setInputValue(text);
 
@@ -57,7 +49,8 @@ export default function EditableDatePicker({
       if (onChange) {
         onChange(dayStartParsedDate);
       }
-    } else if (text === "") { // Input boş ise tarihi temizle
+    } else if (text === '') {
+      // Input boş ise tarihi temizle
       setSelectedDate(undefined);
       if (onChange) {
         onChange(undefined);
@@ -68,7 +61,7 @@ export default function EditableDatePicker({
     // Kullanıcı düzeltme yapana kadar input'ta yazdığı değer kalır.
   };
 
-  const handleDateSelectFromCalendar = (date) => {
+  const handleDateSelectFromCalendar = date => {
     if (date instanceof Date && isValid(date)) {
       const dayStartDate = startOfDay(date); // Her zaman günün başlangıcı
       setSelectedDate(dayStartDate);
@@ -76,18 +69,19 @@ export default function EditableDatePicker({
       if (onChange) {
         onChange(dayStartDate);
       }
-    } else { // Takvimden seçim kaldırılırsa (örneğin, `undefined` gelirse)
-        setSelectedDate(undefined);
-        setInputValue("");
-        if(onChange) {
-            onChange(undefined);
-        }
+    } else {
+      // Takvimden seçim kaldırılırsa (örneğin, `undefined` gelirse)
+      setSelectedDate(undefined);
+      setInputValue('');
+      if (onChange) {
+        onChange(undefined);
+      }
     }
     setPopoverOpen(false);
   };
 
   return (
-    <div className={cn("flex items-center w-full", className)}>
+    <div className={cn('flex items-center w-full', className)}>
       <Input
         type="text"
         placeholder={placeholderText || inputFormat.toUpperCase()}
@@ -100,10 +94,10 @@ export default function EditableDatePicker({
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant={"outline"} // Shadcn'deki gibi tutarlı olması için
+            variant={'outline'} // Shadcn'deki gibi tutarlı olması için
             className={cn(
-              "rounded-l-none border-l-0 px-3 font-normal",
-              !selectedDate && "text-muted-foreground" // Eğer tarih seçili değilse placeholder gibi görünmesi için
+              'rounded-l-none border-l-0 px-3 font-normal',
+              !selectedDate && 'text-muted-foreground', // Eğer tarih seçili değilse placeholder gibi görünmesi için
             )}
           >
             <CalendarIcon className="h-4 w-4" />

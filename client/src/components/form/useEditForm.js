@@ -71,7 +71,6 @@ export function useEditForm({
     const submit = useCallback(async () => {
         const validatedData = validate();
         if (!validatedData) {
-            console.log("Validation failed or returned null.");
             return;
         }
         setIsLoading(true);

@@ -17,7 +17,7 @@ export const ToolbarFacetedFilter = props => {
   const globalFilterState = currentTableState.globalFilter;
   const sortingState = currentTableState.sorting;
 
-  // isFiltered'ı columnFilters'a bağımlı hale getiriyoruz
+
   const isFiltered = useMemo(() => {
     const hasColumnFilters = columnFilters && columnFilters.length > 0;
     const hasGlobalFilter = globalFilterState && (typeof globalFilterState === 'string' ? globalFilterState.trim().length > 0 : typeof globalFilterState === 'object' && globalFilterState.rules && globalFilterState.rules.length > 0);
@@ -46,7 +46,6 @@ export const ToolbarFacetedFilter = props => {
   }, [columnFilters, globalFilterState]);
 
   const facetedFilterComponents = useMemo(() => {
-    console.log('Recalculating facetedFilterComponents due to dependency change.'); // Hata ayıklama için
     return facetedFilterSetup
       .map(setup => {
         const columnIdStr = setup.columnId;

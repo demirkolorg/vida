@@ -25,7 +25,6 @@ export const useBirimStore = createCrudStore(
       // ornekOzelAlan: null,
       // ornekOzelAction: () => {
       //   set({ ornekOzelAlan: "Birim için özel bir değer" });
-      //   console.log("Birim için özel action çağrıldı. Mevcut Birim sayısı:", get().datas.length);
       //   baseStore.GetAll(); // Temel store action'larını da çağırabiliriz
       // },
       // --- Özel State ve Action'lar Sonu ---

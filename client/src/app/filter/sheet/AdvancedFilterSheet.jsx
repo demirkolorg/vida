@@ -57,7 +57,6 @@ export function AdvancedFilterSheet({
 
   useEffect(() => {
     if (isOpen && table) {
-      console.log('[AdvancedFilterSheet] Sheet is open and table exists. Setting available columns.');
       const cols = table
         .getAllLeafColumns()
         .filter(col => col.getCanFilter() && col.id !== 'actions' && col.columnDef.meta?.filterVariant)
@@ -78,7 +77,6 @@ export function AdvancedFilterSheet({
 
   useEffect(() => {
     if (!isOpen) {
-      console.log('[AdvancedFilterSheet] Sheet is closing. Resetting states.');
       setFilterLogic({ condition: 'AND', rules: [initialRule()] });
       setAvailableColumns([]); // Sütunları da temizle
       saveFilterForm.reset({ filterName: '', description: '' });

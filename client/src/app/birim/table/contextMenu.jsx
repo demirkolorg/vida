@@ -9,7 +9,6 @@ export function BirimContextMenu({ item }) {
 
   const handleListSubeler = useCallback(() => {
     if (!item) return;
-    console.log(`"${item.ad}" birimine bağlı şubeler listelenecek.`);
   }, [item]);
 
   return (

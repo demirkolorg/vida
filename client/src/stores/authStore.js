@@ -134,10 +134,8 @@ export const useAuthStore = create((set, get) => ({
   },
 
   refreshAuthToken: async () => {
-    // console.log("refreshAuthToken tetiklendi");
     const authDataString = localStorage.getItem("vida-auth");
     if (!authDataString) {
-      // console.log("Refresh: localStorage'da authData yok, logout.");
       // get().logout(); // Direkt logout yerine false dön, çağıran yer logout yapsın
       return false;
     }
@@ -147,7 +145,6 @@ export const useAuthStore = create((set, get) => ({
       const currentRefreshToken = authData?.refreshToken;
 
       if (!currentRefreshToken) {
-        // console.log("Refresh: authData'da refreshToken yok, logout.");
         // get().logout();
         return false;
       }
@@ -159,7 +156,6 @@ export const useAuthStore = create((set, get) => ({
       // Sadece token'ı güncelle, user aynı kalır. isAuth zaten true olmalı.
       // Axios interceptor bu fonksiyonu çağırdığında, yeni token ile orijinal isteği tekrarlayacak.
       set({ isAuth: true, user: authData.user }); // Kullanıcıyı ve auth durumunu koru
-      // console.log("Token başarıyla yenilendi.");
       return true;
     } catch (error) {
       console.error("Token yenileme hatası (refreshAuthToken):", error);

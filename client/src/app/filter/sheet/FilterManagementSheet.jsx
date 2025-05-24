@@ -25,23 +25,17 @@ export function FilterManagementSheet({
   entityType,
   entityHuman,
   onClearAllFilters, // DataTable'dan gelir
-  onApplySavedFilter, // DataTable'dan gelir
-  // table prop'u artık sheet açılırken data olarak verilecek
-  // openWithNewForm prop'u da sheet açılırken params olarak verilecek
+  onApplySavedFilter,
+  isTableFiltered,
 }) {
   const user = useAuthStore(state => state.user);
-
-  // YENİ STORE KULLANIMI
   const isOpen = useFilterSheetStore(useFilterSheetStore.getState().selectIsFilterSheetOpen(sheetTypeIdentifier, entityType));
   const sheetInitialData = useFilterSheetStore(useFilterSheetStore.getState().selectFilterSheetData(sheetTypeIdentifier, entityType));
   const sheetParams = useFilterSheetStore(useFilterSheetStore.getState().selectFilterSheetParams(sheetTypeIdentifier, entityType));
   const table = sheetInitialData?.table;
   const openWithNewForm = sheetParams?.openWithNewForm || false; // Varsayılan false
-
   const closeThisSheet = useFilterSheetStore(state => state.closeFilterSheet);
-
   const { datas: savedFiltersList, isLoading: storeIsLoading, GetByEntityType, Create: CreateSavedFilter, Update: UpdateSavedFilter, Delete: DeleteSavedFilter } = useSavedFilterStore();
-
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingFilter, setEditingFilter] = useState(null);
@@ -49,36 +43,27 @@ export function FilterManagementSheet({
   const [filterToDelete, setFilterToDelete] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
 
-  const isTableCurrentlyFiltered = useMemo(() => {
-    if (!table) return false;
-    const { columnFilters, globalFilter } = table.getState();
-    const hasColumnFilters = columnFilters && columnFilters.length > 0;
-    const hasGlobalFilter = globalFilter && (typeof globalFilter === 'string' ? globalFilter.trim().length > 0 : typeof globalFilter === 'object' && globalFilter.rules && globalFilter.rules.length > 0);
-    return hasColumnFilters || hasGlobalFilter;
-  }, [table]);
-
   const form = useForm({
     resolver: zodResolver(SavedFilter_FormInputSchema),
     defaultValues: { filterName: '', description: '' },
   });
 
-// Sadece sheet açıldığında ve openWithNewForm true ise formu açar,
-// veya sadece liste yükler. Formun açık/kapalı durumunu doğrudan etkilemez.
-useEffect(() => {
-  if (isOpen && entityType) {
-    if (openWithNewForm && table && !showSaveForm) { // !showSaveForm eklendi, eğer zaten açıksa tekrar handleOpenNewFilterForm çağırma
-      console.log("[FilterManagementSheet] Initial open with new form prop.");
-      handleOpenNewFilterForm(); // Bu fonksiyon setShowSaveForm(true) yapacak
-    } else if (!openWithNewForm) { // Eğer doğrudan liste görünümüyle açılıyorsa
-      console.log("[FilterManagementSheet] Initial open, fetching existing filters for list view.");
-      GetByEntityType({ entityType }, { showToast: false });
-      // Eğer bir önceki state'ten form açık kalmışsa ve openWithNewForm değilse,
-      // sheet kapanıp açıldığında listeye dönmesi için formu kapat.
-      // Ancak bu, "Düzenle" butonuyla açılan formu da kapatabilir.
-      // Bu yüzden bu bloğu daha dikkatli yönetmek gerekebilir veya
-      // "Listeye Dön" butonu zaten bu işi yapıyor.
-      // Şimdilik bu kısmı kaldırıyorum, çünkü "Listeye Dön" ve sheet kapanış useEffect'i zaten formu resetliyor.
-      /*
+  // veya sadece liste yükler. Formun açık/kapalı durumunu doğrudan etkilemez.
+  useEffect(() => {
+    if (isOpen && entityType) {
+      if (openWithNewForm && table && !showSaveForm) {
+        // !showSaveForm eklendi, eğer zaten açıksa tekrar handleOpenNewFilterForm çağırma
+        handleOpenNewFilterForm(); // Bu fonksiyon setShowSaveForm(true) yapacak
+      } else if (!openWithNewForm) {
+        // Eğer doğrudan liste görünümüyle açılıyorsa
+        GetByEntityType({ entityType }, { showToast: false });
+        // Eğer bir önceki state'ten form açık kalmışsa ve openWithNewForm değilse,
+        // sheet kapanıp açıldığında listeye dönmesi için formu kapat.
+        // Ancak bu, "Düzenle" butonuyla açılan formu da kapatabilir.
+        // Bu yüzden bu bloğu daha dikkatli yönetmek gerekebilir veya
+        // "Listeye Dön" butonu zaten bu işi yapıyor.
+        // Şimdilik bu kısmı kaldırıyorum, çünkü "Listeye Dön" ve sheet kapanış useEffect'i zaten formu resetliyor.
+        /*
       if (showSaveForm) {
           setShowSaveForm(false);
           setIsEditMode(false);
@@ -86,40 +71,38 @@ useEffect(() => {
           form.reset({ filterName: '', description: '' });
       }
       */
+      }
     }
-  }
-}, [isOpen, entityType, GetByEntityType, openWithNewForm, table]); // form ve showSaveForm buradan çıkarıldı. handleOpenNewFilterForm useCallback ile sarmalanmalı.
+  }, [isOpen, entityType, GetByEntityType, openWithNewForm, table]); // form ve showSaveForm buradan çıkarıldı. handleOpenNewFilterForm useCallback ile sarmalanmalı.
 
-// Sheet kapandığında tüm ilgili state'leri sıfırla (Bu zaten vardı ve doğru)
-useEffect(() => {
-  if (!isOpen) {
-    console.log("[FilterManagementSheet] Sheet closed, resetting form states.");
-    setShowSaveForm(false);
-    setIsEditMode(false);
-    setEditingFilter(null);
-    form.reset({ filterName: '', description: '' });
-  }
-}, [isOpen, form]);
+  // Sheet kapandığında tüm ilgili state'leri sıfırla (Bu zaten vardı ve doğru)
+  useEffect(() => {
+    if (!isOpen) {
+      setShowSaveForm(false);
+      setIsEditMode(false);
+      setEditingFilter(null);
+      form.reset({ filterName: '', description: '' });
+    }
+  }, [isOpen, form]);
 
-// Form gösterildiğinde ve edit modu/verisi değiştiğinde form alanlarını doldur (Bu da doğru)
-useEffect(() => {
-  if (showSaveForm) {
-    if (isEditMode && editingFilter) {
-      console.log("[FilterManagementSheet] useEffect populating form for EDIT mode with filter:", editingFilter);
-      form.reset({
-        filterName: editingFilter.filterName || '',
-        description: editingFilter.description || '',
-      });
-    } else if (!isEditMode && editingFilter) { // Yeni kayıt için (editingFilter sadece filterState içerir)
-      console.log("[FilterManagementSheet] useEffect populating form for NEW mode with current table state:", editingFilter);
-      form.reset({ filterName: '', description: '' }); // İsim ve açıklama boş başlar
-    } else if (!isEditMode && !editingFilter) {
+  // Form gösterildiğinde ve edit modu/verisi değiştiğinde form alanlarını doldur (Bu da doğru)
+  useEffect(() => {
+    if (showSaveForm) {
+      if (isEditMode && editingFilter) {
+        form.reset({
+          filterName: editingFilter.filterName || '',
+          description: editingFilter.description || '',
+        });
+      } else if (!isEditMode && editingFilter) {
+        // Yeni kayıt için (editingFilter sadece filterState içerir)
+        form.reset({ filterName: '', description: '' }); // İsim ve açıklama boş başlar
+      } else if (!isEditMode && !editingFilter) {
         // Bu durum, handleOpenNewFilterForm'un editingFilter'ı set etmesinden önce tetiklenebilir.
         // veya formun ilk açılışında.
         form.reset({ filterName: '', description: '' });
+      }
     }
-  }
-}, [showSaveForm, isEditMode, editingFilter, form]);                                                               // handleOpenNewFilterForm'u da useCallback ile sarmalayıp eklemek daha iyi olur.
+  }, [showSaveForm, isEditMode, editingFilter, form]); // handleOpenNewFilterForm'u da useCallback ile sarmalayıp eklemek daha iyi olur.
 
   const handleOpenNewFilterForm = () => {
     if (!table) {
@@ -140,8 +123,6 @@ useEffect(() => {
   };
 
   const handleEditSavedFilter = savedFilterToEdit => {
-    console.log('[FilterManagementSheet] handleEditSavedFilter called with:', savedFilterToEdit); // LOG
-
     setIsEditMode(true);
     setEditingFilter(savedFilterToEdit);
     setShowSaveForm(true);
@@ -185,6 +166,7 @@ useEffect(() => {
     /* ... (aynı) ... */ setFilterToDelete(filter);
     setShowDeleteDialog(true);
   };
+
   const confirmDeleteFilter = async () => {
     /* ... (aynı, DeleteSavedFilter kullanır) ... */
     if (filterToDelete) {
@@ -234,20 +216,16 @@ useEffect(() => {
 
   return (
     <Sheet open={isOpen} onOpenChange={handleInternalOpenChange}>
-      <SheetContent className="sm:max-w-xl w-full flex flex-col p-0">
+      <SheetContent className="sm:max-w-xl w-full flex flex-col p-0 overflow-hidden h-full">
         <SheetHeader className="p-6 pb-4 border-b sticky top-0 bg-background z-10">
           <SheetTitle className="flex items-center gap-2 text-xl">
             <ListFilter className="h-5 w-5" /> {currentSheetTitle}
           </SheetTitle>
           <SheetDescription>{currentSheetDescription}</SheetDescription>
         </SheetHeader>
-
-        <div className="p-6 flex-grow flex flex-col overflow-hidden">
-                  {console.log("[FilterManagementSheet] In render, showSaveForm:", showSaveForm)} {/* RENDER LOGU */}
-
+        <div className="px-6 pb-6 flex-grow flex flex-col overflow-hidden">
           {showSaveForm ? (
             <Form {...form}>
-              {/* ... (Form içeriği ve FormField'lar önceki cevaptaki gibi aynı) ... */}
               <form onSubmit={form.handleSubmit(onSubmitSaveForm)} className="space-y-6 flex-grow flex flex-col">
                 <ScrollArea className="flex-grow pr-3 -mr-3">
                   <div className="space-y-6 pb-6">
@@ -301,20 +279,18 @@ useEffect(() => {
               </form>
             </Form>
           ) : (
-            <>
-              {/* ... (Liste görünümü ve butonları önceki cevaptaki gibi aynı) ... */}
-              <div className="py-2 flex items-center justify-between bg-background z-10 mb-4 border-b pb-4 -mx-6 px-6">
-                {isTableCurrentlyFiltered && onClearAllFilters && (
-                  <Button variant="ghost" size="sm" onClick={onClearAllFilters} className="text-xs text-muted-foreground hover:text-destructive px-2">
+            <div className="flex flex-col flex-grow overflow-hidden">
+              {isTableFiltered && onClearAllFilters && (
+                <div className="flex items-center justify-between bg-background z-10 border-b pb-4  shrink-0">
+                  <Button onClick={handleOpenNewFilterForm} size="sm" disabled={!table} className="px-3">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Mevcut Tablo Filtresini Kaydet
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={onClearAllFilters} className="">
                     <XIcon className="mr-1.5 h-3.5 w-3.5" /> Aktif Tablo Filtrelerini Temizle
                   </Button>
-                )}
-                <div className="flex-grow" />
-                <Button onClick={handleOpenNewFilterForm} size="sm" disabled={!table} className="px-3">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Mevcut Tablo Filtresini Kaydet
-                </Button>
-              </div>
-              <ScrollArea className="flex-grow -mx-6 px-6">
+                </div>
+              )}
+              <ScrollArea className="flex-grow h-full">
                 {storeIsLoading && savedFiltersList.length === 0 ? (
                   <div className="flex justify-center items-center h-32">
                     <Spinner />
@@ -344,17 +320,7 @@ useEffect(() => {
                           </Button>
                           {filter.createdById === user?.id && (
                             <>
-
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => {
-                                  console.log('Düzenle butonu tıklandı!', filter.filterName); // BASİT LOG
-                                  handleEditSavedFilter(filter);
-                                }}
-                                title="Düzenle"
-                                className=" h-8 w-8 ml-1"
-                              >
+                              <Button variant="outline" size="icon" onClick={() => handleEditSavedFilter(filter)} title="Düzenle" className=" h-8 w-8 ml-1">
                                 <Edit3Icon className="h-4 w-4" />
                               </Button>
                               <Button variant="destructive" size="icon" onClick={() => openDeleteConfirmation(filter)} title="Sil" className=" h-8 w-8 ml-1">
@@ -368,13 +334,12 @@ useEffect(() => {
                   </ul>
                 )}
               </ScrollArea>
-            </>
+            </div>
           )}
         </div>
       </SheetContent>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        {/* ... (AlertDialog içeriği aynı) ... */}
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Filtreyi Silme Onayı</AlertDialogTitle> <AlertDialogDescription> "{filterToDelete?.filterName}" adlı filtreyi kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz. </AlertDialogDescription>

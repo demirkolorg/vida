@@ -191,7 +191,7 @@ export function DataTable({
     // table.setGlobalFilter(''); // Bu, activeGlobalFilter'ın yeniden hesaplanmasıyla otomatik olmalı
 
     toast.info('Tüm filtreler temizlendi.');
-  }, [table /* setGlobalSearchInput, setAdvancedFilterObject */]); // Bağımlılıkları kendi DataTable'ınızdaki state setter'larına göre ayarlayın
+  }, [table, setGlobalSearchInput, setAdvancedFilterObject]);
 
   const handleApplySavedFilter = useCallback(
     savedFilterState => {
@@ -229,20 +229,24 @@ export function DataTable({
     [table, setGlobalSearchInput, setAdvancedFilterObject],
   );
 
-   const isTableFiltered = useMemo(() => {
+  const isTableFiltered = useMemo(() => {
     const { columnFilters, globalFilter } = table.getState();
     const hasColumnFilters = columnFilters && columnFilters.length > 0;
-    const hasGlobalFilter = globalFilter &&
-      (typeof globalFilter === 'string'
-        ? globalFilter.trim().length > 0
-        : typeof globalFilter === 'object' && globalFilter.rules && globalFilter.rules.length > 0);
+    const hasGlobalFilter = globalFilter && (typeof globalFilter === 'string' ? globalFilter.trim().length > 0 : typeof globalFilter === 'object' && globalFilter.rules && globalFilter.rules.length > 0);
     return hasColumnFilters || hasGlobalFilter;
   }, [table.getState().columnFilters, table.getState().globalFilter]); // Bağımlılıkları state'ten al
 
-
   return (
     <div className="w-full space-y-2">
-      <FilterManagementSheet sheetTypeIdentifier="filterManagement" entityType={entityType} entityHuman={entityHuman} table={table} onClearAllFilters={handleClearAllFilters} onApplySavedFilter={handleApplySavedFilter} />
+      <FilterManagementSheet
+        sheetTypeIdentifier="filterManagement"
+        entityType={entityType}
+        entityHuman={entityHuman}
+        table={table}
+        onClearAllFilters={handleClearAllFilters}
+        onApplySavedFilter={handleApplySavedFilter}
+        isTableFiltered={isTableFiltered}
+      />
       <AdvancedFilterSheet sheetTypeIdentifier="advancedFilter" entityType={entityType} entityHuman={entityHuman} table={table} onApplyFilters={applyAdvancedFiltersToTable} />
       <ToolbarIndex
         table={table}

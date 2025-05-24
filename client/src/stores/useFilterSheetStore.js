@@ -13,7 +13,6 @@ export const useFilterSheetStore = create((set, get) => ({
   // Belirli bir filtre sheet'ini açar
   openFilterSheet: (sheetTypeIdentifier, entityType, data = null, params = null) => {
     const key = `${sheetTypeIdentifier}_${entityType}`;
-    console.log(`[FILTER_STORE] Opening sheet with key: ${key}`, { data, params });
     set(state => ({
       openSheets: {
         ...state.openSheets,
@@ -29,7 +28,6 @@ export const useFilterSheetStore = create((set, get) => ({
   // Belirli bir filtre sheet'ini kapatır
   closeFilterSheet: (sheetTypeIdentifier, entityType) => {
     const key = `${sheetTypeIdentifier}_${entityType}`;
-    console.log(`[FILTER_STORE] Closing sheet with key: ${key}`);
     set(state => {
       const newOpenSheets = { ...state.openSheets };
       if (newOpenSheets[key]) {
