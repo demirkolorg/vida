@@ -18,7 +18,7 @@ import { PlusCircle, PlayIcon, ListFilter, Edit3Icon, Trash2Icon, XIcon } from '
 import { Spinner } from '@/components/general/Spinner'; // BaseCreateSheet'ten alındı
 import { useAuthStore } from '@/stores/authStore';
 
-export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement', entityType, table, entityHuman, onClearAllFilters, onApplySavedFilter }) {
+export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement', entityType, table, entityHuman, onClearAllFilters, onApplySavedFilter, openWithNewForm = false }) {
   const user = useAuthStore(state => state.user);
   const isOpen = useSheetStore(selectIsSheetOpen(sheetTypeIdentifier, entityType));
   const closeSheet = useSheetStore(state => state.closeSheet);
@@ -29,12 +29,14 @@ export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement'
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [filterToDelete, setFilterToDelete] = useState(null); // { id, filterName }
   const [formLoading, setFormLoading] = useState(false);
-
   const title = `${entityHuman} İçin Kayıtlı Filtreler`;
-
   const columnFilters = table.getState().columnFilters;
   const globalFilterState = table.getState().globalFilter;
   const isFiltered = columnFilters.length > 0 || (globalFilterState && (typeof globalFilterState === 'string' ? globalFilterState.length > 0 : true));
+
+    const sheetData = useSheetStore(state => state.sheets[sheetTypeIdentifier]?.[entityType]?.data);
+  const openSheetParams = useSheetStore(state => state.sheets[sheetTypeIdentifier]?.[entityType]?.params);
+
 
   const form = useForm({
     resolver: zodResolver(SavedFilter_FormInputSchema),
@@ -44,20 +46,37 @@ export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement'
     },
   });
 
-  useEffect(() => {
-    if (isOpen && entityType) {
-      GetByEntityType({ entityType }, { showToast: false });
-    }
-  }, [isOpen, entityType, GetByEntityType]);
+  // useEffect(() => {
+  //   if (isOpen && entityType) {
+  //     GetByEntityType({ entityType }, { showToast: false });
+  //   }
+  // }, [isOpen, entityType, GetByEntityType]);
+
+  // useEffect(() => {
+  //   if (!isOpen) {
+  //     setShowSaveForm(false);
+  //     setIsEditMode(false);
+  //     setEditingFilter(null);
+  //     form.reset({ filterName: '', description: '' });
+  //   }
+  // }, [isOpen, form]);
+
 
   useEffect(() => {
-    if (!isOpen) {
-      setShowSaveForm(false);
-      setIsEditMode(false);
-      setEditingFilter(null);
-      form.reset({ filterName: '', description: '' });
+    // Sheet açıldığında ve openWithNewForm true ise doğrudan yeni filtre formunu göster
+    if (isOpen && openWithNewForm) {
+      handleAddNewFilter(); // Bu fonksiyon zaten showSaveForm'u true yapıyor
+    } else if (isOpen && entityType) {
+      GetByEntityType({ entityType }, { showToast: false });
+      if (showSaveForm && !openSheetParams?.openWithNewForm) {
+          setShowSaveForm(false);
+          setIsEditMode(false);
+          setEditingFilter(null);
+          form.reset({ filterName: '', description: '' });
+      }
     }
-  }, [isOpen, form]);
+  }, [isOpen, entityType, GetByEntityType, openWithNewForm]); // openSheetParams eklendi
+
 
   useEffect(() => {
     if (isEditMode && editingFilter) {

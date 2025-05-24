@@ -20,6 +20,7 @@ interface BaseDeleteSheetProps<TItem extends { id: string }> {
 
 export function BaseDeleteSheet<TItem extends { id: string }>({ title, children, entityType, deleteAction, loadingAction, cancelButtonText = 'Vazgeç', confirmButtonText = 'Evet, Kaydı Sil', description = 'Bu işlem geri alınamaz. Aşağıdaki kaydı kalıcı olarak silmek istediğinizden emin misiniz?' }: BaseDeleteSheetProps<TItem>) {
   const isOpen = useSheetStore(selectIsSheetOpen('delete', entityType));
+  
   const itemData = useSheetStore(selectSheetData<TItem>(entityType)); // Get the data for the item to delete
   const closeSheet = useSheetStore(state => state.closeSheet);
   const [isSubmitting, setIsSubmitting] = useState(false);

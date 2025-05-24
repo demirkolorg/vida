@@ -6,12 +6,13 @@ import { ToolbarIndex } from '@/components/toolbar/ToolbarIndex';
 import { AuditColumns } from '@/components/table/AuditColumns';
 import { DataTablePagination } from '@/components/table/Pagination';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
-import { getStartOfDay, customGlobalFilterFn, useDebounce } from '@/components/table/Functions';
+import { customGlobalFilterFn, useDebounce } from '@/components/table/Functions';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getSortedRowModel, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 import { FilterManagementSheet } from '@/app/filter/sheet/FilterManagementSheet';
 import { AdvancedFilterSheet } from '@/app/filter/sheet/AdvancedFilterSheet';
 import { toast } from 'sonner'; // Assuming you use sonner for toasts
+import { HeaderContextMenu } from '@/components/contextMenu/HeaderContextMenu';
 
 export function DataTable({
   entityType,
@@ -43,16 +44,17 @@ export function DataTable({
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState(initialSortingState);
   const [isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen] = useState(false);
+
   const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
   const initialVisibility = useMemo(() => {
     const auditColumnDefaultVisibility = includeAuditColumns
       ? {
-        createdBy: false,
-        createdAt: false,
-        updatedBy: false,
-        updatedAt: false,
-      }
+          createdBy: false,
+          createdAt: false,
+          updatedBy: false,
+          updatedAt: false,
+        }
       : {};
     return { ...auditColumnDefaultVisibility, ...columnVisibilityData };
   }, [columnVisibilityData, includeAuditColumns]);
@@ -73,8 +75,8 @@ export function DataTable({
 
   const table = useReactTable({
     data,
-    columns: allColumns, // your specificColumns + auditColumns
-    autoResetPageIndex: false,
+    columns: allColumns,
+    autoResetPageIndex: true,
     enableRowSelection,
     getRowId: originalRow => originalRow.id,
     getCoreRowModel: getCoreRowModel(),
@@ -85,11 +87,13 @@ export function DataTable({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    globalFilterFn: customGlobalFilterFn, // Your custom function
+    globalFilterFn: customGlobalFilterFn,
+    enableColumnResizing: true,
+    columnResizeMode: 'onChange',
     state: {
       sorting,
       columnFilters,
-      globalFilter: activeGlobalFilter, // This is the crucial part
+      globalFilter: activeGlobalFilter,
       columnVisibility,
       rowSelection,
     },
@@ -207,17 +211,14 @@ export function DataTable({
 
       // 2. Global Filtreyi Uygula
       if (typeof savedGlobalFilter === 'string') {
-        console.log('Applying saved simple global filter:', savedGlobalFilter);
         setGlobalSearchInput(savedGlobalFilter);
         setAdvancedFilterObject(null);
       } else if (typeof savedGlobalFilter === 'object' && savedGlobalFilter !== null && savedGlobalFilter.rules) {
         // ÖNEMLİ: savedGlobalFilter.rules kontrolü eklendi
-        console.log('Applying saved advanced global filter:', savedGlobalFilter);
         setAdvancedFilterObject(savedGlobalFilter);
         setGlobalSearchInput('');
       } else {
         // Hiçbiri değilse (null, undefined, veya rules içermeyen obje)
-        console.log('Clearing global filters from saved state.');
         setGlobalSearchInput('');
         setAdvancedFilterObject(null);
       }
@@ -227,6 +228,17 @@ export function DataTable({
     },
     [table, setGlobalSearchInput, setAdvancedFilterObject],
   );
+
+   const isTableFiltered = useMemo(() => {
+    const { columnFilters, globalFilter } = table.getState();
+    const hasColumnFilters = columnFilters && columnFilters.length > 0;
+    const hasGlobalFilter = globalFilter &&
+      (typeof globalFilter === 'string'
+        ? globalFilter.trim().length > 0
+        : typeof globalFilter === 'object' && globalFilter.rules && globalFilter.rules.length > 0);
+    return hasColumnFilters || hasGlobalFilter;
+  }, [table.getState().columnFilters, table.getState().globalFilter]); // Bağımlılıkları state'ten al
+
 
   return (
     <div className="w-full space-y-2">
@@ -251,6 +263,7 @@ export function DataTable({
         entityType={entityType}
         displayStatusFilter={displayStatusFilter}
         onToggleStatus={onToggleStatus}
+        isTableFiltered={isTableFiltered}
       />
 
       <div className="rounded-md border">
@@ -258,16 +271,42 @@ export function DataTable({
           <TableHeader className="bg-primary-foreground">
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <TableHead
-                    key={header.id}
-                    style={{
-                      width: header.getSize() !== 150 ? header.getSize() : undefined,
-                    }}
-                  >
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map(header => {
+                  const headerContent = header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext());
+                  return (
+                    <TableHead
+                      className="group relative"
+                      key={header.id}
+                      style={{
+                        width: header.getSize(),
+                      }}
+                    >
+                      {/* HeaderContextMenu ile sütun başlığını sarmala */}
+                      <HeaderContextMenu column={header.column} table={table}>
+                        <div className="flex items-center justify-between w-full">
+                          {' '}
+                          {/* Başlık ve resizer için */}
+                          <div className="flex-grow">
+                            {' '}
+                            {/* Başlık içeriği */}
+                            {headerContent}
+                          </div>
+                          {/* Yeniden Boyutlandırma Tutamacı (önceki kodunuzdan) */}
+                          {header.column.getCanResize() && (
+                            <div
+                              onMouseDown={header.getResizeHandler()}
+                              onTouchStart={header.getResizeHandler()}
+                              className={cn(
+                                'absolute top-0 right-0 h-full w-1.5 cursor-col-resize select-none touch-none bg-transparent group-hover:bg-border transition-colors duration-200 ease-in-out z-10 opacity-0 group-hover:opacity-100',
+                                header.column.getIsResizing() && 'bg-primary opacity-100',
+                              )}
+                            />
+                          )}
+                        </div>
+                      </HeaderContextMenu>
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -280,7 +319,11 @@ export function DataTable({
                 const renderRowContent = () =>
                   row.getVisibleCells().map(cell => {
                     const cellContent = flexRender(cell.column.columnDef.cell, cell.getContext());
-                    return <TableCell key={cell.id}>{cellContent}</TableCell>;
+                    return (
+                      <TableCell className={'break-words'} key={cell.id}>
+                        {cellContent}
+                      </TableCell>
+                    );
                   });
 
                 if (contextMenuContent) {

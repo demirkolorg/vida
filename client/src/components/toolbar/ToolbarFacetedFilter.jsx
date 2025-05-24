@@ -1,24 +1,52 @@
 // ToolbarFacetedFilter.jsx
 
 import { Button } from '@/components/ui/button';
-import { XIcon } from 'lucide-react';
 import { createOptionsFromValues } from '@/components/table/Functions';
 import { ToolbarFacetedFilterComp } from '@/components/toolbar/ToolbarFacetedFilterComp';
 import { useMemo } from 'react';
+import { FilterSummary } from '@/app/filter/sheet/FilterSummary';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { XIcon, Filter as FilterIcon } from 'lucide-react'; // Filter ikonu eklendi
+import { Badge } from '@/components/ui/badge'; // Badge importu
 
 export const ToolbarFacetedFilter = props => {
   const { table, onClearAllFilters, facetedFilterSetup, data } = props;
 
-  const columnFilters = table.getState().columnFilters; // Bu zaten alınıyor
-  const globalFilterState = table.getState().globalFilter;
+  const currentTableState = table.getState(); // Tablonun mevcut state'ini al
+  const columnFilters = currentTableState.columnFilters;
+  const globalFilterState = currentTableState.globalFilter;
+  const sortingState = currentTableState.sorting;
+
   // isFiltered'ı columnFilters'a bağımlı hale getiriyoruz
   const isFiltered = useMemo(() => {
-    return columnFilters.length > 0 || (globalFilterState && (typeof globalFilterState === 'string' ? globalFilterState.length > 0 : true));
+    const hasColumnFilters = columnFilters && columnFilters.length > 0;
+    const hasGlobalFilter = globalFilterState && (typeof globalFilterState === 'string' ? globalFilterState.trim().length > 0 : typeof globalFilterState === 'object' && globalFilterState.rules && globalFilterState.rules.length > 0);
+    return hasColumnFilters || hasGlobalFilter;
   }, [columnFilters, globalFilterState]);
 
+  const filterStateForSummary = useMemo(() => {
+    return {
+      columnFilters: columnFilters,
+      globalFilter: globalFilterState,
+      sorting: sortingState,
+    };
+  }, [columnFilters, globalFilterState, sortingState]);
+
+  // Aktif filtre sayısını hesapla (basit bir gösterge için)
+  const activeFilterCount = useMemo(() => {
+    let count = columnFilters?.length || 0;
+    if (globalFilterState) {
+      if (typeof globalFilterState === 'string' && globalFilterState.trim().length > 0) {
+        count++;
+      } else if (typeof globalFilterState === 'object' && globalFilterState.rules && globalFilterState.rules.length > 0) {
+        count += globalFilterState.rules.length; // Veya sadece 1 sayabiliriz: global filtre aktif
+      }
+    }
+    return count;
+  }, [columnFilters, globalFilterState]);
 
   const facetedFilterComponents = useMemo(() => {
-    console.log("Recalculating facetedFilterComponents due to dependency change."); // Hata ayıklama için
+    console.log('Recalculating facetedFilterComponents due to dependency change.'); // Hata ayıklama için
     return facetedFilterSetup
       .map(setup => {
         const columnIdStr = setup.columnId;
@@ -59,18 +87,10 @@ export const ToolbarFacetedFilter = props => {
         return <ToolbarFacetedFilterComp key={columnIdStr} column={column} title={setup.title} options={options} />;
       })
       .filter(Boolean);
-  }, [
-    data,
-    facetedFilterSetup,
-    table, // table instance'ı
-    // EN ÖNEMLİSİ: Sütun filtreleri değiştiğinde yeniden hesapla
-    // table.getState().columnFilters referansı her filtre değiştiğinde yeni bir dizi olur.
-    // Bu nedenle, bunu doğrudan bağımlılık olarak kullanmak işe yarar.
-    columnFilters // table.getState().columnFilters'ı değişkene atayıp onu kullanmak daha temiz.
-  ]); // Bağımlılık güncellendi
+  }, [data, facetedFilterSetup, table, columnFilters]);
 
   return (
-    <div className="relative flex items-center flex-wrap flex-grow sm:flex-grow-0 gap-2"> {/* flex-wrap ve items-center eklendi */}
+    <div className="relative flex items-center flex-wrap flex-grow sm:flex-grow-0 gap-2">
       {facetedFilterComponents}
       {isFiltered && (
         <Button variant="destructive" onClick={onClearAllFilters} className="h-8 ml-2" aria-label="Filtreleri Temizle">
@@ -78,6 +98,26 @@ export const ToolbarFacetedFilter = props => {
           Temizle
         </Button>
       )}
+
+      {isFiltered && ( // Sadece aktif filtre varsa göster
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="h-8 ">
+              <FilterIcon className=" h-4 w-4" />
+              {activeFilterCount > 0 && activeFilterCount}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 md:w-96 p-0" align="start">
+            {' '}
+            {/* Genişlik ayarlandı */}
+            <FilterSummary filterState={filterStateForSummary} table={table} />
+          </PopoverContent>
+        </Popover>
+      )}
+
+      {/* {editingFilter?.filterState && (
+    
+      )} */}
     </div>
   );
 };

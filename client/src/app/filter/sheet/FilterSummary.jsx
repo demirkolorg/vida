@@ -3,7 +3,8 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ListChecks, Search, SortAsc, SortDesc, Filter as FilterIconLucide, Info,  LayersIcon, Braces,Dot } from 'lucide-react'; // LayersIcon eklendi
+import { ListChecks, Search, SortAsc, SortDesc, Filter as FilterIconLucide, Info, LayersIcon, Braces, Dot } from 'lucide-react'; // LayersIcon eklendi
+import { getOperatorLabel } from '@/app/filter/helper/getOperatorLabel';
 
 function getFormattedFilterCriteria(filterState, table) {
   if (!filterState) return [];
@@ -11,7 +12,6 @@ function getFormattedFilterCriteria(filterState, table) {
   const { columnFilters, globalFilter, sorting } = filterState;
   const criteria = [];
 
-  // Genel Filtre (Basit arama veya Gelişmiş Filtre)
   if (globalFilter) {
     if (typeof globalFilter === 'string' && globalFilter.trim() !== '') {
       criteria.push({
@@ -33,16 +33,15 @@ function getFormattedFilterCriteria(filterState, table) {
             columnName = typeof column.columnDef.header === 'string' ? column.columnDef.header : rule.field;
           }
         }
-        // Operatörleri daha kullanıcı dostu hale getirebilirsiniz (opsiyonel)
-        // const operatorLabel = getOperatorLabel(rule.operator); // getOperatorLabel diye bir helper fonksiyonunuz olabilir
-        const operatorLabel = rule.operator; // Şimdilik direkt operatörü kullanalım
+        // const operatorLabel = rule.operator; // Şimdilik direkt operatörü kullanalım
+        const operatorLabel = getOperatorLabel(rule.operator); // getOperatorLabel diye bir helper fonksiyonunuz olabilir
         let valueLabel = `"${rule.value}"`;
         if (rule.operator === 'between' && rule.value2) {
           valueLabel += ` ve "${rule.value2}"`;
         } else if (rule.operator === 'isEmpty' || rule.operator === 'isNotEmpty') {
           valueLabel = ''; // Değer yok
         } else if (typeof rule.value === 'boolean') {
-            valueLabel = rule.value ? 'Evet/Aktif' : 'Hayır/Pasif';
+          valueLabel = rule.value ? 'Evet/Aktif' : 'Hayır/Pasif';
         }
 
         return `"${columnName}" ${operatorLabel} ${valueLabel}`.trim();
@@ -65,8 +64,10 @@ function getFormattedFilterCriteria(filterState, table) {
       let columnName = cf.id;
       if (table) {
         const column = table.getColumn(cf.id);
-        if (column && column.columnDef) {
-          columnName = typeof column.columnDef.header === 'string' ? column.columnDef.header : cf.id;
+        if (column && column.columnDef && typeof column.columnDef.header === 'string') {
+          columnName = column.columnDef.header; // Kullanıcı dostu başlığı al
+        } else if (column && column.columnDef && typeof column.columnDef.meta?.exportHeader === 'string') {
+          columnName = column.columnDef.meta.exportHeader; // Alternatif olarak exportHeader (varsa)
         }
       }
       // cf.value'nun yapısına göre (örneğin dizi ise) formatlama
@@ -86,8 +87,10 @@ function getFormattedFilterCriteria(filterState, table) {
       let columnName = sort.id;
       if (table) {
         const column = table.getColumn(sort.id);
-        if (column && column.columnDef) {
-          columnName = typeof column.columnDef.header === 'string' ? column.columnDef.header : sort.id;
+        if (column && column.columnDef && typeof column.columnDef.header === 'string') {
+          columnName = column.columnDef.header; // Kullanıcı dostu başlığı al
+        } else if (column && column.columnDef && typeof column.columnDef.meta?.exportHeader === 'string') {
+          columnName = column.columnDef.meta.exportHeader; // Alternatif olarak exportHeader
         }
       }
       const direction = sort.desc ? 'Azalan' : 'Artan';
@@ -127,8 +130,8 @@ export const FilterSummary = ({ filterState, table }) => {
 
   const groupOrder = ['Genel Arama', 'Gelişmiş Filtre', 'Sütun Filtreleri', 'Sıralamalar'];
 
-   return (
-    <div className="mb-4 p-4 border rounded-lg space-y-3 bg-muted/30 shadow-sm">
+  return (
+    <div className="p-4 border rounded-lg space-y-3 bg-muted/30 shadow-sm">
       <h4 className="text-sm font-semibold flex items-center text-foreground mb-3">
         <ListChecks className="h-4.5 w-4.5 mr-2 text-primary" />
         Kaydedilecek Geçerli Filtre ve Sıralama Özeti:
@@ -145,7 +148,9 @@ export const FilterSummary = ({ filterState, table }) => {
                 {groupType === 'Sıralamalar' && <LayersIcon className="h-3.5 w-3.5 mr-1.5 text-purple-500" />}
                 {groupType}:
               </p>
-              <div className="flex flex-col gap-1.5 pl-2"> {/* Kuralları alt alta göstermek için flex-col */}
+              <div className="flex flex-col gap-1.5 pl-2">
+                {' '}
+                {/* Kuralları alt alta göstermek için flex-col */}
                 {groupedCriteria[groupType].map(item => (
                   <div key={item.id} className="flex flex-col text-xs">
                     <Badge

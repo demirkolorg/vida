@@ -16,6 +16,7 @@ interface BaseDetailSheetProps<TItem extends { id: string }> {
 
 export function BaseDetailSheet<TItem extends { id: string }>({ title, entityType, description, closeButtonText = 'Kapat', children, footerContent }: BaseDetailSheetProps<TItem>) {
   const isOpen = useSheetStore(selectIsSheetOpen('detail', entityType));
+  
   const itemData = useSheetStore(selectSheetData<TItem>());
   const closeSheet = useSheetStore(state => state.closeSheet);
   const handleInternalOpenChange = (open: boolean) => {

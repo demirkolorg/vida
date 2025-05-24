@@ -8,8 +8,8 @@ export const Birim_Columns = () => [
       const ad = row.getValue('ad');
       return <div className="font-medium">{ad || '-'}</div>;
     },
-    enableHiding: false,
-    size: 250,
+     enableHiding: false,
+     size: 250,
     meta: {
       exportHeader: 'Birim Adı',
       filterVariant: 'text',
@@ -22,7 +22,7 @@ export const Birim_Columns = () => [
       const aciklama = row.getValue('aciklama');
       return <div className="text-sm text-gray-600 truncate max-w-xs">{aciklama || '-'}</div>;
     },
-    size: 300,
+     size: 300,
     meta: {
       exportHeader: 'Açıklama',
       filterVariant: 'text',
@@ -36,7 +36,7 @@ export const Birim_Columns = () => [
       const subeSayisi = row.original.subeler?.length ?? 0;
       return <div className="text-center w-20">{subeSayisi}</div>;
     },
-    size: 100,
+    size: 10,
     enableSorting: true,
     meta: {
       exportHeader: 'Şube Sayısı',
@@ -51,7 +51,7 @@ export const Birim_Columns = () => [
       const malzemeSayisi = row.original.malzemeler?.length ?? 0;
       return <div className="text-center w-24">{malzemeSayisi}</div>;
     },
-    size: 120,
+    size: 50,
     enableSorting: true,
     meta: {
       exportHeader: 'Malzeme Sayısı',

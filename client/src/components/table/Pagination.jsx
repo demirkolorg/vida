@@ -29,6 +29,8 @@ export function DataTablePagination({ table }) {
             </SelectContent>
           </Select>
         </div>
+
+        
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
           Sayfa {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
         </div>

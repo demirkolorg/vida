@@ -20,43 +20,9 @@ import DatePicker from '@/components/ui/date-picker'; // Shadcn Date Picker (Cal
 import { Textarea } from '@/components/ui/textarea';
 import EditableDatePicker from '@/components/ui/editable-date-picker'; // YENİ EditableDatePicker'ı import edin
 import { isValid } from 'date-fns'; // <<< isValid'ı buraya ekleyin
+import { OPERATORS } from '@/app/filter/constants/constant'; // Operatörleri içe aktar
 
-const OPERATORS = {
-  text: [
-    { value: 'contains', label: 'İçerir' },
-    { value: 'equals', label: 'Eşittir' },
-    { value: 'startsWith', label: 'İle Başlar' },
-    { value: 'endsWith', label: 'İle Biter' },
-    { value: 'notContains', label: 'İçermez' },
-    { value: 'notEquals', label: 'Eşit Değildir' },
-    { value: 'isEmpty', label: 'Boş' },
-    { value: 'isNotEmpty', label: 'Boş Değil' },
-  ],
-  number: [
-    { value: 'equals', label: 'Eşittir (=)' },
-    { value: 'notEquals', label: 'Eşit Değildir (≠)' },
-    { value: 'gt', label: 'Büyüktür (>)' },
-    { value: 'gte', label: 'Büyük Eşittir (≥)' },
-    { value: 'lt', label: 'Küçüktür (<)' },
-    { value: 'lte', label: 'Küçük Eşittir (≤)' },
-  ],
-  date: [
-    { value: 'equals', label: 'Eşittir' },
-    { value: 'notEquals', label: 'Eşit Değildir' },
-    { value: 'after', label: 'Sonra' },
-    { value: 'before', label: 'Önce' },
-    { value: 'between', label: 'Arasında' }, // Bu özel bir değer girişi gerektirir (2 tarih)
-  ],
-  select: [
-    // Bu, faceted filter gibi çalışır, çoklu seçim veya tekil seçim
-    { value: 'equals', label: 'Eşittir' },
-    { value: 'notEquals', label: 'Eşit Değildir' },
-    { value: 'isAnyOf', label: 'Herhangi Biri' }, // Değer bir dizi olabilir
-    { value: 'isNoneOf', label: 'Hiçbiri Değil' }, // Değer bir dizi olabilir
-  ],
-  boolean: [{ value: 'equals', label: 'Eşittir' }],
-};
-const getStartOfDay = (dateInput) => {
+const getStartOfDay = dateInput => {
   if (!dateInput) return null;
   const date = new Date(dateInput);
   if (isNaN(date.getTime())) return null; // Geçersiz tarih kontrolü
@@ -174,14 +140,7 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
           };
         })
         .filter(
-          rule =>
-            rule.field &&
-            rule.operator &&
-            (rule.operator === 'isEmpty' ||
-              rule.operator === 'isNotEmpty' ||
-              rule.value !== '' ||
-              typeof rule.value === 'boolean' ||
-              (rule.operator === 'between' && (rule.value !== '' || rule.value2 !== ''))),
+          rule => rule.field && rule.operator && (rule.operator === 'isEmpty' || rule.operator === 'isNotEmpty' || rule.value !== '' || typeof rule.value === 'boolean' || (rule.operator === 'between' && (rule.value !== '' || rule.value2 !== ''))),
         );
 
       if (processedRules.length > 0) {
@@ -193,7 +152,6 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
   }, [onApplyFilters, filterLogic, availableColumns]); // availableColumns'ı bağımlılıklara ekle
 
   const handleSaveFilterSubmit = async formData => {
-
     const advancedFilterObjectToSave = filterLogic.rules
       .map(rule => {
         const selectedCol = availableColumns.find(c => c.value === rule.field);
@@ -204,12 +162,7 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
       })
       .filter(
         rule =>
-          rule.field &&
-          rule.operator &&
-          (rule.operator === 'isEmpty' ||
-            rule.operator === 'isNotEmpty' ||
-            (typeof rule.value === 'boolean' ? true : rule.value !== '') ||
-            (rule.operator === 'between' && (rule.value !== '' || rule.value2 !== ''))),
+          rule.field && rule.operator && (rule.operator === 'isEmpty' || rule.operator === 'isNotEmpty' || (typeof rule.value === 'boolean' ? true : rule.value !== '') || (rule.operator === 'between' && (rule.value !== '' || rule.value2 !== ''))),
       );
 
     if (processedRulesForSave.length === 0) {
@@ -321,28 +274,14 @@ export function AdvancedFilterSheet({ sheetTypeIdentifier = 'advancedFilter', en
                           {selectedColumn?.filterVariant === 'text' && <Input placeholder="Değer girin" value={rule.value} onChange={e => handleRuleChange(rule.id, 'value', e.target.value)} />}
                           {selectedColumn?.filterVariant === 'number' && <Input type="number" placeholder="Sayısal değer" value={rule.value} onChange={e => handleRuleChange(rule.id, 'value', e.target.value)} />}
 
-
-
                           {selectedColumn?.filterVariant === 'date' && rule.operator !== 'between' && (
-                            <EditableDatePicker
-                              value={rule.value && isValid(new Date(rule.value)) ? new Date(rule.value) : undefined}
-                              onChange={date => handleRuleChange(rule.id, 'value', date)}
-                              placeholderText="Tarih (gg.aa.yyyy)"
-                            />
+                            <EditableDatePicker value={rule.value && isValid(new Date(rule.value)) ? new Date(rule.value) : undefined} onChange={date => handleRuleChange(rule.id, 'value', date)} placeholderText="Tarih (gg.aa.yyyy)" />
                           )}
                           {selectedColumn?.filterVariant === 'date' && rule.operator === 'between' && (
                             <div className="flex flex-col space-y-2">
-                              <EditableDatePicker
-                                value={rule.value && isValid(new Date(rule.value)) ? new Date(rule.value) : undefined}
-                                onChange={date => handleRuleChange(rule.id, 'value', date)}
-                                placeholderText="Başlangıç"
-                              />
+                              <EditableDatePicker value={rule.value && isValid(new Date(rule.value)) ? new Date(rule.value) : undefined} onChange={date => handleRuleChange(rule.id, 'value', date)} placeholderText="Başlangıç" />
 
-                              <EditableDatePicker
-                                value={rule.value2 && isValid(new Date(rule.value2)) ? new Date(rule.value2) : undefined}
-                                onChange={date => handleRuleChange(rule.id, 'value2', date)}
-                                placeholderText="Bitiş"
-                              />
+                              <EditableDatePicker value={rule.value2 && isValid(new Date(rule.value2)) ? new Date(rule.value2) : undefined} onChange={date => handleRuleChange(rule.id, 'value2', date)} placeholderText="Bitiş" />
                             </div>
                           )}
                           {selectedColumn?.filterVariant === 'select' && (

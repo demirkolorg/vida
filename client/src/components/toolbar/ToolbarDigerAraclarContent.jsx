@@ -1,18 +1,19 @@
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { ChevronDown, DownloadIcon, EyeIcon, Table2, FileTextIcon, ListFilter,SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, DownloadIcon, EyeIcon, Table2, FileTextIcon, ListFilter, SlidersHorizontal, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { exportTableToExcel, exportTableToTxt } from '@/lib/exportUtils';
 import { EntityStatusOptions } from '@/constants/statusOptions';
 import { DropdownMenu, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useSheetStore } from '@/stores/sheetStore'; // Zaten kullanıyorsunuz
+import { toast } from 'sonner'; // Assuming you use sonner for toasts
 
 export const ToolbarDigerAraclarContent = props => {
-  const { isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen, renderCollapsibleToolbarContent, table, entityType, displayStatusFilter, onToggleStatus } = props;
+  const { isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen, renderCollapsibleToolbarContent, table, entityType, displayStatusFilter, onToggleStatus, isTableFiltered } = props;
 
   const openSheet = useSheetStore(state => state.openSheet);
 
   const handleOpenFilterSheet = () => {
-    openSheet('filterManagement', { table, entityType }, entityType, {
+    openSheet('filterManagement', { table, entityType, openWithNewForm: false }, entityType, {
       title: `${entityType} İçin Kayıtlı Filtreler`, // Sheet başlığı
       size: 'lg',
     });
@@ -20,10 +21,23 @@ export const ToolbarDigerAraclarContent = props => {
 
   const handleOpenAdvencedSheet = () => {
     openSheet('advancedFilter', { table, entityType }, entityType, {
-      title: `${entityType} İçin Kayıtlı Filtreler`,
+      title: `${entityType} İçin Gelişmiş Filtre Oluştur`,
       size: 'lg',
     });
   };
+
+  const handleSaveCurrentFilter = () => {
+    if (!isTableFiltered) {
+      toast.info('Kaydedilecek aktif bir filtre bulunmuyor.');
+      return;
+    }
+    openSheet('filterManagement', { table, entityType, openWithNewForm: true }, entityType,
+       {
+      title: `${entityType} İçin Yeni Filtre Kaydet`,
+      size: 'lg',
+    });
+  };
+
   return (
     <>
       {renderCollapsibleToolbarContent && (
@@ -44,15 +58,20 @@ export const ToolbarDigerAraclarContent = props => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                   <DropdownMenuItem onClick={handleOpenFilterSheet}>
+                  {isTableFiltered && (
+                    <DropdownMenuItem onClick={handleSaveCurrentFilter}>
+                      <Save className="mr-2 h-4 w-4" />
+                      Geçerli Filtreyi Kaydet
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={handleOpenFilterSheet}>
                     <ListFilter className="mr-2 h-4 w-4" />
                     Filtreleri Yönet
                   </DropdownMenuItem>
-                   <DropdownMenuItem onClick={handleOpenAdvencedSheet}>
+                  <DropdownMenuItem onClick={handleOpenAdvencedSheet}>
                     <SlidersHorizontal className="mr-2 h-4 w-4" />
                     Gelişmiş Filtre Oluştur
                   </DropdownMenuItem>
-                
                 </DropdownMenuContent>
               </DropdownMenu>
 

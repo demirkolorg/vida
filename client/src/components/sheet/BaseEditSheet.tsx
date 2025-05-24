@@ -26,6 +26,7 @@ interface BaseEditSheetProps<TItem extends { id: string }, TUpdatePayload> {
 
 export function BaseEditSheet<TItem extends { id: string }, TUpdatePayload extends object>({ title, schema, children, entityType, description, updateAction, loadingAction }: BaseEditSheetProps<TItem, TUpdatePayload>) {
   const isOpen = useSheetStore(selectIsSheetOpen('edit', entityType));
+  
   const currentData = useSheetStore(selectSheetData<TItem>(entityType));
   const closeSheet = useSheetStore(state => state.closeSheet);
 
