@@ -1,170 +1,195 @@
-import React, { useState, useEffect, useCallback } from 'react';
+// src/app/filter/sheet/FilterManagementSheet.jsx
+'use client';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { useSheetStore, selectIsSheetOpen } from '@/stores/sheetStore';
+// YENİ FİLTRE STORE'UNU IMPORT EDİN
+import { useFilterSheetStore } from '@/stores/useFilterSheetStore'; // Dosya yolunuza göre güncelleyin
 import { FilterSummary } from '@/app/filter/sheet/FilterSummary';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { SavedFilter_FormInputSchema } from '@/app/filter/constants/schema';
 import { useSavedFilterStore } from '@/app/filter/constants/store';
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { PlusCircle, PlayIcon, ListFilter, Edit3Icon, Trash2Icon, XIcon } from 'lucide-react';
-import { Spinner } from '@/components/general/Spinner'; // BaseCreateSheet'ten alındı
+import { Spinner } from '@/components/general/Spinner';
 import { useAuthStore } from '@/stores/authStore';
 
-export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement', entityType, table, entityHuman, onClearAllFilters, onApplySavedFilter, openWithNewForm = false }) {
+export function FilterManagementSheet({
+  sheetTypeIdentifier = 'filterManagement', // Bu prop hala kullanılabilir, store key'i için
+  entityType,
+  entityHuman,
+  onClearAllFilters, // DataTable'dan gelir
+  onApplySavedFilter, // DataTable'dan gelir
+  // table prop'u artık sheet açılırken data olarak verilecek
+  // openWithNewForm prop'u da sheet açılırken params olarak verilecek
+}) {
   const user = useAuthStore(state => state.user);
-  const isOpen = useSheetStore(selectIsSheetOpen(sheetTypeIdentifier, entityType));
-  const closeSheet = useSheetStore(state => state.closeSheet);
-  const { datas, isLoading: storeIsLoading, GetByEntityType, Create, Update, Delete } = useSavedFilterStore();
+
+  // YENİ STORE KULLANIMI
+  const isOpen = useFilterSheetStore(useFilterSheetStore.getState().selectIsFilterSheetOpen(sheetTypeIdentifier, entityType));
+  const sheetInitialData = useFilterSheetStore(useFilterSheetStore.getState().selectFilterSheetData(sheetTypeIdentifier, entityType));
+  const sheetParams = useFilterSheetStore(useFilterSheetStore.getState().selectFilterSheetParams(sheetTypeIdentifier, entityType));
+  const table = sheetInitialData?.table;
+  const openWithNewForm = sheetParams?.openWithNewForm || false; // Varsayılan false
+
+  const closeThisSheet = useFilterSheetStore(state => state.closeFilterSheet);
+
+  const { datas: savedFiltersList, isLoading: storeIsLoading, GetByEntityType, Create: CreateSavedFilter, Update: UpdateSavedFilter, Delete: DeleteSavedFilter } = useSavedFilterStore();
+
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingFilter, setEditingFilter] = useState(null); // { id, filterName, description, filterState }
+  const [editingFilter, setEditingFilter] = useState(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [filterToDelete, setFilterToDelete] = useState(null); // { id, filterName }
+  const [filterToDelete, setFilterToDelete] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
-  const title = `${entityHuman} İçin Kayıtlı Filtreler`;
-  const columnFilters = table.getState().columnFilters;
-  const globalFilterState = table.getState().globalFilter;
-  const isFiltered = columnFilters.length > 0 || (globalFilterState && (typeof globalFilterState === 'string' ? globalFilterState.length > 0 : true));
 
-    const sheetData = useSheetStore(state => state.sheets[sheetTypeIdentifier]?.[entityType]?.data);
-  const openSheetParams = useSheetStore(state => state.sheets[sheetTypeIdentifier]?.[entityType]?.params);
-
+  const isTableCurrentlyFiltered = useMemo(() => {
+    if (!table) return false;
+    const { columnFilters, globalFilter } = table.getState();
+    const hasColumnFilters = columnFilters && columnFilters.length > 0;
+    const hasGlobalFilter = globalFilter && (typeof globalFilter === 'string' ? globalFilter.trim().length > 0 : typeof globalFilter === 'object' && globalFilter.rules && globalFilter.rules.length > 0);
+    return hasColumnFilters || hasGlobalFilter;
+  }, [table]);
 
   const form = useForm({
     resolver: zodResolver(SavedFilter_FormInputSchema),
-    defaultValues: {
-      filterName: '',
-      description: '',
-    },
+    defaultValues: { filterName: '', description: '' },
   });
 
-  // useEffect(() => {
-  //   if (isOpen && entityType) {
-  //     GetByEntityType({ entityType }, { showToast: false });
-  //   }
-  // }, [isOpen, entityType, GetByEntityType]);
-
-  // useEffect(() => {
-  //   if (!isOpen) {
-  //     setShowSaveForm(false);
-  //     setIsEditMode(false);
-  //     setEditingFilter(null);
-  //     form.reset({ filterName: '', description: '' });
-  //   }
-  // }, [isOpen, form]);
-
-
-  useEffect(() => {
-    // Sheet açıldığında ve openWithNewForm true ise doğrudan yeni filtre formunu göster
-    if (isOpen && openWithNewForm) {
-      handleAddNewFilter(); // Bu fonksiyon zaten showSaveForm'u true yapıyor
-    } else if (isOpen && entityType) {
+// Sadece sheet açıldığında ve openWithNewForm true ise formu açar,
+// veya sadece liste yükler. Formun açık/kapalı durumunu doğrudan etkilemez.
+useEffect(() => {
+  if (isOpen && entityType) {
+    if (openWithNewForm && table && !showSaveForm) { // !showSaveForm eklendi, eğer zaten açıksa tekrar handleOpenNewFilterForm çağırma
+      console.log("[FilterManagementSheet] Initial open with new form prop.");
+      handleOpenNewFilterForm(); // Bu fonksiyon setShowSaveForm(true) yapacak
+    } else if (!openWithNewForm) { // Eğer doğrudan liste görünümüyle açılıyorsa
+      console.log("[FilterManagementSheet] Initial open, fetching existing filters for list view.");
       GetByEntityType({ entityType }, { showToast: false });
-      if (showSaveForm && !openSheetParams?.openWithNewForm) {
+      // Eğer bir önceki state'ten form açık kalmışsa ve openWithNewForm değilse,
+      // sheet kapanıp açıldığında listeye dönmesi için formu kapat.
+      // Ancak bu, "Düzenle" butonuyla açılan formu da kapatabilir.
+      // Bu yüzden bu bloğu daha dikkatli yönetmek gerekebilir veya
+      // "Listeye Dön" butonu zaten bu işi yapıyor.
+      // Şimdilik bu kısmı kaldırıyorum, çünkü "Listeye Dön" ve sheet kapanış useEffect'i zaten formu resetliyor.
+      /*
+      if (showSaveForm) {
           setShowSaveForm(false);
           setIsEditMode(false);
           setEditingFilter(null);
           form.reset({ filterName: '', description: '' });
       }
+      */
     }
-  }, [isOpen, entityType, GetByEntityType, openWithNewForm]); // openSheetParams eklendi
+  }
+}, [isOpen, entityType, GetByEntityType, openWithNewForm, table]); // form ve showSaveForm buradan çıkarıldı. handleOpenNewFilterForm useCallback ile sarmalanmalı.
 
+// Sheet kapandığında tüm ilgili state'leri sıfırla (Bu zaten vardı ve doğru)
+useEffect(() => {
+  if (!isOpen) {
+    console.log("[FilterManagementSheet] Sheet closed, resetting form states.");
+    setShowSaveForm(false);
+    setIsEditMode(false);
+    setEditingFilter(null);
+    form.reset({ filterName: '', description: '' });
+  }
+}, [isOpen, form]);
 
-  useEffect(() => {
+// Form gösterildiğinde ve edit modu/verisi değiştiğinde form alanlarını doldur (Bu da doğru)
+useEffect(() => {
+  if (showSaveForm) {
     if (isEditMode && editingFilter) {
+      console.log("[FilterManagementSheet] useEffect populating form for EDIT mode with filter:", editingFilter);
       form.reset({
         filterName: editingFilter.filterName || '',
         description: editingFilter.description || '',
       });
-    } else {
-      // Yeni kayıt için formu temizle, ama showSaveForm true ise
-      if (showSaveForm) {
+    } else if (!isEditMode && editingFilter) { // Yeni kayıt için (editingFilter sadece filterState içerir)
+      console.log("[FilterManagementSheet] useEffect populating form for NEW mode with current table state:", editingFilter);
+      form.reset({ filterName: '', description: '' }); // İsim ve açıklama boş başlar
+    } else if (!isEditMode && !editingFilter) {
+        // Bu durum, handleOpenNewFilterForm'un editingFilter'ı set etmesinden önce tetiklenebilir.
+        // veya formun ilk açılışında.
         form.reset({ filterName: '', description: '' });
-      }
     }
-  }, [showSaveForm, isEditMode, editingFilter, form]);
+  }
+}, [showSaveForm, isEditMode, editingFilter, form]);                                                               // handleOpenNewFilterForm'u da useCallback ile sarmalayıp eklemek daha iyi olur.
 
-  const handleAddNewFilter = () => {
+  const handleOpenNewFilterForm = () => {
     if (!table) {
       toast.error('Filtre kaydetmek için tablo referansı bulunamadı.');
       return;
     }
     const currentTableState = {
       columnFilters: table.getState().columnFilters,
-      globalFilter: table.getState().globalFilter, // Bu, string veya gelişmiş filtre objesi olabilir
+      globalFilter: table.getState().globalFilter,
       sorting: table.getState().sorting,
     };
-    if (currentTableState.columnFilters.length === 0 && !currentTableState.globalFilter && currentTableState.sorting.length === 0) {
-      toast.info('Kaydedilecek aktif bir filtre veya sıralama bulunmuyor. Yine de boş bir filtre kaydedebilirsiniz.');
+    if ((!currentTableState.columnFilters || currentTableState.columnFilters.length === 0) && !currentTableState.globalFilter && (!currentTableState.sorting || currentTableState.sorting.length === 0)) {
+      toast.info('Kaydedilecek aktif bir filtre veya sıralama bulunmuyor.');
     }
-
     setIsEditMode(false);
-    setEditingFilter({ filterState: currentTableState }); // Sadece filterState'i ayarla
-    form.reset({ filterName: '', description: '' }); // Formu temizle
+    setEditingFilter({ filterState: currentTableState });
     setShowSaveForm(true);
   };
 
-  const handleEditFilter = filter => {
+  const handleEditSavedFilter = savedFilterToEdit => {
+    console.log('[FilterManagementSheet] handleEditSavedFilter called with:', savedFilterToEdit); // LOG
+
     setIsEditMode(true);
-    setEditingFilter(filter); // filter objesi { id, filterName, description, filterState } içermeli
-    // form.reset yukarıdaki useEffect ile tetiklenecek
+    setEditingFilter(savedFilterToEdit);
     setShowSaveForm(true);
   };
 
-  const onSubmitSaveForm = async formData => {
+  const onSubmitSaveForm = async formDataFromForm => {
+    // ... (onSubmitSaveForm içeriği aynı kalabilir, CreateSavedFilter vb. kullanır)
     setFormLoading(true);
-    let filterStateToSave = null;
+    let filterStateToSave;
 
-    if (isEditMode && editingFilter) {
-      filterStateToSave = editingFilter.filterState; // Düzenlemede state'i koru
-    } else if (editingFilter?.filterState) {
+    if (editingFilter && editingFilter.filterState) {
       filterStateToSave = editingFilter.filterState;
     } else {
-      toast.error('Filtre durumu alınamadı.');
+      toast.error('Filtre durumu (filterState) bulunamadı. Kayıt yapılamıyor.');
       setFormLoading(false);
       return;
     }
 
     const payload = {
-      filterName: formData.filterName,
-      description: formData.description || null,
+      filterName: formDataFromForm.filterName,
+      description: formDataFromForm.description || null,
       entityType: entityType,
       filterState: filterStateToSave,
     };
 
     let result = null;
     if (isEditMode && editingFilter?.id) {
-      result = await Update(editingFilter.id, payload, { showToast: true });
+      result = await UpdateSavedFilter(editingFilter.id, payload, { showToast: true });
     } else {
-      result = await Create(payload, { entityTypeToRefresh: entityType, showToast: true });
+      result = await CreateSavedFilter(payload, { entityTypeToRefresh: entityType, showToast: true });
     }
     setFormLoading(false);
 
     if (result) {
       setShowSaveForm(false);
-      setEditingFilter(null);
-      setIsEditMode(false);
-      form.reset({ filterName: '', description: '' });
+      GetByEntityType({ entityType }, { showToast: false }); // Listeyi yenile
     }
   };
 
   const openDeleteConfirmation = filter => {
-    setFilterToDelete(filter);
+    /* ... (aynı) ... */ setFilterToDelete(filter);
     setShowDeleteDialog(true);
   };
-
   const confirmDeleteFilter = async () => {
+    /* ... (aynı, DeleteSavedFilter kullanır) ... */
     if (filterToDelete) {
       setFormLoading(true);
-      await Delete(filterToDelete.id, {
+      await DeleteSavedFilter(filterToDelete.id, {
         entityTypeToRefresh: entityType,
         filterName: filterToDelete.filterName,
         showToast: true,
@@ -178,33 +203,30 @@ export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement'
   const applyFilterAndClose = useCallback(
     filterToApply => {
       if (onApplySavedFilter && filterToApply && filterToApply.filterState) {
-        // `filterState` objesi, kaydedilmiş filtreleri içerir.
-        // Bu obje, { columnFilters: [], globalFilter: '' | {}, sorting: [] } yapısında olmalı.
         onApplySavedFilter(filterToApply.filterState);
         toast.success(`"${filterToApply.filterName}" filtresi uygulandı.`);
-        closeSheet(); // Sheet'i kapat
+        closeThisSheet(sheetTypeIdentifier, entityType);
       } else {
-        toast.error('Filtre uygulanamadı. Gerekli fonksiyon veya filtre durumu eksik.');
+        toast.error('Filtre uygulanamadı.');
       }
     },
-    [onApplySavedFilter, closeSheet],
+    [onApplySavedFilter, closeThisSheet, sheetTypeIdentifier, entityType],
   );
 
   const handleInternalOpenChange = open => {
     if (!open) {
-      closeSheet();
+      closeThisSheet(sheetTypeIdentifier, entityType);
     }
   };
 
-  const sheetTitle = title || `${entityType} İçin Kayıtlı Filtreler`;
-  const description = 'Kaydedilmiş filtrelerinizi yönetebilir, yenisini ekleyebilir veya uygulayabilirsiniz.';
-  const sheetDescription =
-    description ||
-    (showSaveForm
-      ? isEditMode
-        ? `"${editingFilter?.filterName}" filtresini düzenleyin.`
-        : 'Mevcut tablo filtrelerini yeni bir isimle kaydedin.'
-      : `Kaydedilmiş filtrelerinizi yönetin veya yenisini ekleyin. Bir filtreyi uygulamak için "Uygula" butonuna tıklayın.`);
+  const baseTitle = `${entityHuman || entityType} İçin`;
+  const currentSheetTitle = showSaveForm ? (isEditMode ? `"${editingFilter?.filterName || 'Filtre'}" Düzenle` : `${baseTitle} Yeni Filtre Kaydet`) : `${baseTitle} Kayıtlı Filtreler`;
+
+  const currentSheetDescription = showSaveForm
+    ? isEditMode
+      ? 'Filtre adını ve açıklamasını güncelleyebilirsiniz.'
+      : 'Mevcut tablo filtrelerini yeni bir isimle kaydedin. * ile işaretli alanlar zorunludur.'
+    : 'Kaydedilmiş filtrelerinizi yönetin, düzenleyin veya tabloya uygulayın.';
 
   if (!isOpen) {
     return null;
@@ -212,134 +234,154 @@ export function FilterManagementSheet({ sheetTypeIdentifier = 'filterManagement'
 
   return (
     <Sheet open={isOpen} onOpenChange={handleInternalOpenChange}>
-      <SheetContent className="sm:max-w-lg overflow-y-auto p-6 flex flex-col" side="right">
-        <SheetHeader>
+      <SheetContent className="sm:max-w-xl w-full flex flex-col p-0">
+        <SheetHeader className="p-6 pb-4 border-b sticky top-0 bg-background z-10">
           <SheetTitle className="flex items-center gap-2 text-xl">
-            <ListFilter className="h-5 w-5" /> {sheetTitle}
+            <ListFilter className="h-5 w-5" /> {currentSheetTitle}
           </SheetTitle>
-          <SheetDescription>{sheetDescription}</SheetDescription>
+          <SheetDescription>{currentSheetDescription}</SheetDescription>
         </SheetHeader>
 
-        {showSaveForm ? (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmitSaveForm)} className="space-y-4 py-6">
-              <FilterSummary
-                filterState={editingFilter?.filterState}
-                table={table} // TanStack Table instance'ını buraya pass edin
-              />
+        <div className="p-6 flex-grow flex flex-col overflow-hidden">
+                  {console.log("[FilterManagementSheet] In render, showSaveForm:", showSaveForm)} {/* RENDER LOGU */}
 
-              <FormField
-                control={form.control}
-                name="filterName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Filtre Adı*</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Örn: Aktif ve İstanbul" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+          {showSaveForm ? (
+            <Form {...form}>
+              {/* ... (Form içeriği ve FormField'lar önceki cevaptaki gibi aynı) ... */}
+              <form onSubmit={form.handleSubmit(onSubmitSaveForm)} className="space-y-6 flex-grow flex flex-col">
+                <ScrollArea className="flex-grow pr-3 -mr-3">
+                  <div className="space-y-6 pb-6">
+                    <FilterSummary filterState={editingFilter?.filterState} table={table} />
+                    <FormField
+                      control={form.control}
+                      name="filterName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Filtre Adı*</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Örn: Aktif Projeler (İstanbul)" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Açıklama</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Bu filtre hangi kayıtları listeler? (Opsiyonel)" {...field} rows={3} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </ScrollArea>
+                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4 border-t mt-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowSaveForm(false);
+                      setIsEditMode(false);
+                      setEditingFilter(null);
+                      form.reset({ filterName: '', description: '' });
+                    }}
+                    disabled={formLoading || storeIsLoading}
+                  >
+                    Listeye Dön
+                  </Button>
+                  <Button type="submit" disabled={formLoading || storeIsLoading}>
+                    {(formLoading || storeIsLoading) && <Spinner size="small" className="mr-2 text-primary-foreground" />} {isEditMode ? 'Filtreyi Güncelle' : 'Filtreyi Kaydet'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          ) : (
+            <>
+              {/* ... (Liste görünümü ve butonları önceki cevaptaki gibi aynı) ... */}
+              <div className="py-2 flex items-center justify-between bg-background z-10 mb-4 border-b pb-4 -mx-6 px-6">
+                {isTableCurrentlyFiltered && onClearAllFilters && (
+                  <Button variant="ghost" size="sm" onClick={onClearAllFilters} className="text-xs text-muted-foreground hover:text-destructive px-2">
+                    <XIcon className="mr-1.5 h-3.5 w-3.5" /> Aktif Tablo Filtrelerini Temizle
+                  </Button>
                 )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Açıklama</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Bu filtre ne işe yarıyor?" {...field} rows={3} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setShowSaveForm(false)} disabled={formLoading}>
-                  Listeye Dön
-                </Button>
-                <Button type="submit" disabled={formLoading || storeIsLoading}>
-                  {formLoading || storeIsLoading ? <Spinner size="small" className="text-primary-foreground mr-2" /> : null}
-                  {isEditMode ? 'Filtreyi Güncelle' : 'Filtreyi Kaydet'}
+                <div className="flex-grow" />
+                <Button onClick={handleOpenNewFilterForm} size="sm" disabled={!table} className="px-3">
+                  <PlusCircle className="mr-2 h-4 w-4" /> Mevcut Tablo Filtresini Kaydet
                 </Button>
               </div>
-            </form>
-          </Form>
-        ) : (
-          <>
-            <div className="py-4 flex justify-end">
-              <Button onClick={handleAddNewFilter} size="sm" disabled={!table} className="">
-                <PlusCircle className="mr-2 h-4 w-4 " /> Geçerli Filtreyi Kaydet
-              </Button>
-              {isFiltered && (
-                <Button variant="destructive" onClick={onClearAllFilters} className="h-8  ml-2 " aria-label="Filtreleri Temizle">
-                  <XIcon className="mr-1 h-3 w-3" />
-                  Geçerli Filtreyi Temizle
-                </Button>
-              )}
-            </div>
-            <ScrollArea className="flex-grow pr-3 mb-4">
-              {storeIsLoading && datas.length === 0 ? (
-                <div className="flex justify-center items-center h-32">
-                  <Spinner />
-                </div>
-              ) : !storeIsLoading && datas.length === 0 ? (
-                <p className="text-center text-muted-foreground py-4">Bu varlık türü için kaydedilmiş filtre bulunmuyor.</p>
-              ) : (
-                <ul className="space-y-2">
-                  {datas.map(filter => (
-                    <li key={filter.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/50 transition-colors">
-                      <div className="flex-grow mr-2 overflow-hidden">
-                        <p className="font-semibold truncate" title={filter.filterName}>
-                          {filter.filterName}
-                        </p>
-                        {filter.description && (
-                          <p className="text-sm text-muted-foreground truncate" title={filter.description}>
-                            {filter.description}
+              <ScrollArea className="flex-grow -mx-6 px-6">
+                {storeIsLoading && savedFiltersList.length === 0 ? (
+                  <div className="flex justify-center items-center h-32">
+                    <Spinner />
+                  </div>
+                ) : !storeIsLoading && savedFiltersList.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4"> Bu varlık türü için kaydedilmiş filtre bulunmuyor. </p>
+                ) : (
+                  <ul className="space-y-2 pb-4">
+                    {savedFiltersList.map(filter => (
+                      <li key={filter.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/50 transition-colors">
+                        <div className="flex-grow mr-2 overflow-hidden">
+                          <p className="font-semibold truncate" title={filter.filterName}>
+                            {filter.filterName}
                           </p>
-                        )}
-                        <p className="text-xs text-gray-500 mt-1">
-                          Oluşturan: {filter.createdBy?.ad || filter.createdBy?.soyad || 'Bilinmiyor'}
-                          {' - '}
-                          {new Date(filter.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-1 shrink-0">
-                        <Button variant="default" size="sm" onClick={() => applyFilterAndClose(filter)} title="Filtreyi Uygula ve Kapat" className=" h-8 px-2">
-                          <PlayIcon className="h-4 w-4" /> Uygula
-                        </Button>
-                        {filter.createdById === user?.id && (
-                          <>
-                            <Button variant="outline" size="icon" onClick={() => handleEditFilter(filter)} title="Düzenle" className=" h-8 w-8 ml-2">
-                              <Edit3Icon className="h-4 w-4" />
-                            </Button>
-                            <Button variant="destructive" size="icon" onClick={() => openDeleteConfirmation(filter)} title="Sil" className=" h-8 w-8 ml-2">
-                              <Trash2Icon className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </ScrollArea>
-          </>
-        )}
+                          {filter.description && (
+                            <p className="text-sm text-muted-foreground truncate" title={filter.description}>
+                              {filter.description}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">
+                            Oluşturan: {filter.createdBy?.ad || filter.createdBy?.soyad || 'Bilinmiyor'} {' - '} {new Date(filter.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-1 shrink-0">
+                          <Button variant="default" size="sm" onClick={() => applyFilterAndClose(filter)} title="Filtreyi Uygula ve Kapat" className=" h-8 px-2">
+                            <PlayIcon className="h-4 w-4" /> Uygula
+                          </Button>
+                          {filter.createdById === user?.id && (
+                            <>
+
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => {
+                                  console.log('Düzenle butonu tıklandı!', filter.filterName); // BASİT LOG
+                                  handleEditSavedFilter(filter);
+                                }}
+                                title="Düzenle"
+                                className=" h-8 w-8 ml-1"
+                              >
+                                <Edit3Icon className="h-4 w-4" />
+                              </Button>
+                              <Button variant="destructive" size="icon" onClick={() => openDeleteConfirmation(filter)} title="Sil" className=" h-8 w-8 ml-1">
+                                <Trash2Icon className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </ScrollArea>
+            </>
+          )}
+        </div>
       </SheetContent>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        {/* ... (AlertDialog içeriği aynı) ... */}
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Filtreyi Silme Onayı</AlertDialogTitle>
-            <AlertDialogDescription>"{filterToDelete?.filterName}" adlı filtreyi kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</AlertDialogDescription>
+            <AlertDialogTitle>Filtreyi Silme Onayı</AlertDialogTitle> <AlertDialogDescription> "{filterToDelete?.filterName}" adlı filtreyi kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz. </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className={''} disabled={formLoading || storeIsLoading}>
-              İptal
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteFilter} disabled={formLoading || storeIsLoading} className="bg-destructive  hover:bg-destructive/90">
+            <AlertDialogCancel disabled={formLoading || storeIsLoading}> Vazgeç </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteFilter} disabled={formLoading || storeIsLoading} className="bg-destructive hover:bg-destructive/90">
               {formLoading || storeIsLoading ? <Spinner size="small" /> : 'Sil'}
             </AlertDialogAction>
           </AlertDialogFooter>

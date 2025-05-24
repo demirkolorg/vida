@@ -1,11 +1,9 @@
-import { Outlet } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { Outlet } from "react-router-dom";
 
 export function RootLayout() {
   return (
     <div className="min-h-screen">
       <Outlet />
-      <Toaster />
     </div>
   );
 }
