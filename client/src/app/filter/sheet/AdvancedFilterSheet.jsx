@@ -216,7 +216,7 @@ export function AdvancedFilterSheet({
 
         <div className="p-6 flex-grow flex flex-col overflow-hidden">
           <div className="mb-4 flex items-center justify-between">
-            <ToggleGroup type="single" value={filterLogic.condition} onValueChange={value => value && setFilterLogic(prev => ({ ...prev, condition: value }))} className="my-2">
+            <ToggleGroup type="single" value={filterLogic.condition} onValueChange={value => value && setFilterLogic(prev => ({ ...prev, condition: value }))} className="my-2 ">
               <ToggleGroupItem value="AND" aria-label="Tüm koşullar (VE)">
                 VE
               </ToggleGroupItem>

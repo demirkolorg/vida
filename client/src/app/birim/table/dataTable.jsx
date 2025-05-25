@@ -37,22 +37,22 @@ export function BirimDataTable() {
   }, [datas, displayStatusFilter]);
 
   return (
-    <>
-      <DataTable
-        data={filteredDatas}
-        columns={columns}
-        isLoading={isLoading}
-        onRefresh={handleRefreshData}
-        onToggleStatus={toggleDisplayStatusFilter}
-        entityType={EntityType}
-        entityHuman={EntityHuman}
-        rowContextMenu={contextMenu}
-        facetedFilterSetup={facesFilterData}
-        initialSortingState={sorting}
-        columnVisibilityData={columnVisibilityData}
-        renderCollapsibleToolbarContent={() => <EntitySpecificToolbar />}
-        displayStatusFilter={displayStatusFilter}
-      />
-    </>
+
+    <DataTable
+      data={filteredDatas}
+      columns={columns}
+      isLoading={isLoading}
+      onRefresh={handleRefreshData}
+      onToggleStatus={toggleDisplayStatusFilter}
+      entityType={EntityType}
+      entityHuman={EntityHuman}
+      rowContextMenu={contextMenu}
+      facetedFilterSetup={facesFilterData}
+      initialSortingState={sorting}
+      columnVisibilityData={columnVisibilityData}
+      renderCollapsibleToolbarContent={() => <EntitySpecificToolbar />}
+      displayStatusFilter={displayStatusFilter}
+    />
+
   );
 }

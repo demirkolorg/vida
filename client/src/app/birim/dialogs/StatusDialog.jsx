@@ -13,7 +13,7 @@ export const StatusDialog = () => {
     if (!updateStatusAction) return;
     try {
       await updateStatusAction(itemId, newStatus, { showToast: true });
-      closeDialog(); // Başarılı olursa dialog'u kapat
+      closeDialog(); 
     } catch (error) {
       console.error('Durum güncelleme hatası (dialog):', error);
     }

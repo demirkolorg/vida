@@ -7,15 +7,44 @@ import {
 } from '@/api/userSettings'; // API dosyanızın doğru yolunu belirtin
 import { useAuthStore } from './authStore';
 
+// src/stores/useThemeStore.js
+
+// src/stores/useThemeStore.js
+
 const THEMES = [
-  { value: "default", label: "Standart", iconColor: "hsl(var(--primary))" },
-  { value: "violet", label: "Menekşe", iconColor: "oklch(0.6 0.2 280)" },
+  // Varsayılan
+  { value: "default", label: "Klasik", iconColor: "hsl(var(--primary))" },
+
+  // Mor ve Pembe Tonları
+  { value: "violet", label: "Menekşe", iconColor: "oklch(0.6 0.25 292.717)" },
+  { value: "purple", label: "Lavanta", iconColor: "oklch(0.55 0.22 275)" },
   { value: "rose", label: "Gül", iconColor: "oklch(0.65 0.2 340)" },
-  { value: "green", label: "Yeşil", iconColor: "oklch(0.6 0.2 140)" },
-  { value: "yellow", label: "Sarı", iconColor: "oklch(0.8 0.2 85)" },
-  { value: "blue", label: "Mavi", iconColor: "oklch(0.6 0.2 220)" },
-  { value: "red", label: "Kırmızı", iconColor: "oklch(0.637 0.237 25.331)" },
-  { value: "orange", label: "Turuncu", iconColor: "oklch(0.7 0.2 50)" },
+  { value: "magenta", label: "Fuşya", iconColor: "oklch(0.62 0.26 315)" },    // YENİ: Magenta
+
+  // Kırmızı ve Turuncu Tonları
+  { value: "red", label: "Lale", iconColor: "oklch(0.637 0.237 25.331)" },
+  { value: "red-vivid", label: "Gelincik", iconColor: "oklch(0.60 0.24 25)" },
+  { value: "orange", label: "Nergis", iconColor: "oklch(0.7 0.2 50)" },
+  { value: "orange-vivid", label: "Kadife", iconColor: "oklch(0.70 0.20 50)" },
+
+  // Sarı ve Açık Yeşil Tonları
+  { value: "yellow", label: "Papatya", iconColor: "oklch(0.8 0.2 85)" },
+  { value: "yellow-vivid", label: "Ayçiçeği", iconColor: "oklch(0.80 0.20 85)" },
+  { value: "lime", label: "Ihlamur", iconColor: "oklch(0.85 0.24 110)" },   // YENİ: Lime
+
+  // Yeşil Tonları
+  { value: "green", label: "Çimen", iconColor: "oklch(0.6 0.2 140)" },
+  { value: "green-vivid", label: "Yonca", iconColor: "oklch(0.58 0.20 140)" },
+
+  // Mavi, Turkuaz ve Cyan Tonları
+  { value: "blue", label: "Sümbül", iconColor: "oklch(0.6 0.2 220)" },
+  { value: "blue-vivid", label: "UnutmaBeni", iconColor: "oklch(0.60 0.20 220)" },
+  { value: "cyan", label: "Turmalin", iconColor: "oklch(0.7 0.15 195)" },    // YENİ: Cyan
+  { value: "teal", label: "Hercai", iconColor: "oklch(0.58 0.18 185)" },
+
+  // Kahverengi Tonları
+  { value: "brown", label: "Toprak", iconColor: "oklch(0.55 0.15 40)" },
+
 ];
 
 const DEFAULT_THEME = THEMES[0].value;

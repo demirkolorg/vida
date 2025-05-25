@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Package, ShieldCheck, Route, Settings, FileText, Briefcase, Layers,Building } from 'lucide-react'; // Yeni ikonlar eklendi
+import { LayoutDashboard, Users, Package, ShieldCheck, Route, Settings, FileText, Briefcase, Layers,Building,Construction } from 'lucide-react'; // Yeni ikonlar eklendi
 
 export const NavMainData = [
   {
@@ -6,6 +6,17 @@ export const NavMainData = [
     label: 'Anasayfa',
     icon: LayoutDashboard,
   },
+  {
+    to: '/malzemeler',
+    label: 'Malzemeler',
+    icon: Package,
+  },
+  {
+    to: '/malzeme-hareketleri',
+    label: 'Malzeme Hareketleri',
+    icon: Route,
+  },
+
   {
     to: '/personeller', // Eğer bu direkt bir sayfa değilse ve altında menü varsa, 'to' gerekmeyebilir
     label: 'Personeller',
@@ -30,16 +41,6 @@ export const NavMainData = [
     ],
   },
   {
-    to: '/malzemeler',
-    label: 'Malzemeler',
-    icon: Package,
-  },
-  {
-    to: '/malzeme-hareketleri',
-    label: 'Malzeme Hareketleri',
-    icon: Route,
-  },
-  {
     label: 'Tanımlar',
     icon: Layers,
     isDropdown: true,
@@ -48,6 +49,11 @@ export const NavMainData = [
         to: '/birim',
         label: 'Birim',
         icon: Building,
+      },
+      {
+        to: '/sabitkodu',
+        label: 'Sabit Kodu',
+        icon: Construction,
       },
     ],
   },

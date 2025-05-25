@@ -91,7 +91,7 @@ useEffect(() => {
                 {availableThemes.map((themeOption) => (
                   <CommandItem
                     key={themeOption.value}
-                    value={themeOption.value}
+                    value={themeOption.label}
                     onSelect={() => handleThemeSelect(themeOption.value)} // Değeri doğrudan ilet
                   >
                     <Check

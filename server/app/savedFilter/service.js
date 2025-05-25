@@ -53,7 +53,7 @@ const service = {
     try {
       return await prisma[PrismaName].findMany({
         where: { entityType: data.entityType,status: AuditStatusEnum.Aktif },
-        orderBy: { filterName: 'asc' },
+        orderBy: { createdAt: 'desc' },
         include: {
           createdBy: { select: { id: true, ad: true } },
           updatedBy: { select: { id: true, ad: true } },

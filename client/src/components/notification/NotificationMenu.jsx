@@ -1,6 +1,3 @@
-// src/components/layout/NotificationMenu.jsx (veya uygun bir yol)
-"use client"; // Eğer Next.js App Router kullanıyorsanız bu satırı kaldırabilirsiniz.
-               // Create React App veya Vite gibi bir yapıda buna gerek yok.
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
@@ -116,7 +113,7 @@ export function NotificationMenu() {
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <ScrollArea className="max-h-80">
+        <ScrollArea className="max-h-90 ">
           {notifications.length === 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
               Yeni bildiriminiz yok.
@@ -132,7 +129,7 @@ export function NotificationMenu() {
                   key={notification.id}
                   onSelect={() => handleNotificationClick(notification)}
                   className={cn(
-                    "flex items-start p-3 space-x-3 hover:bg-accent cursor-pointer data-[highlighted]:bg-accent",
+                    "flex items-start p-2 mb-1 last:mb-0 rounded-md hover:bg-accent cursor-pointer data-[highlighted]:bg-accent",
                     !notification.isRead && "bg-primary/5 dark:bg-primary/10"
                   )}
                   // `asChild` burada doğrudan Link ile kullanılınca bazen stil sorunları çıkarabilir

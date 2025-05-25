@@ -72,7 +72,7 @@ const controller = {
     try {
       const data = req.body;
       data.personelId = req.user.id;
-      console.log("data",data)
+
       if (!data.personelId) return response.error(req, res, HizmetName, rota, message.get.error, message.required.personelId);
 
       const result = await service[rota](data);

@@ -87,7 +87,6 @@ const service = {
   updateMySettings: async data => {
 
     try {
-      console.log("updateMySettings data",data)
       await PersonelService.checkExistsById(data.personelId);
 
       const validUpdateData = {};
