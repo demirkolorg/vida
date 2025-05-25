@@ -26,6 +26,8 @@ const THEMES = [
   { value: "red-vivid", label: "Gelincik", iconColor: "oklch(0.60 0.24 25)" },
   { value: "orange", label: "Nergis", iconColor: "oklch(0.7 0.2 50)" },
   { value: "orange-vivid", label: "Kadife", iconColor: "oklch(0.70 0.20 50)" },
+    // { value: "gold",       label: "Altın",      iconColor: "oklch(0.75 0.18 65)" }, // YENİ ALTIN TEMA
+
 
   // Sarı ve Açık Yeşil Tonları
   { value: "yellow", label: "Papatya", iconColor: "oklch(0.8 0.2 85)" },
@@ -38,11 +40,12 @@ const THEMES = [
 
   // Mavi, Turkuaz ve Cyan Tonları
   { value: "blue", label: "Sümbül", iconColor: "oklch(0.6 0.2 220)" },
-  { value: "blue-vivid", label: "UnutmaBeni", iconColor: "oklch(0.60 0.20 220)" },
+  { value: "blue-vivid", label: "Safir", iconColor: "oklch(0.60 0.20 220)" },
   { value: "cyan", label: "Turmalin", iconColor: "oklch(0.7 0.15 195)" },    // YENİ: Cyan
   { value: "teal", label: "Hercai", iconColor: "oklch(0.58 0.18 185)" },
 
   // Kahverengi Tonları
+   
   { value: "brown", label: "Toprak", iconColor: "oklch(0.55 0.15 40)" },
 
 ];

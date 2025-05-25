@@ -1046,8 +1046,8 @@
 
 /* global.css veya themes.css dosyanız */
 
-[data-theme="red-vibrant"]:root, /* İsim çakışmaması için, siz sadece "red" yapabilirsiniz */
-.theme-red-vibrant {
+[data-theme="red-vivid"]:root, /* İsim çakışmaması için, siz sadece "red" yapabilirsiniz */
+.theme-red-vivid {
   --radius: 0.5rem; /* Diğer temalarla aynı */
 
   /* Açık Mod - Kırmızı */
@@ -1097,8 +1097,8 @@
   --sidebar-ring: oklch(0.60 0.24 25);       /* Sidebar odak halkası */
 }
 
-.dark[data-theme="red-vibrant"],
-.dark.theme-red-vibrant {
+.dark[data-theme="red-vivid"],
+.dark.theme-red-vivid {
   /* Koyu Mod - Kırmızı */
   --background: oklch(0.18 0.025 15); /* Koyu, hafif kırmızımsı/bordo gri */
   --foreground: oklch(0.93 0.015 20); /* Açık, hafif pembemsi beyaz metin */
@@ -1671,7 +1671,107 @@
   --sidebar-border: oklch(0.30 0.025 200);
   --sidebar-ring: oklch(0.78 0.13 190);
 }
- 
+ /* global.css veya themes.css dosyanız */
+
+[data-theme="gold"]:root,
+.theme-gold {
+  --radius: 0.5rem; /* Diğer temalarla aynı */
+
+  /* Açık Mod - Altın */
+  --background: oklch(0.97 0.015 65); /* Çok açık, kremsi altın/bej */
+  --foreground: oklch(0.28 0.06 55);  /* Koyu, hafif bronz/kahve metin */
+  
+  --card: oklch(1 0 0);                 /* Saf beyaz kart arkaplanı */
+  --card-foreground: oklch(0.28 0.06 55); /* Kart metni */
+  
+  --popover: oklch(1 0 0);              /* Saf beyaz popover */
+  --popover-foreground: oklch(0.28 0.06 55); /* Popover metni */
+  
+  --primary: oklch(0.75 0.18 65);     /* Ana altın rengi (parlak ve zengin) */
+  --primary-foreground: oklch(0.20 0.07 50); /* Ana renk üzerindeki koyu metin (iyi kontrast için) */
+  
+  --secondary: oklch(0.92 0.05 60);  /* Daha açık, pastel altın/şampanya (ikincil) */
+  --secondary-foreground: oklch(0.35 0.08 55); /* İkincil üzerindeki koyu metin */
+  
+  --muted: oklch(0.92 0.05 60);      /* secondary ile aynı */
+  --muted-foreground: oklch(0.55 0.05 55); /* Daha soluk metin */
+  
+  --accent: oklch(0.88 0.07 60);    /* Muted/Secondary'den biraz daha belirgin */
+  --accent-foreground: oklch(0.30 0.09 55); /* Accent üzerindeki metin */
+  
+  --destructive: oklch(0.60 0.25 25);  /* Kırmızı (uyarı için, altın ile kontrast) */
+  
+  --border: oklch(0.88 0.03 60);     /* Açık altın/bej border */
+  --input: oklch(0.88 0.03 60);      /* Input arkaplanı, border ile aynı */
+  --ring: oklch(0.75 0.18 65);       /* Odak halkası, primary ile aynı */
+
+  /* Chart renkleri için altın tonları ve uyumlu renkler */
+  --chart-1: oklch(0.80 0.16 70); /* Biraz daha parlak altın */
+  --chart-2: oklch(0.85 0.12 60); /* Açık, şampanya rengi */
+  --chart-3: oklch(0.65 0.20 55); /* Koyu, bronz altın */
+  --chart-4: oklch(0.70 0.15 40); /* Sıcak kahverengi (uyum için) */
+  --chart-5: oklch(0.90 0.10 80); /* Açık sarı (uyum için) */
+
+  /* Sidebar renkleri (açık mod) */
+  --sidebar: oklch(0.96 0.018 65);           /* Sidebar arkaplanı */
+  --sidebar-foreground: oklch(0.28 0.06 55); /* Sidebar metin rengi */
+  --sidebar-primary: oklch(0.75 0.18 65);    /* Sidebar'daki ana vurgu rengi */
+  --sidebar-primary-foreground: oklch(0.20 0.07 50); /* Sidebar ana vurgu üzerindeki metin */
+  --sidebar-accent: oklch(0.90 0.06 60);   /* Sidebar'daki ikincil vurgu/hover */
+  --sidebar-accent-foreground: oklch(0.35 0.08 55); /* Sidebar ikincil vurgu üzerindeki metin */
+  --sidebar-border: oklch(0.89 0.035 60);  /* Sidebar border rengi */
+  --sidebar-ring: oklch(0.75 0.18 65);       /* Sidebar odak halkası */
+}
+
+.dark[data-theme="gold"],
+.dark.theme-gold {
+  /* Koyu Mod - Altın */
+  --background: oklch(0.15 0.02 55);  /* Koyu, hafif bronz/kahvemsi gri */
+  --foreground: oklch(0.90 0.03 65);  /* Açık, soluk altın/bej metin */
+
+  --card: oklch(0.19 0.025 55);   /* Kart arkaplanı, background'dan biraz açık */
+  --card-foreground: oklch(0.90 0.03 65); /* Kart metni */
+
+  --popover: oklch(0.22 0.03 55);  /* Popover arkaplanı, card'dan biraz açık */
+  --popover-foreground: oklch(0.90 0.03 65); /* Popover metni */
+
+  --primary: oklch(0.82 0.15 68);     /* Koyu modda parlak ve belirgin bir altın */
+  --primary-foreground: oklch(0.12 0.07 50); /* Çok koyu metin (primary açık olduğu için) */
+  
+  --secondary: oklch(0.25 0.035 55);   /* İkincil arkaplanlar, koyu */
+  --secondary-foreground: oklch(0.85 0.035 65); /* İkincil üzerindeki açık metin */
+
+  --muted: oklch(0.25 0.035 55);       /* secondary ile aynı */
+  --muted-foreground: oklch(0.65 0.03 65); /* Daha soluk açık metin */
+
+  --accent: oklch(0.29 0.04 55);    /* Vurgu arkaplanları */
+  --accent-foreground: oklch(0.90 0.03 65);  /* Vurgu üzerindeki metin */
+
+  --destructive: oklch(0.70 0.22 20);  /* Koyu mod için canlı, tehlike kırmızısı/turuncusu */
+  
+  --border: oklch(0.28 0.022 55);     /* Daha belirgin border */
+  --input: oklch(0.28 0.022 55 / 0.5);/* Hafif transparan input arkaplanı veya border ile aynı */
+  --ring: oklch(0.82 0.15 68);       /* Odak halkası, primary ile aynı */
+
+  /* Chart renkleri (koyu mod) */
+  --chart-1: oklch(0.85 0.13 72); /* Parlak açık altın */
+  --chart-2: oklch(0.88 0.09 58); /* Çok açık şampanya */
+  --chart-3: oklch(0.70 0.18 52); /* Zengin bronz */
+  --chart-4: oklch(0.75 0.12 38); /* Sıcak kahve (uyum) */
+  --chart-5: oklch(0.92 0.08 82); /* Çok açık sarı (uyum) */
+
+  /* Sidebar renkleri (koyu mod) */
+  --sidebar: oklch(0.17 0.022 55);           /* Sidebar arkaplanı */
+  --sidebar-foreground: oklch(0.90 0.03 65); /* Sidebar metin rengi */
+  --sidebar-primary: oklch(0.82 0.15 68);    /* Sidebar'daki ana vurgu rengi */
+  --sidebar-primary-foreground: oklch(0.12 0.07 50);/* Sidebar ana vurgu üzerindeki metin */
+  --sidebar-accent: oklch(0.27 0.038 55);  /* Sidebar'daki ikincil vurgu/hover */
+  --sidebar-accent-foreground: oklch(0.85 0.035 65);/* Sidebar ikincil vurgu üzerindeki metin */
+  --sidebar-border: oklch(0.30 0.025 55);  /* Sidebar border rengi */
+  --sidebar-ring: oklch(0.82 0.15 68);       /* Sidebar odak halkası */
+}
+
+
 
 @layer base {
   html {

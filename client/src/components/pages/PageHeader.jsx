@@ -11,7 +11,7 @@ export const PageHeader = ({ useEntityStore, EntityHuman, center, right }) => {
         {EntityHuman} Listesi 
         {/* <strong className="text-3xl text-primary">.</strong> */}
         {displayStatusFilter === EntityStatusOptions.Pasif && (
-          <Badge className="text-xl ml-2 mb-2" variant="destructive">
+          <Badge className="text-xl ml-2 mb-2 bg-primary/30" >
             Pasif Kayıtlar
           </Badge>
         )}
