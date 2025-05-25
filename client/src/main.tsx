@@ -7,6 +7,6 @@ import { ThemeProvider } from "./components/theme/theme-provider.jsx";
 createRoot(document.getElementById("root")).render(
   <ThemeProvider storageKey="vida-theme" defaultTheme="system">
     <AppRouter />
-    <Toaster position="top-center" richColors />
+    <Toaster position="bottom-right"  />
   </ThemeProvider>
 );
