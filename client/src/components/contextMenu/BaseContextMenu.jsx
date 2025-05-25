@@ -17,6 +17,7 @@ export function BaseContextMenu({
     menuTitle,
     children,
     hideDeleteButton = false,
+    
 }) {
     const openSheet = useSheetStore((state) => state.openSheet);
     const openDialog = useDialogStore((state) => state.openDialog);
@@ -69,6 +70,8 @@ export function BaseContextMenu({
                 <Eye className="mr-2 h-4 w-4" />
                 <span>Detayları Göster</span>
             </ContextMenuItem>
+
+
 
             <ContextMenuItem className="" onSelect={handleCopyId}>
                 <Copy className="mr-2 h-4 w-4" />

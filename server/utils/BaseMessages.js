@@ -151,6 +151,7 @@ export default function getMessages(name) {
       aciklama: 'aciklama gerekli',
       sicil: 'sicil gerekli',
       parola: 'parola gerekli',
+      personelId: 'Personel ID gerekli',
     },
 
     //!İSİMSİZ

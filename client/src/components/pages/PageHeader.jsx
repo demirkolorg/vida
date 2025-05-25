@@ -7,8 +7,9 @@ export const PageHeader = ({ useEntityStore, EntityHuman, center, right }) => {
   
   const title = useMemo(
     () => (
-      <p className="border-b border-b-3 border-b-primary/50  flex items-center">
-        {EntityHuman} Listesi
+      <p className="border-b-3 border-b-primary/50  flex items-center">
+        {EntityHuman} Listesi 
+        {/* <strong className="text-3xl text-primary">.</strong> */}
         {displayStatusFilter === EntityStatusOptions.Pasif && (
           <Badge className="text-xl ml-2 mb-2" variant="destructive">
             Pasif Kayıtlar

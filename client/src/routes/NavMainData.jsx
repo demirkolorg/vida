@@ -51,21 +51,4 @@ export const NavMainData = [
       },
     ],
   },
-  {
-    label: 'Ayarlar',
-    icon: Settings,
-    isDropdown: true,
-    children: [
-      {
-        to: '/ayarlar/genel',
-        label: 'Genel Ayarlar',
-        icon: Settings,
-      },
-      {
-        to: '/ayarlar/raporlar',
-        label: 'Rapor Şablonları',
-        icon: FileText,
-      },
-    ],
-  },
 ];

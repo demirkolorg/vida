@@ -277,6 +277,8 @@ model Personel {
   filtrelerOlusturan          SavedFilter[]    @relation("FilterCreatedBy")
   filtrelerGuncelleyen        SavedFilter[]    @relation("FilterUpdatedBy")
 
+  settings UserSettings? @relation("PersonelSettings")
+
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
   createdById String? // String FK
@@ -284,6 +286,20 @@ model Personel {
   updatedAt   DateTime        @updatedAt
   updatedById String? // String FK
   updatedBy   Personel?       @relation("PersonelUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model UserSettings {
+  id         String   @id
+  themeName  String?  @default("violet")
+  isDarkMode Boolean? @default(true)
+
+  personelId String   @unique
+  personel   Personel @relation("PersonelSettings", fields: [personelId], references: [id], onDelete: Cascade)
+
+  // Gelecekte eklenebilecek diğer ayarlar:
+  // language            String?  @default("tr")
+  // notificationsEnabled Boolean? @default(true)
+  // itemsPerPage        Int?     @default(10)
 }
 
 model SavedFilter {

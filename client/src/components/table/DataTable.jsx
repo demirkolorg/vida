@@ -13,6 +13,8 @@ import { FilterManagementSheet } from '@/app/filter/sheet/FilterManagementSheet'
 import { AdvancedFilterSheet } from '@/app/filter/sheet/AdvancedFilterSheet';
 import { toast } from 'sonner'; // Assuming you use sonner for toasts
 import { HeaderContextMenu } from '@/components/contextMenu/HeaderContextMenu';
+import { useEffect } from 'react';
+
 
 export function DataTable({
   entityType,
@@ -35,6 +37,8 @@ export function DataTable({
   includeAuditColumns = true,
   renderCollapsibleToolbarContent,
   displayStatusFilter,
+    enableColumnReordering = false, 
+
 }) {
   const openSheet = useSheetStore(state => state.openSheet);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -44,6 +48,12 @@ export function DataTable({
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState(initialSortingState);
   const [isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen] = useState(false);
+  const [columnOrder, setColumnOrder] = useState([]);
+
+  
+
+  
+
 
   const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
@@ -90,12 +100,16 @@ export function DataTable({
     globalFilterFn: customGlobalFilterFn,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
+
+    enableColumnOrdering: enableColumnReordering, // Prop'a bağlandı
+    onColumnOrderChange: setColumnOrder, // Lokal state'i günceller
     state: {
       sorting,
       columnFilters,
       globalFilter: activeGlobalFilter,
       columnVisibility,
       rowSelection,
+      columnOrder
     },
     initialState: { pagination: { pageSize: 10 } },
   });
@@ -235,6 +249,15 @@ export function DataTable({
     const hasGlobalFilter = globalFilter && (typeof globalFilter === 'string' ? globalFilter.trim().length > 0 : typeof globalFilter === 'object' && globalFilter.rules && globalFilter.rules.length > 0);
     return hasColumnFilters || hasGlobalFilter;
   }, [table.getState().columnFilters, table.getState().globalFilter]); // Bağımlılıkları state'ten al
+
+    useEffect(() => {
+    if (enableColumnReordering) {
+      console.log('Yeni Sütun Sırası:', columnOrder);
+      // Burası, bir sonraki adımda bu `columnOrder`'ı
+      // `useUserSettingsStore`'a kaydetmek için kullanılacak yer olacak.
+    }
+  }, [columnOrder, enableColumnReordering]);
+
 
   return (
     <div className="w-full space-y-2">
@@ -376,6 +399,7 @@ export function DataTable({
       </div>
 
       <DataTablePagination table={table} />
+      
     </div>
   );
 }
