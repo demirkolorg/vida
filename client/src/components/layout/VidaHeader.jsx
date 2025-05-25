@@ -29,7 +29,7 @@ export const VidaHeader = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full ">
-              <Avatar>
+              <Avatar className="h-10 w-10 border-2 bg-primary/50 hover:bg-primary/70">
                 <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>

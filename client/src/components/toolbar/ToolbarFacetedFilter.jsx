@@ -106,9 +106,7 @@ export const ToolbarFacetedFilter = props => {
               {activeFilterCount > 0 && activeFilterCount}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 md:w-96 p-0" align="start">
-            {' '}
-            {/* Genişlik ayarlandı */}
+          <PopoverContent className="w-80 md:w-96 p-0 border-none" align="start">
             <FilterSummary filterState={filterStateForSummary} table={table} />
           </PopoverContent>
         </Popover>

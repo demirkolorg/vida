@@ -131,7 +131,7 @@ export const FilterSummary = ({ filterState, table }) => {
   const groupOrder = ['Genel Arama', 'Gelişmiş Filtre', 'Sütun Filtreleri', 'Sıralamalar'];
 
   return (
-    <div className="p-4 border rounded-lg space-y-3 bg-muted/30 shadow-sm">
+    <div className="p-4 border-2 border-primary/50 rounded-lg space-y-3 bg-muted/30 shadow-sm">
       <h4 className="text-sm font-semibold flex items-center text-foreground mb-3">
         <ListChecks className="h-4.5 w-4.5 mr-2 text-primary" />
         Kaydedilecek Geçerli Filtre ve Sıralama Özeti:
