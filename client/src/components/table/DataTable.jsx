@@ -271,31 +271,25 @@ export function DataTable({
       />
 
       <div className="rounded-md border">
-        <Table>
-          <TableHeader className="bg-secondary">
+        <Table className="rounded-full">
+          <TableHeader className="">
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => {
                   const headerContent = header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext());
                   return (
                     <TableHead
-                      className="group relative"
+                      className="group relative bg-primary/10"
                       key={header.id}
                       style={{
                         width: header.getSize(),
                       }}
                     >
-                      {/* HeaderContextMenu ile sütun başlığını sarmala */}
                       <HeaderContextMenu column={header.column} table={table}>
                         <div className="flex items-center justify-between w-full">
-                          {' '}
-                          {/* Başlık ve resizer için */}
                           <div className="flex-grow">
-                            {' '}
-                            {/* Başlık içeriği */}
                             {headerContent}
                           </div>
-                          {/* Yeniden Boyutlandırma Tutamacı (önceki kodunuzdan) */}
                           {header.column.getCanResize() && (
                             <div
                               onMouseDown={header.getResizeHandler()}
@@ -324,7 +318,7 @@ export function DataTable({
                   row.getVisibleCells().map(cell => {
                     const cellContent = flexRender(cell.column.columnDef.cell, cell.getContext());
                     return (
-                      <TableCell className={'break-words'} key={cell.id}>
+                      <TableCell className={'break-words px-5'} key={cell.id}>
                         {cellContent}
                       </TableCell>
                     );

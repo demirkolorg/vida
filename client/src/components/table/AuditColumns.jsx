@@ -24,7 +24,7 @@ export const AuditColumns = () => [
       return <StatusCell status={status} />;
     },
     size: 100,
-    enableHiding: false,
+    // enableHiding: false,
     enableSorting: true,
     meta: {
       exportHeader: "Durum",

@@ -92,8 +92,6 @@ export const ToolbarDigerAraclarContent = props => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {' '}
-                  {/* Menünün butonun sağına hizalanması için */}
                   <DropdownMenuItem onClick={() => exportTableToExcel(table, entityType)}>
                     <Table2 className="mr-2 h-4 w-4" /> {/* Excel ikonu */}
                     Excel (.xlsx)
@@ -123,9 +121,9 @@ export const ToolbarDigerAraclarContent = props => {
                     .getAllColumns()
                     .filter(column => column.getCanHide())
                     .map(column => (
-                      <DropdownMenuCheckboxItem key={column.id} className="capitalize" checked={column.getIsVisible()} onCheckedChange={value => column.toggleVisibility(!!value)}>
-                        {/* Başlık olarak column.id kullanmak daha güvenilir olabilir */}
-                        {typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id}
+                      <DropdownMenuCheckboxItem key={column.id} className="capitalize cursor-pointer" checked={column.getIsVisible()} onCheckedChange={value => column.toggleVisibility(!!value)}>
+                        {/* {typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id} */}
+                        {column.columnDef.meta.exportHeader}
                       </DropdownMenuCheckboxItem>
                     ))}
                 </DropdownMenuContent>

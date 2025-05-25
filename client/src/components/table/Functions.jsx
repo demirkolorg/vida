@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 
 export const statusStyles = {
-  Aktif: 'bg-green-500 hover:bg-green-600',
-  Pasif: 'bg-yellow-500 hover:bg-yellow-600',
+  Aktif: 'bg-primary/70 hover:bg-green-600',
+  Pasif: 'bg-secondary hover:bg-yellow-600',
   Silindi: 'bg-red-500 hover:bg-red-600',
 };
 
