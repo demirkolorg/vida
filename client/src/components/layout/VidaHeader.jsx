@@ -12,10 +12,11 @@ import { LogoutDropdownMenuItem } from '@/components/auth/LogoutDropdownMenuItem
 import { VidaNavMenu } from './VidaNavMenu';
 import { VidaLogo } from './VidaLogo';
 import { ThemeSelector } from '../theme/ThemeSelector';
+import { NotificationMenu } from '../notification/NotificationMenu';
 
 export const VidaHeader = () => {
   return (
-    <header className="sticky  top-0 z-50 flex  items-center h-16  gap-4 border-b bg-primary/5 px-4 md:px-6">
+    <header className="sticky  top-0 z-50 flex  items-center h-16  gap-4 border-b bg-primary/5 px-4 md:px-6 backdrop-blur-md">
       <div className=" flex-none">
         <VidaLogo />
       </div>
@@ -23,8 +24,9 @@ export const VidaHeader = () => {
         <VidaNavMenu />
       </div>
 
-      <div className="ml-auto flex items-center gap-4 md:gap-2 lg:gap-4">
+      <div className="ml-auto flex items-center gap-2 md:gap-2 lg:gap-2">
         <ThemeSelector />
+        <NotificationMenu />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
