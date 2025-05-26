@@ -10,6 +10,7 @@ import { DashboardPage } from '@/pages/dashboard';
 import { useAuthStore } from '@/stores/authStore';
 import LoginPage from '@/pages/auth/login';
 import { Birim_ListPage } from '@/app/birim/pages/ListPage';
+import { Sube_ListPage } from '@/app/sube/pages/ListPage';
 import { SabitKodu_ListPage } from '@/app/sabitKodu/pages/ListPage';
 import { Marka_ListPage } from '@/app/marka/pages/ListPage';
 import { Depo_ListPage } from '@/app/depo/pages/ListPage';
@@ -51,17 +52,22 @@ const router = createBrowserRouter([
                 handle: { breadcrumb: 'Birim' },
               },
               {
+                path: '/sube',
+                element: <Sube_ListPage />,
+                handle: { breadcrumb: 'Şube' },
+              },
+              {
                 path: '/sabitkodu', // "/dashboard" olarak çözümlenir
                 element: <SabitKodu_ListPage />,
                 handle: { breadcrumb: 'Sabit Kodu' },
               },
               {
-                path: '/marka', 
+                path: '/marka',
                 element: <Marka_ListPage />,
                 handle: { breadcrumb: 'Marka' },
               },
               {
-                path: '/depo', 
+                path: '/depo',
                 element: <Depo_ListPage />,
                 handle: { breadcrumb: 'Depo' },
               },

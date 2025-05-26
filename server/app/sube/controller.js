@@ -13,7 +13,16 @@ const controller = {
       response.error(req, res, HizmetName, rota, message.list.error, error.message);
     }
   },
-
+  getByQuery: async (req, res) => {
+    const rota = 'getByQuery';
+    try {
+      const data = req.body;
+      const result = await service[rota](data);
+      response.success(req, res, HizmetName, rota, message.list.ok, result);
+    } catch (error) {
+      response.error(req, res, HizmetName, rota, message.list.error, error.message);
+    }
+  },
   getById: async (req, res) => {
     try {
       const rota = 'getById';

@@ -12,7 +12,7 @@ export const createBaseApiService = (entityType, entityHuman) => {
         return response?.data?.data || [];
       } catch (error) {
         console.error(`API hatası ${entityHuman} ${rota}:`, error?.response?.data || error.message || error);
-        return [];
+        throw error; // Store'da hata yakalanabilmesi için throw
       }
     },
 
@@ -23,7 +23,7 @@ export const createBaseApiService = (entityType, entityHuman) => {
         return response?.data?.data || [];
       } catch (error) {
         console.error(`API hatası ${entityHuman} ${rota}:`, error?.response?.data || error.message || error);
-        return [];
+        throw error; // Store'da hata yakalanabilmesi için throw
       }
     },
 
@@ -34,7 +34,7 @@ export const createBaseApiService = (entityType, entityHuman) => {
         return response?.data?.data || null;
       } catch (error) {
         console.error(`API hatası (${entityHuman} ${rota} - ID: ${id}):`, error?.response?.data || error.message || error);
-        return null;
+        throw error; // Store'da hata yakalanabilmesi için throw
       }
     },
 
@@ -45,7 +45,7 @@ export const createBaseApiService = (entityType, entityHuman) => {
         return response?.data?.data || null;
       } catch (error) {
         console.error(`API hatası ${entityHuman} ${rota}:`, data, error?.response?.data || error.message || error);
-        return null;
+        throw error; // Store'da hata yakalanabilmesi için throw
       }
     },
 
@@ -57,7 +57,7 @@ export const createBaseApiService = (entityType, entityHuman) => {
         return response?.data?.data || null;
       } catch (error) {
         console.error(`API hatası (${entityHuman} ${rota} - ID: ${id}):`, data, error?.response?.data || error.message || error);
-        return null;
+        throw error; // Store'da hata yakalanabilmesi için throw
       }
     },
 
@@ -69,18 +69,19 @@ export const createBaseApiService = (entityType, entityHuman) => {
         return response?.data?.data || null;
       } catch (error) {
         console.error(`API hatası (${entityHuman} ${rota} - ID: ${id}, Status: ${status}):`, error?.response?.data || error.message || error);
-        return null;
+        throw error; // Store'da hata yakalanabilmesi için throw
       }
     },
 
-    deleteEntity: async (id) => {
+    // ✅ DÜZELTİLDİ: deleteEntity → delete olarak değiştirildi
+    delete: async (id) => {
       const rota = 'delete';
       try {
         await axiosInstance('post', `${entityType}/${rota}`, { id });
         return true;
       } catch (error) {
         console.error(`API hatası (${entityHuman} ${rota} - ID: ${id}):`, error?.response?.data || error.message || error);
-        return false;
+        throw error; // Store'da hata yakalanabilmesi için throw
       }
     },
 
@@ -91,7 +92,7 @@ export const createBaseApiService = (entityType, entityHuman) => {
         return response?.data?.data || [];
       } catch (error) {
         console.error(`API hatası (${entityHuman} ${rota} - Criteria: ${JSON.stringify(criteria)}):`, error?.response?.data || error.message || error);
-        return [];
+        throw error; // Store'da hata yakalanabilmesi için throw
       }
     },
   };
