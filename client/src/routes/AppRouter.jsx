@@ -9,7 +9,7 @@ import { AuthLayout } from '@/layout/AuthLayout';
 import { DashboardPage } from '@/pages/dashboard';
 import { useAuthStore } from '@/stores/authStore';
 import LoginPage from '@/pages/auth/login';
-import { BirimListPage } from '@/app/birim/pages/ListPage';
+import { Birim_ListPage } from '@/app/birim/pages/ListPage';
 import { SabitKoduListPage } from '@/app/sabitKodu/pages/ListPage';
 
 const router = createBrowserRouter([
@@ -45,7 +45,7 @@ const router = createBrowserRouter([
               },
               {
                 path: '/birim', // "/dashboard" olarak çözümlenir
-                element: <BirimListPage />,
+                element: <Birim_ListPage />,
                 handle: { breadcrumb: 'Birim' },
               },
               {

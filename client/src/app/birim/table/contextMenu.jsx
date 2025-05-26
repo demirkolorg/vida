@@ -4,8 +4,8 @@ import { BaseContextMenu } from '@/components/contextMenu/BaseContextMenu';
 import { EntityHuman, EntityType } from '../constants/api';
 import { HomeIcon } from 'lucide-react';
 
-export function BirimContextMenu({ item }) {
-  const menuTitle = item?.ad ? `${item.ad} Birimi` : 'Birim İşlemleri';
+export function Birim_ContextMenu({ item }) {
+  const menuTitle = item?.ad ? `${item.ad} ${EntityHuman} Kaydı` : `${EntityHuman} İşlemleri`;
 
   const handleListSubeler = useCallback(() => {
     if (!item) return;

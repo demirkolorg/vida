@@ -1,14 +1,14 @@
-import { BaseFilterManagementSheet } from '@/components/sheets/BaseFilterManagementSheet'; // Yeni oluşturduğumuz base sheet
+import { BaseFilterManagementSheet } from '@/components/sheets/BaseFilterManagementSheet'; 
 import { EntityType ,EntityHuman} from '../constants/api';
 
 export const FilterSheet = (props) => {
-    const { table } = props; // DataTable'dan gelen tablo instance'ı
+    const { table } = props;
     return (
         <BaseFilterManagementSheet
-            sheetTypeIdentifier="filterManagement" // sheetStore'da tanımladığımız tip
-            entityType={EntityType} // Bu sayfanın varlık tipi (örn: "birim")
-            table={table} // DataTable'dan gelen table instance'ı
-            title={`'${EntityHuman}' İçin Kayıtlı Filtreler`} // EntityHumanName, store veya api dosyasından gelebilir
+            sheetTypeIdentifier="filterManagement"
+            entityType={EntityType} 
+            table={table}
+            title={`'${EntityHuman}' İçin Kayıtlı Filtreler`} 
             description="Kaydedilmiş filtrelerinizi yönetebilir, yenisini ekleyebilir veya uygulayabilirsiniz.v."
         />)
 }

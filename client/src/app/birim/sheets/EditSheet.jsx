@@ -1,95 +1,68 @@
-import React from 'react'; // useEffect, useMemo gerekirse eklenecek
 import { FormFieldInput } from '@/components/form/FormFieldInput';
 import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 import { BaseEditSheet } from '@/components/sheet/BaseEditSheet';
-import { useBirimStore } from '../constants/store'; // .js uzantısı eklenebilir
-import {  Birim_FormInputSchema as EntityFormUpdateSchema } from '../constants/schema'; // .js uzantısı eklenebilir
-import {EntityHuman, EntityType} from '../constants/api'; 
+import { EntityHuman, EntityType } from '../constants/api';
 
-export const BirimEditSheet = (props) => { // React.FC kaldırıldı
-  const updateAction = useBirimStore(state => state.Update);
-  const loadingAction = useBirimStore(state => state.loadingAction);
-  const currentItemForEdit = useBirimStore(state => state.currentData);
+import { Birim_Store as EntityStore } from '../constants/store';
+import { Birim_FormInputSchema as EntityFormUpdateSchema } from '../constants/schema';
 
-  const handleBirimUpdateSubmit = async (id, formData) => {
+
+export const Birim_EditSheet = props => {
+  const updateAction = EntityStore(state => state.Update);
+  const loadingAction = EntityStore(state => state.loadingAction);
+  const currentItemForEdit = EntityStore(state => state.currentData);
+
+  const handleUpdateSubmit = async (id, formData) => {
     const payload = {};
-
     if (formData.ad !== undefined && formData.ad !== currentItemForEdit?.ad) {
       payload.ad = formData.ad;
     }
     if (formData.aciklama !== undefined && formData.aciklama !== currentItemForEdit?.aciklama) {
       payload.aciklama = formData.aciklama;
     }
-
-
     if (Object.keys(payload).length === 0) {
-       toast.info("Değişiklik yapılmadı.");
+      toast.info('Değişiklik yapılmadı.');
       return currentItemForEdit;
     }
-
-    return updateAction(id, payload); // Tip zorlaması (as EntityUpdatePayload) kaldırıldı
+    return updateAction(id, payload); 
   };
 
-  // Parametreden ve dönüş tipinden tip ek açıklaması kaldırıldı
-  const generateBirimDescription = (itemData) => {
+  const generateDescription = itemData => {
     if (itemData?.ad) {
-      return `'${itemData.ad}' adlı birimin bilgilerini düzenleyin.`;
+      return `'${itemData.ad}' adlı ${EntityHuman} kaydının bilgilerini düzenleyin.`;
     }
-    return 'Seçili birim kaydının bilgilerini düzenleyin.';
+    return `Seçili ${EntityHuman} kaydının bilgilerini düzenleyin.`;
   };
 
-  // Parametrelerden tip ek açıklamaları kaldırıldı
-  const renderBirimFormInputs = ({ formData, setFieldValue, errors }) => (
-    // JSX için React importu gerekli
+  const renderFormInputs = ({ formData, setFieldValue, errors }) => (
     <div className="space-y-4">
       <FormFieldInput
-        label="Birim Adı"
+        label={`${EntityHuman} Adı`}
         name="ad"
-        id="edit-birim-ad"
+        id={`edit-${EntityType}-ad`}
         value={formData.ad || ''}
         onChange={e => setFieldValue('ad', e.target.value)}
         error={errors.ad}
         showRequiredStar={true}
         maxLength={100}
-        placeholder="Birim adını giriniz"
+        placeholder={`${EntityHuman} adını giriniz`}
       />
       <FormFieldTextarea
         label="Açıklama"
         name="aciklama"
-        id="edit-birim-aciklama"
+        id={`edit-${EntityType}-aciklama`}
         value={formData.aciklama || ''}
         onChange={e => setFieldValue('aciklama', e.target.value)}
         error={errors.aciklama}
-        placeholder="Birim ile ilgili kısa bir açıklama (opsiyonel)"
+        placeholder={`${EntityHuman} ile ilgili kısa bir açıklama (opsiyonel)`}
         rows={3}
       />
-      {/*
-        <FormFieldCombobox
-          label="Ana Şube"
-          name="anaSubeId"
-          id="edit-birim-anaSubeId"
-          value={formData.anaSubeId ?? undefined}
-          onValueChange={value => setFieldValue('anaSubeId', value)}
-          options={subeOptions || []}
-          placeholder={loadingSubeler ? "Şubeler yükleniyor..." : 'Ana Şube Seçin'}
-        />
-      */}
     </div>
   );
 
   return (
-    <BaseEditSheet
-      entityType={ EntityType}
-      title={`${EntityHuman} Düzenle`}
-      description={generateBirimDescription}
-      schema={EntityFormUpdateSchema} // Zod şeması doğrudan kullanılır
-      updateAction={handleBirimUpdateSubmit}
-      loadingAction={loadingAction /* || loadingSubeler */}
-      {...props}
-    >
-      {({ formData, setFieldValue, errors }) =>
-        renderBirimFormInputs({ formData, setFieldValue, errors })
-      }
+    <BaseEditSheet entityType={EntityType} title={`${EntityHuman} Düzenle`} description={generateDescription} schema={EntityFormUpdateSchema} updateAction={handleUpdateSubmit} loadingAction={loadingAction} {...props}>
+      {({ formData, setFieldValue, errors }) => renderFormInputs({ formData, setFieldValue, errors })}
     </BaseEditSheet>
   );
 };

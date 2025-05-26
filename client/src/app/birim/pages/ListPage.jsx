@@ -1,24 +1,25 @@
 import { PageHeader } from '@/components/pages/PageHeader';
-import { useBirimStore } from '../constants/store';
-import { BirimCreateSheet } from '../sheets/CreateSheet';
-import { BirimEditSheet } from '../sheets/EditSheet';
-import { BirimDeleteSheet } from '../sheets/DeleteSheet';
-import { BirimDetailSheet } from '../sheets/DetailSheet';
-import { BirimDataTable } from '../table/dataTable';
-import { StatusDialog } from '../dialogs/StatusDialog';
 import { EntityHuman } from '../constants/api';
 
+import { Birim_Store as EntityStore } from '../constants/store';
+import { Birim_CreateSheet as EntityCreateSheet} from '../sheets/CreateSheet';
+import { Birim_EditSheet as EntityEditSheet } from '../sheets/EditSheet';
+import { Birim_DeleteSheet as EntityDeleteSheet } from '../sheets/DeleteSheet';
+import { Birim_DetailSheet as EntityDetailSheet} from '../sheets/DetailSheet';
+import { Birim_DataTable as EntityDataTable  } from '../table/dataTable';
+import { Birim_StatusDialog as EntityStatusDialog } from '../dialogs/StatusDialog';
 
-export function BirimListPage() {
+
+export function Birim_ListPage() {
   return (
     <div className="container mx-auto">
-      <PageHeader EntityHuman={EntityHuman} useEntityStore={useBirimStore} />
-      <BirimDataTable />
-      <BirimCreateSheet />
-      <BirimEditSheet />
-      <BirimDeleteSheet />
-      <BirimDetailSheet />
-      <StatusDialog />
+      <PageHeader EntityHuman={EntityHuman} useEntityStore={EntityStore} />
+      <EntityDataTable/>
+      <EntityCreateSheet />
+      <EntityEditSheet />
+      <EntityDeleteSheet />
+      <EntityDetailSheet />
+      <EntityStatusDialog />
     </div>
   );
 }

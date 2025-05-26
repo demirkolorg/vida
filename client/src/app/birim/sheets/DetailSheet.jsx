@@ -1,27 +1,21 @@
-// src/app/(features)/birim/sheet/birim-detail-sheet.jsx
-
-// 'use client';
-
-import React from 'react';
-// DetailItem ve DetailSection'ı aynı dosyadan import ediyoruz
-import { DetailItem, DetailSection } from '@/components/table/DetailItem';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { BaseDetailSheet } from '@/components/sheet/BaseDetailSheet';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { Badge } from '@/components/ui/badge';
+import { DetailItem, DetailSection } from '@/components/table/DetailItem';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { BaseDetailSheet } from '@/components/sheet/BaseDetailSheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { statusStyles } from '@/components/table/Functions';
 
 import { EntityType, EntityHuman } from '../constants/api';
 
-const renderBirimTitle = itemData => {
+const renderTitle = itemData => {
   return itemData?.ad ? `${itemData.ad} ${EntityHuman} Detayı` : `${EntityHuman} Detayı`;
 };
 
-const renderBirimDetails = itemData => {
+const renderDetails = itemData => {
   if (!itemData) {
-    return <div className="p-4 text-center text-muted-foreground">Birim bilgisi bulunamadı.</div>;
+    return <div className="p-4 text-center text-muted-foreground">${EntityHuman} bilgisi bulunamadı.</div>;
   }
 
   const createdByAvatar = itemData.createdBy?.avatar || '/placeholder.png';
@@ -31,12 +25,12 @@ const renderBirimDetails = itemData => {
     <ScrollArea className="h-[calc(100vh-230px)]">
       <div className="p-2 md:p-4">
         <DetailSection title="Temel Bilgiler">
-          <DetailItem label="Birim ID">
+          <DetailItem label={`${EntityHuman} ID`}>
             <Badge variant="secondary" className="font-mono text-xs">
               {itemData.id}
             </Badge>
           </DetailItem>
-          <DetailItem label="Birim Adı">{itemData.ad || '-'}</DetailItem>
+          <DetailItem label={`${EntityHuman} Adı`}>{itemData.ad || '-'}</DetailItem>
           <DetailItem label="Durum">
             <Badge
               variant={itemData.status === 'Aktif' ? 'success_muted' : itemData.status === 'Pasif' ? 'warning_muted' : itemData.status === 'Silindi' ? 'destructive_muted' : 'outline'}
@@ -99,10 +93,10 @@ const renderBirimDetails = itemData => {
   );
 };
 
-export const BirimDetailSheet = props => {
+export const Birim_DetailSheet = props => {
   return (
-    <BaseDetailSheet entityType={EntityType} title={renderBirimTitle} {...props}>
-      {item => renderBirimDetails(item)}
+    <BaseDetailSheet entityType={EntityType} title={renderTitle} {...props}>
+      {item => renderDetails(item)}
     </BaseDetailSheet>
   );
 };

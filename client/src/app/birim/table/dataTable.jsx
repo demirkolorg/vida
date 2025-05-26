@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { DataTable } from '@/components/table/DataTable';
-import { Birim_Columns as EntityColumns } from './columns';
-import { BirimContextMenu as EntityContextMenu } from './contextMenu';
-import { useBirimStore as useEntityStore } from '../constants/store';
-import { BirimSpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
 import { EntityType, EntityHuman } from '../constants/api';
+
+import { Birim_Columns as EntityColumns } from './columns';
+import { Birim_ContextMenu as EntityContextMenu } from './contextMenu';
+import { Birim_Store as useEntityStore } from '../constants/store';
+import { Birim_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
 
 const columnVisibilityData = {};
 const sorting = [{ id: 'ad', desc: false }];
@@ -13,7 +14,7 @@ const facesFilterData = [
   { columnId: 'createdBy', title: 'Oluşturan' },
 ];
 
-export function BirimDataTable() {
+export function Birim_DataTable() {
   const datas = useEntityStore(state => state.datas);
   const fetchData = useEntityStore(state => state.GetByQuery);
   const isLoading = useEntityStore(state => state.loadingList);
@@ -37,7 +38,6 @@ export function BirimDataTable() {
   }, [datas, displayStatusFilter]);
 
   return (
-
     <DataTable
       data={filteredDatas}
       columns={columns}
@@ -53,6 +53,5 @@ export function BirimDataTable() {
       renderCollapsibleToolbarContent={() => <EntitySpecificToolbar />}
       displayStatusFilter={displayStatusFilter}
     />
-
   );
 }

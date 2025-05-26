@@ -1,12 +1,13 @@
 import { useDialogStore } from '@/stores/dialogStore';
 import { UpdateStatusDialog } from '@/components/dialogs/UpdateStatusDialog';
 import { EntityStatusOptions } from '@/constants/statusOptions';
-import { useBirimStore } from '../constants/store';
+
+import { Birim_Store as EntityStore } from '../constants/store';
 import { EntityType, EntityHuman } from '../constants/api';
 
-export const StatusDialog = () => {
-  const updateStatusAction = useBirimStore(state => state.UpdateStatus);
-  const loadingAction = useBirimStore(state => state.loadingAction);
+export const Birim_StatusDialog = () => {
+  const updateStatusAction = EntityStore(state => state.UpdateStatus);
+  const loadingAction = EntityStore(state => state.loadingAction);
   const { dialogType, dialogItem, isDialogOpen, closeDialog } = useDialogStore();
 
   const handleStatusChangeSubmit = async (itemId, newStatus) => {
@@ -28,10 +29,10 @@ export const StatusDialog = () => {
             if (!open) closeDialog();
           }}
           item={dialogItem}
-          entityType={EntityType} // Veya dialogItem'dan alınabilir
-          entityHumanName={EntityHuman} // Veya dialogItem'dan alınabilir
+          entityType={EntityType}
+          entityHumanName={EntityHuman} 
           currentStatus={dialogItem?.status}
-          availableStatuses={EntityStatusOptions} // Veya dialogItem'dan alınabilir
+          availableStatuses={EntityStatusOptions}
           onStatusChange={handleStatusChangeSubmit}
           isLoading={loadingAction}
         />
