@@ -12,6 +12,7 @@ import LoginPage from '@/pages/auth/login';
 import { Birim_ListPage } from '@/app/birim/pages/ListPage';
 import { SabitKodu_ListPage } from '@/app/sabitKodu/pages/ListPage';
 import { Marka_ListPage } from '@/app/marka/pages/ListPage';
+import { Depo_ListPage } from '@/app/depo/pages/ListPage';
 
 const router = createBrowserRouter([
   {
@@ -58,6 +59,11 @@ const router = createBrowserRouter([
                 path: '/marka', 
                 element: <Marka_ListPage />,
                 handle: { breadcrumb: 'Marka' },
+              },
+              {
+                path: '/depo', 
+                element: <Depo_ListPage />,
+                handle: { breadcrumb: 'Depo' },
               },
               // ... AuthLayout kullanan diğer korumalı sayfalarınız
             ],

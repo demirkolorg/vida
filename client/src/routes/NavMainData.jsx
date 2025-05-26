@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Package, ShieldCheck, Route, Pyramid, Briefcase, Layers, Building, Construction } from 'lucide-react'; // Yeni ikonlar eklendi
+import { LayoutDashboard, Users, Warehouse,Package, ShieldCheck, Route, Pyramid, Briefcase, Layers, Building, Construction } from 'lucide-react'; // Yeni ikonlar eklendi
 
 export const NavMainData = [
   {
@@ -57,8 +57,13 @@ export const NavMainData = [
       },
       {
         to: '/marka',
-        label: 'Marka                             ',
+        label: 'Marka',
         icon: Pyramid,
+      },
+      {
+        to: '/depo',
+        label: 'Depo',
+        icon: Warehouse,
       },
     ],
   },

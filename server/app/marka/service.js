@@ -145,7 +145,6 @@ const service = {
 
       return await prisma[PrismaName].update({
         where: { id: data.id }, data: updatePayload,
-        orderBy: { ad: 'asc' },
         include: {
           malzemeler: {
             where: { status: AuditStatusEnum.Aktif },
