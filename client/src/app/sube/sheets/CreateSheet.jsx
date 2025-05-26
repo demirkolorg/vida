@@ -9,9 +9,11 @@ import { Sube_Store as EntityStore } from '../constants/store';
 import { Sube_CreateSchema as EntityCreateSchema } from '../constants/schema';
 
 // Birim seçenekleri için hook veya store
-import { Birim_Store } from '../../birim/constants/store';
+import { Birim_Store } from '@/app/birim/constants/store';
+import { Birim_CreateSheet } from '@/app/birim/sheets/CreateSheet';
+import { useSheetStore } from '@/stores/sheetStore';
 
-const renderFormInputs = ({ formData, setFieldValue, errors, birimOptions }) => {
+const renderFormInputs = ({ formData, setFieldValue, errors, birimOptions, onAddNewBirim }) => {
   return (
     <div className="space-y-4">
       <FormFieldInput
@@ -37,6 +39,8 @@ const renderFormInputs = ({ formData, setFieldValue, errors, birimOptions }) => 
         placeholder="Birim seçiniz"
         options={birimOptions}
         emptyMessage="Birim bulunamadı"
+        onAddNew={onAddNewBirim}
+        addNewText="Yeni Birim Ekle"
       />
       
       <FormFieldTextarea
@@ -61,6 +65,11 @@ export const Sube_CreateSheet = (props) => {
   const birimList = Birim_Store(state => state.datas);
   const loadBirimList = Birim_Store(state => state.GetAll);
   
+  // Sheet store for nested sheet management
+  const { openSheet, closeSheet, mode, entityType } = useSheetStore();
+  const [tempFormData, setTempFormData] = React.useState(null);
+  const [tempSetFieldValue, setTempSetFieldValue] = React.useState(null);
+  
   // Component mount olduğunda birim listesini yükle
   React.useEffect(() => {
     if (!birimList || birimList.length === 0) {
@@ -74,18 +83,63 @@ export const Sube_CreateSheet = (props) => {
     label: birim.ad
   })) || [];
 
+  // Yeni birim ekleme handler'ı
+  const handleAddNewBirim = React.useCallback((formData, setFieldValue) => {
+    // Form data ve setFieldValue'yu geçici olarak sakla
+    setTempFormData(formData);
+    setTempSetFieldValue(() => setFieldValue);
+    
+    // Birim oluşturma sheet'ini aç
+    openSheet('create', null, 'birim');
+  }, [openSheet]);
+
+  // Yeni birim oluşturulduktan sonra callback
+  const handleBirimCreated = React.useCallback((newBirim) => {
+    // Birim listesini yenile
+    loadBirimList({ showToast: false });
+    
+    // Yeni oluşturulan birimi otomatik seç
+    if (tempSetFieldValue && newBirim?.id) {
+      tempSetFieldValue('birimId', newBirim.id);
+    }
+    
+    // Geçici verileri temizle
+    setTempFormData(null);
+    setTempSetFieldValue(null);
+    
+    // Birim sheet'ini kapat
+    closeSheet();
+  }, [loadBirimList, tempSetFieldValue, closeSheet]);
+
   return (
-    <BaseCreateSheet
-      entityType={EntityType}
-      title={`Yeni ${EntityHuman} Ekle`}
-      schema={EntityCreateSchema}
-      createAction={createAction}
-      loadingCreate={loadingCreate}
-      {...props}
-    >
-      {({ formData, setFieldValue, errors }) =>
-        renderFormInputs({ formData, setFieldValue, errors, birimOptions })
-      }
-    </BaseCreateSheet>
+    <>
+      <BaseCreateSheet
+        entityType={EntityType}
+        title={`Yeni ${EntityHuman} Ekle`}
+        schema={EntityCreateSchema}
+        createAction={createAction}
+        loadingCreate={loadingCreate}
+        {...props}
+      >
+        {({ formData, setFieldValue, errors }) =>
+          renderFormInputs({ 
+            formData, 
+            setFieldValue, 
+            errors, 
+            birimOptions,
+            onAddNewBirim: () => handleAddNewBirim(formData, setFieldValue)
+          })
+        }
+      </BaseCreateSheet>
+
+      {/* Nested Birim Create Sheet */}
+      {mode === 'create' && entityType === 'birim' && (
+        <Birim_CreateSheet
+          isOpen={true}
+          onClose={closeSheet}
+          onSuccess={handleBirimCreated}
+        />
+      )}
+    </>
   );
 };

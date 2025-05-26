@@ -9,11 +9,6 @@ import { Sube_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar
 
 const columnVisibilityData = {};
 const sorting = [{ id: 'ad', desc: false }];
-const facesFilterData = [
-  { columnId: 'status', title: 'Durum' },
-  { columnId: 'birim', title: 'Birim' },
-  { columnId: 'createdBy', title: 'Oluşturan' },
-];
 
 export function Sube_DataTable() {
   const datas = useEntityStore(state => state.datas);
@@ -21,7 +16,49 @@ export function Sube_DataTable() {
   const isLoading = useEntityStore(state => state.loadingList);
   const toggleDisplayStatusFilter = useEntityStore(state => state.ToggleDisplayStatusFilter);
   const displayStatusFilter = useEntityStore(state => state.displayStatusFilter);
-  const columns = useMemo(() => EntityColumns(), []);
+  
+  // Columns'ı dinamik olarak oluştur
+  const columns = useMemo(() => {
+    const baseColumns = EntityColumns();
+    
+    // Birim filter options'ını data'dan oluştur
+    const uniqueBirimler = [...new Set(datas.map(item => item.birim?.ad).filter(Boolean))];
+    const birimFilterOptions = uniqueBirimler.map(birimAd => ({
+      label: birimAd,
+      value: birimAd,
+    }));
+
+    // Birim kolonunu bul ve filterOptions'ını ekle
+    const updatedColumns = baseColumns.map(column => {
+      if (column.accessorKey === 'birim') {
+        return {
+          ...column,
+          meta: {
+            ...column.meta,
+            filterOptions: birimFilterOptions
+          }
+        };
+      }
+      return column;
+    });
+
+    return updatedColumns;
+  }, [datas]);
+
+  // Faceted filter data'ya birim options'ını ekle
+  const facesFilterData = useMemo(() => [
+    { columnId: 'status', title: 'Durum' },
+    { 
+      columnId: 'birim', 
+      title: 'Birim',
+      options: [...new Set(datas.map(item => item.birim?.ad).filter(Boolean))].map(birimAd => ({
+        label: birimAd,
+        value: birimAd,
+      }))
+    },
+    { columnId: 'createdBy', title: 'Oluşturan' },
+  ], [datas]);
+
   const contextMenu = row => <EntityContextMenu item={row.original} />;
 
   useEffect(() => {

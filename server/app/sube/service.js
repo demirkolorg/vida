@@ -136,7 +136,24 @@ const service = {
       };
       if (data.aciklama !== undefined) createPayload.aciklama = data.aciklama;
 
-      return await prisma[PrismaName].create({ data: createPayload });
+      return await prisma[PrismaName].create({
+        data: createPayload,
+        include: {
+          birim: {
+            select: { id: true, ad: true },
+          },
+          burolar: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true },
+          },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true, sabitKodu: { select: { ad: true } } },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
     } catch (error) {
       throw error;
     }
@@ -157,7 +174,25 @@ const service = {
         updatePayload.birimId = data.birimId;
       }
 
-      return await prisma[PrismaName].update({ where: { id: data.id }, data: updatePayload });
+      return await prisma[PrismaName].update({
+        where: { id: data.id },
+        data: updatePayload,
+        include: {
+          birim: {
+            select: { id: true, ad: true },
+          },
+          burolar: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true },
+          },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true, sabitKodu: { select: { ad: true } } },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
     } catch (error) {
       throw error;
     }
@@ -172,7 +207,25 @@ const service = {
       const updatePayload = { updatedById: data.islemYapanKullanici };
       if (data.status !== undefined) updatePayload.status = data.status;
 
-      return await prisma[PrismaName].update({ where: { id: data.id }, data: updatePayload });
+      return await prisma[PrismaName].update({
+        where: { id: data.id },
+        data: updatePayload,
+        include: {
+          birim: {
+            select: { id: true, ad: true },
+          },
+          burolar: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true },
+          },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true, sabitKodu: { select: { ad: true } } },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
     } catch (error) {
       throw error;
     }

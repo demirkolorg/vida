@@ -1787,3 +1787,15 @@
     transition-timing-function: ease-in-out;
   }
 }
+
+
+/* globals.css veya component.css'e eklenebilir */
+[data-radix-popper-content-wrapper] {
+  max-height: 320px !important;
+}
+
+.command-list-scrollable {
+  max-height: 256px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
