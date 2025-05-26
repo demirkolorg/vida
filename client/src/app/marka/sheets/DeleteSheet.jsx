@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { BaseDeleteSheet } from '@/components/sheet/BaseDeleteSheet';
 import { EntityType, EntityHuman } from '../constants/api';
 
-import { SabitKodu_Store as EntityStore } from '../constants/store'; 
+import { Marka_Store as EntityStore } from '../constants/store'; 
 
 const renderDetails = itemData => (
   // JSX için React importu gerekli
@@ -25,7 +25,14 @@ const renderDetails = itemData => (
         <p className="mt-1 text-xs text-gray-600">{itemData.aciklama}</p>
       </div>
     )}
-    
+    {typeof itemData.subeler?.length === 'number' && (
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-medium text-muted-foreground">Bağlı Şube Sayısı:</span>
+        <Badge variant={itemData.subeler.length > 0 ? 'destructive_muted' : 'outline'} className="text-xs">
+          {itemData.subeler.length}
+        </Badge>
+      </div>
+    )}
     {typeof itemData.malzemeler?.length === 'number' && (
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium text-muted-foreground">Bağlı Malzeme Sayısı:</span>
@@ -41,7 +48,7 @@ const renderDetails = itemData => (
   </div>
 );
 
-export const SabitKodu_DeleteSheet = props => {
+export const Marka_DeleteSheet = props => {
   const deleteAction = EntityStore(state => state.Delete);
   const loadingAction = EntityStore(state => state.loadingAction);
 

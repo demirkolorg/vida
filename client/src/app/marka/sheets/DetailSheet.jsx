@@ -41,7 +41,16 @@ const renderDetails = itemData => {
           </DetailItem>
           <DetailItem label="Açıklama">{itemData.aciklama || '-'}</DetailItem>
         </DetailSection>
-       
+        {itemData.subeler && itemData.subeler.length > 0 && (
+          <DetailSection title={`Bağlı Şubeler (${itemData.subeler.length})`}>
+            <ul className="list-disc list-inside pl-4 space-y-1 text-sm">
+              {itemData.subeler.slice(0, 5).map(sube => (
+                <li key={sube.id}>{sube.ad}</li>
+              ))}
+              {itemData.subeler.length > 5 && <li className="text-muted-foreground text-xs">... ve {itemData.subeler.length - 5} şube daha</li>}
+            </ul>
+          </DetailSection>
+        )}
         {itemData.malzemeler && itemData.malzemeler.length > 0 && (
           <DetailSection title={`İlişkili Malzemeler (${itemData.malzemeler.length})`}>
             <ul className="list-disc list-inside pl-4 space-y-1 text-sm">
@@ -84,7 +93,7 @@ const renderDetails = itemData => {
   );
 };
 
-export const SabitKodu_DetailSheet = props => {
+export const Marka_DetailSheet = props => {
   return (
     <BaseDetailSheet entityType={EntityType} title={renderTitle} {...props}>
       {item => renderDetails(item)}

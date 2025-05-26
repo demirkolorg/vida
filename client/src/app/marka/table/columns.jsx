@@ -1,7 +1,7 @@
 import { HeaderButton } from '@/components/table/HeaderButton';
 import { EntityHuman } from '../constants/api';
 
-export const SabitKodu_Columns = () => [
+export const Marka_Columns = () => [
   {
     accessorKey: 'ad',
     header: ({ column }) => <HeaderButton column={column} title={`${EntityHuman} Adı`} />,
@@ -30,6 +30,21 @@ export const SabitKodu_Columns = () => [
     },
   },
   {
+    accessorKey: 'subeSayisi',
+    accessorFn: row => row.subeler?.length ?? 0,
+    header: ({ column }) => <HeaderButton column={column} title="Şube Sayısı" />,
+    cell: ({ row }) => {
+      const subeSayisi = row.original.subeler?.length ?? 0;
+      return <div className="text-center w-20">{subeSayisi}</div>;
+    },
+    size: 10,
+    enableSorting: true,
+    meta: {
+      exportHeader: 'Şube Sayısı',
+      filterVariant: 'number',
+    },
+  },
+  {
     accessorKey: 'malzemeSayisi',
     accessorFn: row => row.malzemeler?.length ?? 0,
     header: ({ column }) => <HeaderButton column={column} title="Malzeme Sayısı" />,
@@ -41,6 +56,21 @@ export const SabitKodu_Columns = () => [
     enableSorting: true,
     meta: {
       exportHeader: 'Malzeme Sayısı',
+      filterVariant: 'number',
+    },
+  },
+  {
+    accessorKey: 'modelSayisi',
+    accessorFn: row => row.modeller?.length ?? 0,
+    header: ({ column }) => <HeaderButton column={column} title="Model Sayısı" />,
+    cell: ({ row }) => {
+      const modelSayisi = row.original.modeller?.length ?? 0;
+      return <div className="text-center w-24">{modelSayisi}</div>;
+    },
+    size: 50,
+    enableSorting: true,
+    meta: {
+      exportHeader: 'Model Sayısı',
       filterVariant: 'number',
     },
   },

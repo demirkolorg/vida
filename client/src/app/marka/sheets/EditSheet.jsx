@@ -3,11 +3,11 @@ import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 import { BaseEditSheet } from '@/components/sheet/BaseEditSheet';
 import { EntityHuman, EntityType } from '../constants/api';
 
-import { SabitKodu_Store as EntityStore } from '../constants/store';
-import { SabitKodu_FormInputSchema as EntityFormUpdateSchema } from '../constants/schema';
+import { Marka_Store as EntityStore } from '../constants/store';
+import { Marka_FormInputSchema as EntityFormUpdateSchema } from '../constants/schema';
 
 
-export const SabitKodu_EditSheet = props => {
+export const Marka_EditSheet = props => {
   const updateAction = EntityStore(state => state.Update);
   const loadingAction = EntityStore(state => state.loadingAction);
   const currentItemForEdit = EntityStore(state => state.currentData);

@@ -2,10 +2,10 @@ import { useDialogStore } from '@/stores/dialogStore';
 import { UpdateStatusDialog } from '@/components/dialogs/UpdateStatusDialog';
 import { EntityStatusOptions } from '@/constants/statusOptions';
 
-import { SabitKodu_Store as EntityStore } from '../constants/store';
+import { Marka_Store as EntityStore } from '../constants/store';
 import { EntityType, EntityHuman } from '../constants/api';
 
-export const SabitKodu_StatusDialog = () => {
+export const Marka_StatusDialog = () => {
   const updateStatusAction = EntityStore(state => state.UpdateStatus);
   const loadingAction = EntityStore(state => state.loadingAction);
   const { dialogType, dialogItem, isDialogOpen, closeDialog } = useDialogStore();

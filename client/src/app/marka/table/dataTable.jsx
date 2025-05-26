@@ -2,10 +2,10 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { DataTable } from '@/components/table/DataTable';
 import { EntityType, EntityHuman } from '../constants/api';
 
-import { SabitKodu_Columns as EntityColumns } from './columns';
-import { SabitKodu_ContextMenu as EntityContextMenu } from './contextMenu';
-import { SabitKodu_Store as useEntityStore } from '../constants/store';
-import { SabitKodu_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
+import { Marka_Columns as EntityColumns } from './columns';
+import { Marka_ContextMenu as EntityContextMenu } from './contextMenu';
+import { Marka_Store as useEntityStore } from '../constants/store';
+import { Marka_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
 
 const columnVisibilityData = {};
 const sorting = [{ id: 'ad', desc: false }];
@@ -14,7 +14,7 @@ const facesFilterData = [
   { columnId: 'createdBy', title: 'Oluşturan' },
 ];
 
-export function SabitKodu_DataTable() {
+export function Marka_DataTable() {
   const datas = useEntityStore(state => state.datas);
   const fetchData = useEntityStore(state => state.GetByQuery);
   const isLoading = useEntityStore(state => state.loadingList);

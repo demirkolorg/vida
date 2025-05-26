@@ -4,8 +4,8 @@ import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 import { BaseCreateSheet } from '@/components/sheet/BaseCreateSheet';
 import { EntityType ,EntityHuman} from '../constants/api';
 
-import { SabitKodu_Store as EntityStore } from '../constants/store'; 
-import { SabitKodu_CreateSchema as EntityCreateSchema } from '../constants/schema'; 
+import { Marka_Store as EntityStore } from '../constants/store'; 
+import { Marka_CreateSchema as EntityCreateSchema } from '../constants/schema'; 
 
 
 const renderFormInputs = ({ formData, setFieldValue, errors }) => (
@@ -35,7 +35,7 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => (
   </div>
 );
 
-export const SabitKodu_CreateSheet = (props) => { 
+export const Marka_CreateSheet = (props) => { 
   const createAction = EntityStore(state => state.Create);
   const loadingCreate = EntityStore(state => state.loadingAction);
 

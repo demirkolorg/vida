@@ -4,7 +4,7 @@ import { BaseContextMenu } from '@/components/contextMenu/BaseContextMenu';
 import { EntityHuman, EntityType } from '../constants/api';
 import { HomeIcon } from 'lucide-react';
 
-export function SabitKodu_ContextMenu({ item }) {
+export function Marka_ContextMenu({ item }) {
   const menuTitle = item?.ad ? `${item.ad} ${EntityHuman} Kaydı` : `${EntityHuman} İşlemleri`;
 
   const handleListSubeler = useCallback(() => {
