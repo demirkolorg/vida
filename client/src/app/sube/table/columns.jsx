@@ -3,6 +3,17 @@ import { Badge } from '@/components/ui/badge';
 import { EntityHuman } from '../constants/api';
 
 export const Sube_Columns = () => {
+  const inArrayFilterFn = (row, columnId, filterValueArray) => {
+  // Eğer filtre için seçilmiş bir değer yoksa veya dizi boşsa,
+  // bu filtre için tüm satırları geçir (true döndür)
+  if (!filterValueArray || filterValueArray.length === 0) {
+    return true;
+  }
+  const rowValue = row.getValue(columnId); // Satırın ilgili kolondaki değeri
+  // Satırın değerinin, seçilen filtre değerleri dizisinde olup olmadığını kontrol et
+  return filterValueArray.includes(rowValue);
+};
+
   // Statik birim filter options - bu DataTable render sırasında doldurulacak
   const birimFilterOptions = []; // Boş bırakıyoruz, DataTable'da doldurulacak
 
@@ -16,6 +27,7 @@ export const Sube_Columns = () => {
       },
       enableHiding: false,
       size: 250,
+          filterFn: inArrayFilterFn,
       meta: {
         exportHeader: `${EntityHuman} Adı`,
         filterVariant: 'text',
@@ -35,6 +47,7 @@ export const Sube_Columns = () => {
           <div className="text-sm text-gray-500">-</div>
         );
       },
+          filterFn: inArrayFilterFn,
       size: 200,
       meta: {
         exportHeader: 'Bağlı Birim',
@@ -48,6 +61,7 @@ export const Sube_Columns = () => {
         const aciklama = row.getValue('aciklama');
         return <div className="text-sm text-gray-600 truncate max-w-xs">{aciklama || '-'}</div>;
       },
+          filterFn: inArrayFilterFn,
       size: 300,
       meta: {
         exportHeader: 'Açıklama',
@@ -68,6 +82,7 @@ export const Sube_Columns = () => {
           </div>
         );
       },
+          filterFn: inArrayFilterFn,
       size: 120,
       enableSorting: true,
       meta: {
@@ -89,6 +104,7 @@ export const Sube_Columns = () => {
           </div>
         );
       },
+          filterFn: inArrayFilterFn,
       size: 130,
       enableSorting: true,
       meta: {

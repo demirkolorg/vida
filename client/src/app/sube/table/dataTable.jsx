@@ -51,10 +51,10 @@ export function Sube_DataTable() {
     { 
       columnId: 'birim', 
       title: 'Birim',
-      options: [...new Set(datas.map(item => item.birim?.ad).filter(Boolean))].map(birimAd => ({
-        label: birimAd,
-        value: birimAd,
-      }))
+      // options: [...new Set(datas.map(item => item.birim?.ad).filter(Boolean))].map(birimAd => ({
+      //   label: birimAd,
+      //   value: birimAd,
+      // }))
     },
     { columnId: 'createdBy', title: 'Oluşturan' },
   ], [datas]);
