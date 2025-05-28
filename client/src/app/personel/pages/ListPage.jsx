@@ -11,7 +11,7 @@ import { Personel_StatusDialog as EntityStatusDialog } from '../dialogs/StatusDi
 
 export function Personel_ListPage() {
   return (
-    <div className="container mx-auto">
+    <div className="mx-auto">
       <PageHeader EntityHuman={EntityHuman} useEntityStore={EntityStore} />
       <EntityDataTable/>
       <EntityCreateSheet />

@@ -12,7 +12,7 @@ import { Buro_StatusDialog as EntityStatusDialog } from '../dialogs/StatusDialog
 
 export function Buro_ListPage() {
   return (
-    <div className="container mx-auto">
+    <div className="mx-auto">
       <PageHeader EntityHuman={EntityHuman} useEntityStore={EntityStore} />
       <EntityDataTable/>
       <EntityCreateSheet />

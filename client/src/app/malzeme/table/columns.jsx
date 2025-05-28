@@ -1,6 +1,5 @@
 import { HeaderButton } from '@/components/table/HeaderButton';
 import { Badge } from '@/components/ui/badge';
-import { EntityHuman } from '../constants/api';
 
 export const Malzeme_Columns = () => {
   const inArrayFilterFn = (row, columnId, filterValueArray) => {
@@ -46,13 +45,7 @@ export const Malzeme_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Sabit Kodu" />,
       cell: ({ row }) => {
         const sabitKodu = row.original.sabitKodu;
-        return sabitKodu ? (
-          <Badge variant="secondary" className="text-xs max-w-[120px] truncate">
-            {sabitKodu.ad}
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground text-sm">-</span>
-        );
+        return sabitKodu ? <div className="font-medium text-sm">{sabitKodu.ad}</div> : <span className="text-muted-foreground text-sm">-</span>;
       },
       filterFn: inArrayFilterFn,
       size: 160,
@@ -67,11 +60,7 @@ export const Malzeme_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Marka" />,
       cell: ({ row }) => {
         const marka = row.original.marka;
-        return marka ? (
-          <div className="font-medium text-sm">{marka.ad}</div>
-        ) : (
-          <span className="text-muted-foreground text-sm">-</span>
-        );
+        return marka ? <div className="font-medium text-sm">{marka.ad}</div> : <span className="text-muted-foreground text-sm">-</span>;
       },
       filterFn: inArrayFilterFn,
       size: 120,
@@ -86,11 +75,7 @@ export const Malzeme_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Model" />,
       cell: ({ row }) => {
         const model = row.original.model;
-        return model ? (
-          <div className="text-sm">{model.ad}</div>
-        ) : (
-          <span className="text-muted-foreground text-sm">-</span>
-        );
+        return model ? <div className="text-sm">{model.ad}</div> : <span className="text-muted-foreground text-sm">-</span>;
       },
       filterFn: inArrayFilterFn,
       size: 120,
@@ -105,10 +90,7 @@ export const Malzeme_Columns = () => {
       cell: ({ row }) => {
         const malzemeTipi = row.getValue('malzemeTipi');
         return (
-          <Badge 
-            variant={malzemeTipi === 'Demirbas' ? 'default' : 'secondary'} 
-            className="text-xs"
-          >
+          <Badge variant={malzemeTipi === 'Demirbas' ? 'default' : 'secondary'} className="text-xs">
             {malzemeTipi || '-'}
           </Badge>
         );
@@ -130,13 +112,7 @@ export const Malzeme_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Kuvve Birimi" />,
       cell: ({ row }) => {
         const birim = row.original.birim;
-        return birim ? (
-          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-            {birim.ad}
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground text-sm">-</span>
-        );
+        return birim ? <div className="font-medium text-sm">{birim.ad}</div> : <span className="text-muted-foreground text-sm">-</span>;
       },
       filterFn: inArrayFilterFn,
       size: 150,
@@ -151,19 +127,85 @@ export const Malzeme_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="İş Karşılığı Şube" />,
       cell: ({ row }) => {
         const sube = row.original.sube;
-        return sube ? (
-          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-            {sube.ad}
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground text-sm">-</span>
-        );
+        return sube ? <div className="font-medium text-sm">{sube.ad}</div> : <span className="text-muted-foreground text-sm">-</span>;
       },
       filterFn: inArrayFilterFn,
       size: 170,
       meta: {
         exportHeader: 'İş Karşılığı Şube',
         filterVariant: 'select',
+      },
+    },
+    {
+      accessorKey: 'kod',
+      header: ({ column }) => <HeaderButton column={column} title="Kod" />,
+      cell: ({ row }) => {
+        const kod = row.getValue('kod');
+        return (
+          <div className="font-mono text-xs">
+            {kod ? (
+              <Badge variant="outline" className="font-mono">
+                {kod}
+              </Badge>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )}
+          </div>
+        );
+      },
+      filterFn: inArrayFilterFn,
+      size: 150,
+      meta: {
+        exportHeader: 'Kod',
+        filterVariant: 'text',
+      },
+    },
+    {
+      accessorKey: 'bademSeriNo',
+      header: ({ column }) => <HeaderButton column={column} title="Badem Seri No" />,
+      cell: ({ row }) => {
+        const bademSeriNo = row.getValue('bademSeriNo');
+        return (
+          <div className="font-mono text-xs">
+            {bademSeriNo ? (
+              <Badge variant="outline" className="font-mono">
+                {bademSeriNo}
+              </Badge>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )}
+          </div>
+        );
+      },
+      filterFn: inArrayFilterFn,
+      size: 150,
+      meta: {
+        exportHeader: 'Badem Seri No',
+        filterVariant: 'text',
+      },
+    },
+    {
+      accessorKey: 'etmysSeriNo',
+      header: ({ column }) => <HeaderButton column={column} title="ETMYS Seri No" />,
+      cell: ({ row }) => {
+        const etmysSeriNo = row.getValue('etmysSeriNo');
+        return (
+          <div className="font-mono text-xs">
+            {etmysSeriNo ? (
+              <Badge variant="outline" className="font-mono">
+                {etmysSeriNo}
+              </Badge>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )}
+          </div>
+        );
+      },
+      filterFn: inArrayFilterFn,
+      size: 150,
+      meta: {
+        exportHeader: 'ETMYS Seri No',
+        filterVariant: 'text',
       },
     },
     {
@@ -196,13 +238,9 @@ export const Malzeme_Columns = () => {
       cell: ({ row }) => {
         const kayitTarihi = row.getValue('kayitTarihi');
         if (!kayitTarihi) return <span className="text-muted-foreground text-sm">-</span>;
-        
+
         const date = new Date(kayitTarihi);
-        return (
-          <div className="text-sm">
-            {date.toLocaleDateString('tr-TR')}
-          </div>
-        );
+        return <div className="text-sm">{date.toLocaleDateString('tr-TR')}</div>;
       },
       filterFn: inArrayFilterFn,
       size: 120,

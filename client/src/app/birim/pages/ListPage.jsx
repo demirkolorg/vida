@@ -12,7 +12,7 @@ import { Birim_StatusDialog as EntityStatusDialog } from '../dialogs/StatusDialo
 
 export function Birim_ListPage() {
   return (
-    <div className="container mx-auto">
+    <div className="mx-auto">
       <PageHeader EntityHuman={EntityHuman} useEntityStore={EntityStore} />
       <EntityDataTable/>
       <EntityCreateSheet />

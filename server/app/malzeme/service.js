@@ -214,12 +214,12 @@ const service = {
 
       // Opsiyonel alanlar
       if (data.vidaNo !== undefined) createPayload.vidaNo = data.vidaNo;
-      if (data.kayitTarihi !== undefined) createPayload.kayitTarihi = data.kayitTarihi;
       if (data.kod !== undefined) createPayload.kod = data.kod;
       if (data.bademSeriNo !== undefined) createPayload.bademSeriNo = data.bademSeriNo;
       if (data.etmysSeriNo !== undefined) createPayload.etmysSeriNo = data.etmysSeriNo;
       if (data.stokDemirbasNo !== undefined) createPayload.stokDemirbasNo = data.stokDemirbasNo;
       if (data.aciklama !== undefined) createPayload.aciklama = data.aciklama;
+      if (data.kayitTarihi !== undefined) createPayload.kayitTarihi = data.kayitTarihi;
 
       return await prisma[PrismaName].create({
         data: createPayload,

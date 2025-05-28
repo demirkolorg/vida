@@ -12,7 +12,7 @@ import { SabitKodu_StatusDialog as EntityStatusDialog } from '../dialogs/StatusD
 
 export function SabitKodu_ListPage() {
   return (
-    <div className="container mx-auto">
+    <div className="mx-auto">
       <PageHeader EntityHuman={EntityHuman} useEntityStore={EntityStore} />
       <EntityDataTable/>
       <EntityCreateSheet />

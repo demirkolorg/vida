@@ -6,7 +6,7 @@ import { FormFieldDatePicker } from '@/components/form/FormFieldDatePicker';
 import { BaseCreateSheet } from '@/components/sheet/BaseCreateSheet';
 import { EntityType, EntityHuman } from '../constants/api';
 
-import { Malzeme_Store as EntityStore } from '../constants/store'; 
+import { Malzeme_Store as EntityStore } from '../constants/store';
 import { Malzeme_CreateSchema as EntityCreateSchema } from '../constants/schema';
 
 // İlişkili varlıkların store'ları
@@ -20,7 +20,7 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
   // İlişkili verileri store'lardan al
   const birimList = Birim_Store(state => state.datas);
   const loadBirimList = Birim_Store(state => state.GetAll);
-  
+
   const subeList = Sube_Store(state => state.datas);
   const loadSubeList = Sube_Store(state => state.GetAll);
 
@@ -53,35 +53,40 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
   }, [birimList, subeList, sabitKoduList, markaList, modelList, loadBirimList, loadSubeList, loadSabitKoduList, loadMarkaList, loadModelList]);
 
   // Seçenekleri hazırla
-  const birimOptions = birimList?.map(birim => ({
-    value: birim.id,
-    label: birim.ad
-  })) || [];
+  const birimOptions =
+    birimList?.map(birim => ({
+      value: birim.id,
+      label: birim.ad,
+    })) || [];
 
-  const subeOptions = subeList?.map(sube => ({
-    value: sube.id,
-    label: sube.ad
-  })) || [];
+  const subeOptions =
+    subeList?.map(sube => ({
+      value: sube.id,
+      label: sube.ad,
+    })) || [];
 
-  const sabitKoduOptions = sabitKoduList?.map(sabitKodu => ({
-    value: sabitKodu.id,
-    label: sabitKodu.ad
-  })) || [];
+  const sabitKoduOptions =
+    sabitKoduList?.map(sabitKodu => ({
+      value: sabitKodu.id,
+      label: sabitKodu.ad,
+    })) || [];
 
-  const markaOptions = markaList?.map(marka => ({
-    value: marka.id,
-    label: marka.ad
-  })) || [];
+  const markaOptions =
+    markaList?.map(marka => ({
+      value: marka.id,
+      label: marka.ad,
+    })) || [];
 
-  const modelOptions = modelList?.filter(model => 
-    !formData.markaId || model.markaId === formData.markaId
-  ).map(model => ({
-    value: model.id,
-    label: model.ad
-  })) || [];
+  const modelOptions =
+    modelList
+      ?.filter(model => !formData.markaId || model.markaId === formData.markaId)
+      .map(model => ({
+        value: model.id,
+        label: model.ad,
+      })) || [];
 
   // Marka değiştiğinde model seçimini sıfırla
-  const handleMarkaChange = (markaId) => {
+  const handleMarkaChange = markaId => {
     setFieldValue('markaId', markaId);
     // Eğer seçili model bu markaya ait değilse temizle
     if (formData.modelId) {
@@ -100,16 +105,7 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
   return (
     <div className="space-y-4">
       {/* Vida No */}
-      <FormFieldInput
-        label="Vida No"
-        name="vidaNo"
-        id={`create-${EntityType}-vidaNo`}
-        value={formData.vidaNo || ''}
-        onChange={e => setFieldValue('vidaNo', e.target.value)}
-        error={errors.vidaNo}
-        placeholder="Vida numarasını giriniz"
-        maxLength={50}
-      />
+      <FormFieldInput label="Vida No" name="vidaNo" id={`create-${EntityType}-vidaNo`} value={formData.vidaNo || ''} onChange={e => setFieldValue('vidaNo', e.target.value)} error={errors.vidaNo} placeholder="Vida numarasını giriniz" maxLength={50} />
 
       {/* Malzeme Tipi */}
       <FormFieldSelect
@@ -184,15 +180,15 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
       {/* Model */}
       <FormFieldSelect
         label="Model"
-        name="modelId"  
+        name="modelId"
         id={`create-${EntityType}-modelId`}
         value={formData.modelId || ''}
         onChange={value => setFieldValue('modelId', value)}
         error={errors.modelId}
         showRequiredStar={true}
-        placeholder={formData.markaId ? "Modeli seçiniz" : "Önce marka seçiniz"}
+        placeholder={formData.markaId ? 'Modeli seçiniz' : 'Önce marka seçiniz'}
         options={modelOptions}
-        emptyMessage={formData.markaId ? "Bu marka için model bulunamadı" : "Önce bir marka seçin"}
+        emptyMessage={formData.markaId ? 'Bu marka için model bulunamadı' : 'Önce bir marka seçin'}
         disabled={!formData.markaId}
       />
 
@@ -200,24 +196,37 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
       <FormFieldDatePicker
         label="Kayıt Tarihi"
         name="kayitTarihi"
-        id={`create-${EntityType}-kayitTarihi`}
+        id={`edit-${EntityType}-kayitTarihi`}
         value={formData.kayitTarihi || null}
-        onChange={date => setFieldValue('kayitTarihi', date)}
+        onChange={date => {
+          if (date) {
+            // Seçilen tarihi klonlayarak yeni bir Date nesnesi oluştur
+            const adjustedDate = new Date(
+              Date.UTC(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate(),
+                12, // Saat UTC 12
+                0, // Dakika
+                0, // Saniye
+                0, // Milisaniye
+              ),
+            );
+
+            console.log('DatePicker selected date object (original):', date);
+            console.log('Adjusted Date for payload (UTC noon):', adjustedDate);
+            console.log('Adjusted Date ISO for payload:', adjustedDate.toISOString());
+            setFieldValue('kayitTarihi', adjustedDate);
+          } else {
+            setFieldValue('kayitTarihi', null);
+          }
+        }}
         error={errors.kayitTarihi}
         placeholder="Kayıt tarihini seçiniz"
       />
 
       {/* Kod */}
-      <FormFieldInput
-        label="Kod"
-        name="kod"
-        id={`create-${EntityType}-kod`}
-        value={formData.kod || ''}
-        onChange={e => setFieldValue('kod', e.target.value)}
-        error={errors.kod}
-        placeholder="Malzeme kodunu giriniz"
-        maxLength={50}
-      />
+      <FormFieldInput label="Kod" name="kod" id={`create-${EntityType}-kod`} value={formData.kod || ''} onChange={e => setFieldValue('kod', e.target.value)} error={errors.kod} placeholder="Malzeme kodunu giriniz" maxLength={50} />
 
       {/* Badem Seri No */}
       <FormFieldInput
@@ -270,22 +279,13 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
   );
 };
 
-export const Malzeme_CreateSheet = (props) => { 
+export const Malzeme_CreateSheet = props => {
   const createAction = EntityStore(state => state.Create);
   const loadingCreate = EntityStore(state => state.loadingAction);
 
   return (
-    <BaseCreateSheet
-      entityType={EntityType}
-      title={`Yeni ${EntityHuman} Ekle`}
-      schema={EntityCreateSchema}
-      createAction={createAction}
-      loadingCreate={loadingCreate}
-      {...props}
-    >
-      {({ formData, setFieldValue, errors }) =>
-        renderFormInputs({ formData, setFieldValue, errors })
-      }
+    <BaseCreateSheet entityType={EntityType} title={`Yeni ${EntityHuman} Ekle`} schema={EntityCreateSchema} createAction={createAction} loadingCreate={loadingCreate} {...props}>
+      {({ formData, setFieldValue, errors }) => renderFormInputs({ formData, setFieldValue, errors })}
     </BaseCreateSheet>
   );
 };
