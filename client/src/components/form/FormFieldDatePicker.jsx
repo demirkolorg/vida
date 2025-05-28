@@ -75,7 +75,7 @@ export function FormFieldDatePicker({
             locale={tr}
             initialFocus
             disabled={disabled}
-            className="rounded-md border"
+            className="rounded-md"
           />
         </PopoverContent>
       </Popover>

@@ -12,9 +12,9 @@ import { Malzeme_CreateSchema as EntityCreateSchema } from '../constants/schema'
 // İlişkili varlıkların store'ları
 import { Birim_Store } from '@/app/birim/constants/store';
 import { Sube_Store } from '@/app/sube/constants/store';
-// import { SabitKodu_Store } from '@/app/sabit-kodu/constants/store';
-// import { Marka_Store } from '@/app/marka/constants/store';
-// import { Model_Store } from '@/app/model/constants/store';
+import { SabitKodu_Store } from '@/app/sabitKodu/constants/store';
+import { Marka_Store } from '@/app/marka/constants/store';
+import { Model_Store } from '@/app/model/constants/store';
 
 const renderFormInputs = ({ formData, setFieldValue, errors }) => {
   // İlişkili verileri store'lardan al
@@ -24,6 +24,15 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
   const subeList = Sube_Store(state => state.datas);
   const loadSubeList = Sube_Store(state => state.GetAll);
 
+  const sabitKoduList = SabitKodu_Store(state => state.datas);
+  const loadSabitKoduList = SabitKodu_Store(state => state.GetAll);
+
+  const markaList = Marka_Store(state => state.datas);
+  const loadMarkaList = Marka_Store(state => state.GetAll);
+
+  const modelList = Model_Store(state => state.datas);
+  const loadModelList = Model_Store(state => state.GetAll);
+
   // Component mount olduğunda ilişkili listeleri yükle
   React.useEffect(() => {
     if (!birimList || birimList.length === 0) {
@@ -32,7 +41,16 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
     if (!subeList || subeList.length === 0) {
       loadSubeList({ showToast: false });
     }
-  }, [birimList, subeList, loadBirimList, loadSubeList]);
+    if (!sabitKoduList || sabitKoduList.length === 0) {
+      loadSabitKoduList({ showToast: false });
+    }
+    if (!markaList || markaList.length === 0) {
+      loadMarkaList({ showToast: false });
+    }
+    if (!modelList || modelList.length === 0) {
+      loadModelList({ showToast: false });
+    }
+  }, [birimList, subeList, sabitKoduList, markaList, modelList, loadBirimList, loadSubeList, loadSabitKoduList, loadMarkaList, loadModelList]);
 
   // Seçenekleri hazırla
   const birimOptions = birimList?.map(birim => ({
@@ -44,6 +62,35 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
     value: sube.id,
     label: sube.ad
   })) || [];
+
+  const sabitKoduOptions = sabitKoduList?.map(sabitKodu => ({
+    value: sabitKodu.id,
+    label: sabitKodu.ad
+  })) || [];
+
+  const markaOptions = markaList?.map(marka => ({
+    value: marka.id,
+    label: marka.ad
+  })) || [];
+
+  const modelOptions = modelList?.filter(model => 
+    !formData.markaId || model.markaId === formData.markaId
+  ).map(model => ({
+    value: model.id,
+    label: model.ad
+  })) || [];
+
+  // Marka değiştiğinde model seçimini sıfırla
+  const handleMarkaChange = (markaId) => {
+    setFieldValue('markaId', markaId);
+    // Eğer seçili model bu markaya ait değilse temizle
+    if (formData.modelId) {
+      const selectedModel = modelList?.find(model => model.id === formData.modelId);
+      if (selectedModel && selectedModel.markaId !== markaId) {
+        setFieldValue('modelId', '');
+      }
+    }
+  };
 
   const malzemeTipiOptions = [
     { value: 'Demirbas', label: 'Demirbaş' },
@@ -106,40 +153,47 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
         emptyMessage="Şube bulunamadı"
       />
 
-      {/* Sabit Kodu - Bu kısım ilgili store hazır olduğunda açılacak */}
-      <FormFieldInput
-        label="Sabit Kodu ID"
+      {/* Sabit Kodu */}
+      <FormFieldSelect
+        label="Sabit Kodu"
         name="sabitKoduId"
         id={`create-${EntityType}-sabitKoduId`}
         value={formData.sabitKoduId || ''}
-        onChange={e => setFieldValue('sabitKoduId', e.target.value)}
+        onChange={value => setFieldValue('sabitKoduId', value)}
         error={errors.sabitKoduId}
         showRequiredStar={true}
-        placeholder="Sabit kodu ID'sini giriniz"
+        placeholder="Sabit kodunu seçiniz"
+        options={sabitKoduOptions}
+        emptyMessage="Sabit kodu bulunamadı"
       />
 
-      {/* Marka ID - Bu kısım ilgili store hazır olduğunda açılacak */}
-      <FormFieldInput
-        label="Marka ID"
+      {/* Marka */}
+      <FormFieldSelect
+        label="Marka"
         name="markaId"
         id={`create-${EntityType}-markaId`}
         value={formData.markaId || ''}
-        onChange={e => setFieldValue('markaId', e.target.value)}
+        onChange={handleMarkaChange}
         error={errors.markaId}
         showRequiredStar={true}
-        placeholder="Marka ID'sini giriniz"
+        placeholder="Markayı seçiniz"
+        options={markaOptions}
+        emptyMessage="Marka bulunamadı"
       />
 
-      {/* Model ID - Bu kısım ilgili store hazır olduğunda açılacak */}
-      <FormFieldInput
-        label="Model ID"
+      {/* Model */}
+      <FormFieldSelect
+        label="Model"
         name="modelId"  
         id={`create-${EntityType}-modelId`}
         value={formData.modelId || ''}
-        onChange={e => setFieldValue('modelId', e.target.value)}
+        onChange={value => setFieldValue('modelId', value)}
         error={errors.modelId}
         showRequiredStar={true}
-        placeholder="Model ID'sini giriniz"
+        placeholder={formData.markaId ? "Modeli seçiniz" : "Önce marka seçiniz"}
+        options={modelOptions}
+        emptyMessage={formData.markaId ? "Bu marka için model bulunamadı" : "Önce bir marka seçin"}
+        disabled={!formData.markaId}
       />
 
       {/* Kayıt Tarihi */}
