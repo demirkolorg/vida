@@ -13,16 +13,43 @@ const service = {
     const result = await prisma[PrismaName].findUnique({ where: { sicil, status: AuditStatusEnum.Aktif } });
     if (!result) throw new Error(`${email} adresine kayıtlı kullanıcı bulunamadı.`);
   },
+  // server/app/auth/service.js - login fonksiyonu düzeltilmiş hali
   login: async data => {
     try {
-      const user = await prisma[PrismaName].findFirst({ where: { sicil: data.sicil, status: AuditStatusEnum.Aktif, isUser: true } });
-      if (!user.parola) throw new Error('Parola ayarlanmamış.');
+      const user = await prisma[PrismaName].findFirst({
+        where: {
+          sicil: data.sicil,
+          status: AuditStatusEnum.Aktif,
+          isUser: true,
+        },
+      });
+
+      // DÜZELTME 1: Kullanıcı kontrolü eklendi
+      if (!user) {
+        throw new Error('Kullanıcı bulunamadı veya aktif değil.');
+      }
+
+      if (!user.parola) {
+        throw new Error('Parola ayarlanmamış.');
+      }
+
       const isMatch = await bcrypt.compare(data.parola, user.parola);
-      if (!isMatch) throw new Error('Geçersiz parola.');
+      if (!isMatch) {
+        throw new Error('Geçersiz parola.');
+      }
+
       const tokenPayload = { id: user.id, role: user.role, sicil: user.sicil };
-      const accessToken = jwt.sign(tokenPayload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION || '60d' });
-      const refreshToken = jwt.sign(tokenPayload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION || '60d' });
-      await prisma[PrismaName].update({ where: { id: user.id }, data: { lastLogin: new Date() } });
+      const accessToken = jwt.sign(tokenPayload, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRATION || '60d',
+      });
+      const refreshToken = jwt.sign(tokenPayload, process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRATION || '60d',
+      });
+
+      await prisma[PrismaName].update({
+        where: { id: user.id },
+        data: { lastLogin: new Date() },
+      });
 
       return {
         accessToken,

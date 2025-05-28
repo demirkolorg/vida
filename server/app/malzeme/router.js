@@ -6,17 +6,14 @@ import { RoleEnum } from '@prisma/client';
 
 r.get('/health', c.health);
 r.get('/getAll', authToken, authRoles(RoleEnum.Superadmin), c.getAll);
-r.post('/getAllQuery', authToken, authRoles(RoleEnum.Superadmin), c.getAllQuery);
-r.post('/getById', authToken, authRoles(RoleEnum.Superadmin), c.getById);
-r.post('/getByBirimId', authToken, authRoles(RoleEnum.Superadmin), c.getByBirimId);
-r.post('/getBySubeId', authToken, authRoles(RoleEnum.Superadmin), c.getBySubeId);
-r.post('/getBySabitKoduId', authToken, authRoles(RoleEnum.Superadmin), c.getBySabitKoduId);
-r.post('/getByMarkaId', authToken, authRoles(RoleEnum.Superadmin), c.getByMarkaId);
-r.post('/getByModelId', authToken, authRoles(RoleEnum.Superadmin), c.getByModelId);
-r.post('/create', authToken, authRoles(RoleEnum.Superadmin), c.create);
-r.post('/update', authToken, authRoles(RoleEnum.Superadmin), c.update);
-r.post('/updateStatus', authToken, authRoles(RoleEnum.Superadmin), c.updateStatus);
+r.post('/getByQuery', authToken, authRoles(RoleEnum.Personel, RoleEnum.Admin, RoleEnum.Superadmin), c.getByQuery);
+r.post('/getById', authToken, authRoles(RoleEnum.Personel), c.getById);
+r.post('/getByBirimId', authToken, authRoles(RoleEnum.Personel), c.getByBirimId);
+r.post('/getBySubeId', authToken, authRoles(RoleEnum.Personel), c.getBySubeId);
+r.post('/create', authToken, authRoles(RoleEnum.Admin), c.create);
+r.post('/update', authToken, authRoles(RoleEnum.Admin), c.update);
+r.post('/updateStatus', authToken, authRoles(RoleEnum.Admin), c.updateStatus);
 r.post('/delete', authToken, authRoles(RoleEnum.Superadmin), c.delete);
-r.post('/search', authToken, authRoles(RoleEnum.Superadmin), c.search);
+r.post('/search', authToken, authRoles(RoleEnum.Personel), c.search);
 
 export default r;

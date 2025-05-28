@@ -1,4 +1,5 @@
-import { LayoutDashboard, Users, GitBranch, Warehouse, Package, ShieldCheck, Route, Pyramid, Briefcase, Layers, Building, Construction } from 'lucide-react'; // Yeni ikonlar eklendi
+// Navigation data (güncellenmiş)
+import { LayoutDashboard, Users, Warehouse, Package, ShieldCheck, Route, Pyramid, Briefcase, Layers,  Construction, Building2, MapPin, Tag } from 'lucide-react';
 
 export const NavMainData = [
   {
@@ -6,55 +7,88 @@ export const NavMainData = [
     label: 'Anasayfa',
     icon: LayoutDashboard,
   },
+
   {
-    to: '/malzemeler',
-    label: 'Malzemeler',
+    to: '/malzeme',
+    label: 'Malzeme Yönetimi',
     icon: Package,
   },
   {
-    to: '/malzeme-hareketleri',
+    to: '/malzemehareketleri',
     label: 'Malzeme Hareketleri',
     icon: Route,
   },
 
   {
-    to: '/personeller', // Eğer bu direkt bir sayfa değilse ve altında menü varsa, 'to' gerekmeyebilir
-    label: 'Personeller',
-    icon: Users,
-    isDropdown: true, // Bu bir dropdown menü olacak
-    children: [
-      {
-        to: '/personeller/liste',
-        label: 'Personel Listesi',
-        icon: Users, // Alt menü için de ikon olabilir
-      },
-      {
-        to: '/personeller/roller',
-        label: 'Roller ve Yetkiler',
-        icon: ShieldCheck,
-      },
-      {
-        to: '/personeller/departmanlar',
-        label: 'Departmanlar',
-        icon: Briefcase, // Briefcase ikonunu iconMap'e eklemeyi unutmayın
-      },
-    ],
-  },
-  {
-    label: 'Tanımlar',
-    icon: Layers,
+    to: '/organizasyon',
+    label: 'Organizasyon',
+    icon: Building2,
     isDropdown: true,
     children: [
       {
         to: '/birim',
-        label: 'Birim',
-        icon: Building,
+        label: 'Birimler',
+        icon: Building2,
       },
       {
         to: '/sube',
-        label: 'Şube',
-        icon: GitBranch,
+        label: 'Şubeler',
+        icon: ShieldCheck,
       },
+      {
+        to: '/buro',
+        label: 'Bürolar',
+        icon: Briefcase,
+      },
+    ],
+  },
+
+  {
+    label: 'Personel Yönetimi',
+    icon: Building2,
+    isDropdown: true,
+    children: [
+      {
+        to: '/personel',
+        label: 'Personel Listesi',
+        icon: Users,
+      },
+      {
+        to: '/personel/roller',
+        label: 'Roller ve Yetkiler',
+        icon: ShieldCheck,
+      },
+      {
+        to: '/personel/departmanlar',
+        label: 'Departmanlar',
+        icon: Briefcase,
+      },
+    ],
+  },
+
+  {
+    label: 'Depo Yönetimi',
+    icon: Building2,
+    isDropdown: true,
+    children: [
+      {
+        to: '/depo',
+        label: 'Depolar',
+        icon: Warehouse,
+      },
+      {
+        to: '/konum',
+        label: 'Konumlar',
+        icon: MapPin,
+      },
+    ],
+  },
+
+  {
+    label: 'Malzeme Tanımları',
+    icon: Layers,
+    isDropdown: true,
+    children: [
       {
         to: '/sabitkodu',
         label: 'Sabit Kodu',
@@ -66,9 +100,9 @@ export const NavMainData = [
         icon: Pyramid,
       },
       {
-        to: '/depo',
-        label: 'Depo',
-        icon: Warehouse,
+        to: '/model',
+        label: 'Model',
+        icon: Tag,
       },
     ],
   },

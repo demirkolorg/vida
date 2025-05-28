@@ -48,6 +48,7 @@ enum RoleEnum {
 
 // ----- Models -----
 
+//eklendi
 model Birim {
   id         String    @id // String ID, uygulama tarafından atanacak
   ad         String    @unique
@@ -63,7 +64,7 @@ model Birim {
   updatedById String? // Personel ID'si (String)
   updatedBy   Personel?       @relation("BirimUpdatedBy", fields: [updatedById], references: [id])
 }
-
+//eklendi
 model Sube {
   id         String    @id
   ad         String
@@ -81,7 +82,7 @@ model Sube {
   updatedById String?
   updatedBy   Personel?       @relation("SubeUpdatedBy", fields: [updatedById], references: [id])
 }
-
+//eklendi
 model Buro {
   id          String     @id
   ad          String
@@ -100,7 +101,7 @@ model Buro {
   updatedById String?
   updatedBy   Personel?       @relation("BuroUpdatedBy", fields: [updatedById], references: [id])
 }
-
+//eklendi
 model SabitKodu {
   id         String    @id
   ad         String    @unique
@@ -115,7 +116,7 @@ model SabitKodu {
   updatedById String?
   updatedBy   Personel?       @relation("SabitKoduUpdatedBy", fields: [updatedById], references: [id])
 }
-
+//eklendi
 model Marka {
   id         String    @id
   ad         String    @unique
@@ -131,7 +132,7 @@ model Marka {
   updatedById String?
   updatedBy   Personel?       @relation("MarkaUpdatedBy", fields: [updatedById], references: [id])
 }
-
+//eklendi
 model Model {
   id         String    @id
   ad         String
@@ -150,7 +151,7 @@ model Model {
 
   @@unique([ad, markaId])
 }
-
+//eklendi
 model Depo {
   id       String  @id
   ad       String  @unique
@@ -165,7 +166,7 @@ model Depo {
   updatedById String?
   updatedBy   Personel?       @relation("DepoUpdatedBy", fields: [updatedById], references: [id])
 }
-
+//eklendi
 model Konum {
   id                 String           @id
   ad                 String
@@ -234,7 +235,7 @@ model MalzemeHareket {
   createdById String // String FK
   createdBy   Personel        @relation("MalzemeHareketCreatedBy", fields: [createdById], references: [id])
 }
-
+//eklendi
 model Personel {
   id         String    @id
   ad         String
@@ -287,7 +288,7 @@ model Personel {
   updatedById String? // String FK
   updatedBy   Personel?       @relation("PersonelUpdatedBy", fields: [updatedById], references: [id])
 }
-
+//eklendi
 model UserSettings {
   id         String   @id
   themeName  String?  @default("violet")
@@ -301,7 +302,7 @@ model UserSettings {
   // notificationsEnabled Boolean? @default(true)
   // itemsPerPage        Int?     @default(10)
 }
-
+//eklendi
 model SavedFilter {
   id          String  @id
   filterName  String // "Aktif Birimler", "İstanbul Şubeleri Malzemeleri"

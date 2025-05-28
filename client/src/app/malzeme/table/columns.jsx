@@ -1,0 +1,215 @@
+import { HeaderButton } from '@/components/table/HeaderButton';
+import { Badge } from '@/components/ui/badge';
+import { EntityHuman } from '../constants/api';
+
+export const Malzeme_Columns = () => {
+  const inArrayFilterFn = (row, columnId, filterValueArray) => {
+    // Eğer filtre için seçilmiş bir değer yoksa veya dizi boşsa,
+    // bu filtre için tüm satırları geçir (true döndür)
+    if (!filterValueArray || filterValueArray.length === 0) {
+      return true;
+    }
+    const rowValue = row.getValue(columnId); // Satırın ilgili kolondaki değeri
+    // Satırın değerinin, seçilen filtre değerleri dizisinde olup olmadığını kontrol et
+    return filterValueArray.includes(rowValue);
+  };
+
+  return [
+    {
+      accessorKey: 'vidaNo',
+      header: ({ column }) => <HeaderButton column={column} title="Vida No" />,
+      cell: ({ row }) => {
+        const vidaNo = row.getValue('vidaNo');
+        return (
+          <div className="font-mono text-sm">
+            {vidaNo ? (
+              <Badge variant="outline" className="font-mono">
+                {vidaNo}
+              </Badge>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )}
+          </div>
+        );
+      },
+      enableHiding: false,
+      size: 150,
+      filterFn: inArrayFilterFn,
+      meta: {
+        exportHeader: 'Vida No',
+        filterVariant: 'text',
+      },
+    },
+    {
+      accessorKey: 'sabitKodu',
+      accessorFn: row => row.sabitKodu?.ad || '',
+      header: ({ column }) => <HeaderButton column={column} title="Sabit Kodu" />,
+      cell: ({ row }) => {
+        const sabitKodu = row.original.sabitKodu;
+        return sabitKodu ? (
+          <Badge variant="secondary" className="text-xs max-w-[120px] truncate">
+            {sabitKodu.ad}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground text-sm">-</span>
+        );
+      },
+      filterFn: inArrayFilterFn,
+      size: 160,
+      meta: {
+        exportHeader: 'Sabit Kodu',
+        filterVariant: 'select',
+      },
+    },
+    {
+      accessorKey: 'marka',
+      accessorFn: row => row.marka?.ad || '',
+      header: ({ column }) => <HeaderButton column={column} title="Marka" />,
+      cell: ({ row }) => {
+        const marka = row.original.marka;
+        return marka ? (
+          <div className="font-medium text-sm">{marka.ad}</div>
+        ) : (
+          <span className="text-muted-foreground text-sm">-</span>
+        );
+      },
+      filterFn: inArrayFilterFn,
+      size: 120,
+      meta: {
+        exportHeader: 'Marka',
+        filterVariant: 'select',
+      },
+    },
+    {
+      accessorKey: 'model',
+      accessorFn: row => row.model?.ad || '',
+      header: ({ column }) => <HeaderButton column={column} title="Model" />,
+      cell: ({ row }) => {
+        const model = row.original.model;
+        return model ? (
+          <div className="text-sm">{model.ad}</div>
+        ) : (
+          <span className="text-muted-foreground text-sm">-</span>
+        );
+      },
+      filterFn: inArrayFilterFn,
+      size: 120,
+      meta: {
+        exportHeader: 'Model',
+        filterVariant: 'select',
+      },
+    },
+    {
+      accessorKey: 'malzemeTipi',
+      header: ({ column }) => <HeaderButton column={column} title="Malzeme Tipi" />,
+      cell: ({ row }) => {
+        const malzemeTipi = row.getValue('malzemeTipi');
+        return (
+          <Badge 
+            variant={malzemeTipi === 'Demirbas' ? 'default' : 'secondary'} 
+            className="text-xs"
+          >
+            {malzemeTipi || '-'}
+          </Badge>
+        );
+      },
+      filterFn: inArrayFilterFn,
+      size: 120,
+      meta: {
+        exportHeader: 'Malzeme Tipi',
+        filterVariant: 'select',
+        filterOptions: [
+          { label: 'Demirbaş', value: 'Demirbas' },
+          { label: 'Sarf', value: 'Sarf' },
+        ],
+      },
+    },
+    {
+      accessorKey: 'birim',
+      accessorFn: row => row.birim?.ad || '',
+      header: ({ column }) => <HeaderButton column={column} title="Kuvve Birimi" />,
+      cell: ({ row }) => {
+        const birim = row.original.birim;
+        return birim ? (
+          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+            {birim.ad}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground text-sm">-</span>
+        );
+      },
+      filterFn: inArrayFilterFn,
+      size: 150,
+      meta: {
+        exportHeader: 'Kuvve Birimi',
+        filterVariant: 'select',
+      },
+    },
+    {
+      accessorKey: 'sube',
+      accessorFn: row => row.sube?.ad || '',
+      header: ({ column }) => <HeaderButton column={column} title="İş Karşılığı Şube" />,
+      cell: ({ row }) => {
+        const sube = row.original.sube;
+        return sube ? (
+          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+            {sube.ad}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground text-sm">-</span>
+        );
+      },
+      filterFn: inArrayFilterFn,
+      size: 170,
+      meta: {
+        exportHeader: 'İş Karşılığı Şube',
+        filterVariant: 'select',
+      },
+    },
+    {
+      accessorKey: 'stokDemirbasNo',
+      header: ({ column }) => <HeaderButton column={column} title="Stok/Demirbaş No" />,
+      cell: ({ row }) => {
+        const stokDemirbasNo = row.getValue('stokDemirbasNo');
+        return (
+          <div className="font-mono text-xs">
+            {stokDemirbasNo ? (
+              <Badge variant="outline" className="font-mono">
+                {stokDemirbasNo}
+              </Badge>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )}
+          </div>
+        );
+      },
+      filterFn: inArrayFilterFn,
+      size: 150,
+      meta: {
+        exportHeader: 'Stok/Demirbaş No',
+        filterVariant: 'text',
+      },
+    },
+    {
+      accessorKey: 'kayitTarihi',
+      header: ({ column }) => <HeaderButton column={column} title="Kayıt Tarihi" />,
+      cell: ({ row }) => {
+        const kayitTarihi = row.getValue('kayitTarihi');
+        if (!kayitTarihi) return <span className="text-muted-foreground text-sm">-</span>;
+        
+        const date = new Date(kayitTarihi);
+        return (
+          <div className="text-sm">
+            {date.toLocaleDateString('tr-TR')}
+          </div>
+        );
+      },
+      filterFn: inArrayFilterFn,
+      size: 120,
+      meta: {
+        exportHeader: 'Kayıt Tarihi',
+        filterVariant: 'date',
+      },
+    },
+  ];
+};

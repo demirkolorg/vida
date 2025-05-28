@@ -19,7 +19,7 @@ async function main() {
 
     const yeniId = helper.generateId(HizmetName); // "PERSONEL" için ID
     const adminSifrePlainText = '999999'; // Plain text şifre
-    const saltRounds = 10;
+    const saltRounds = 12;
     const hashlenmisSifre = await bcrypt.hash(adminSifrePlainText, saltRounds);
 
     const superAdminData = {

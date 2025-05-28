@@ -1,9 +1,8 @@
 import { prisma } from '../../config/db.js';
 import helper from '../../utils/helper.js';
-import { HizmetName, HumanName, PrismaName } from './base.js';
+import { HizmetName, PrismaName, HumanName } from './base.js';
 import { AuditStatusEnum } from '@prisma/client';
-import MarkaService from '../marka/service.js'; // Marka varlığını kontrol etmek için
-import MalzemeService from '../malzeme/service.js'; // Marka varlığını kontrol etmek için
+import MarkaService from '../marka/service.js';
 
 const service = {
   checkExistsById: async id => {
@@ -14,11 +13,13 @@ const service = {
     return result;
   },
 
-  checkMarkaCount: async markaId => {
-    try {
-      return await prisma[PrismaName].count({ where: { markaId, status: AuditStatusEnum.Aktif } });
-    } catch (error) {
-      throw error;
+  checkModelMarkaUnique: async (ad, markaId, excludeId = null) => {
+    const whereClause = { ad, markaId, status: AuditStatusEnum.Aktif };
+    if (excludeId) whereClause.id = { not: excludeId };
+    
+    const existing = await prisma[PrismaName].findFirst({ where: whereClause });
+    if (existing) {
+      throw new Error(`Bu marka için "${ad}" adında bir model zaten mevcut.`);
     }
   },
 
@@ -26,8 +27,42 @@ const service = {
     try {
       return await prisma[PrismaName].findMany({
         where: { status: AuditStatusEnum.Aktif },
-        orderBy: { ad: 'asc' },
-        include: { marka: { select: { id: true, ad: true } } },
+        orderBy: [{ marka: { ad: 'asc' } }, { ad: 'asc' }],
+        include: {
+          marka: { select: { id: true, ad: true } },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getByQuery: async (data = {}) => {
+    try {
+      const whereClause = {};
+      if (data.status) whereClause.status = data.status;
+      if (data.ad) whereClause.ad = data.ad;
+      if (data.markaId) whereClause.markaId = data.markaId;
+      if (data.aciklama) whereClause.aciklama = data.aciklama;
+
+      return await prisma[PrismaName].findMany({
+        where: whereClause,
+        orderBy: [{ marka: { ad: 'asc' } }, { ad: 'asc' }],
+        include: {
+          marka: { select: { id: true, ad: true } },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
       });
     } catch (error) {
       throw error;
@@ -40,7 +75,15 @@ const service = {
 
       return await prisma[PrismaName].findFirst({
         where: { id: data.id, status: AuditStatusEnum.Aktif },
-        include: { marka: { select: { id: true, ad: true } } },
+        include: {
+          marka: { select: { id: true, ad: true } },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
       });
     } catch (error) {
       throw error;
@@ -51,9 +94,16 @@ const service = {
     try {
       await MarkaService.checkExistsById(data.markaId);
 
-      return await prisma[PrismaName].findFirst({
+      return await prisma[PrismaName].findMany({
         where: { markaId: data.markaId, status: AuditStatusEnum.Aktif },
-        include: { marka: { select: { id: true, ad: true } } },
+        orderBy: { ad: 'asc' },
+        include: {
+          marka: { select: { id: true, ad: true } },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true },
+          },
+        },
       });
     } catch (error) {
       throw error;
@@ -63,9 +113,9 @@ const service = {
   create: async data => {
     try {
       await MarkaService.checkExistsById(data.markaId);
+      await service.checkModelMarkaUnique(data.ad, data.markaId);
 
       const yeniId = helper.generateId(HizmetName);
-
       const createPayload = {
         id: yeniId,
         ad: data.ad,
@@ -75,7 +125,18 @@ const service = {
       };
       if (data.aciklama !== undefined) createPayload.aciklama = data.aciklama;
 
-      return await prisma[PrismaName].create({ data: createPayload });
+      return await prisma[PrismaName].create({
+        data: createPayload,
+        include: {
+          marka: { select: { id: true, ad: true } },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
     } catch (error) {
       throw error;
     }
@@ -86,17 +147,38 @@ const service = {
       const existingEntity = await service.checkExistsById(data.id);
 
       const updatePayload = { updatedById: data.islemYapanKullanici };
+      
       if (data.ad !== undefined) updatePayload.ad = data.ad;
       if (data.aciklama !== undefined) updatePayload.aciklama = data.aciklama;
 
       if (data.markaId !== undefined) {
-        if (data.markaId !== null && data.markaId !== existingEntity.markaId) {
-          await BirimService.checkExistsById(data.markaId);
+        if (data.markaId !== existingEntity.markaId) {
+          await MarkaService.checkExistsById(data.markaId);
         }
         updatePayload.markaId = data.markaId;
       }
 
-      return await prisma[PrismaName].update({ where: { id: data.id }, data: updatePayload });
+      // Model adı veya marka değişiyorsa unique kontrolü yap
+      const finalAd = data.ad !== undefined ? data.ad : existingEntity.ad;
+      const finalMarkaId = data.markaId !== undefined ? data.markaId : existingEntity.markaId;
+      
+      if (data.ad !== undefined || data.markaId !== undefined) {
+        await service.checkModelMarkaUnique(finalAd, finalMarkaId, data.id);
+      }
+
+      return await prisma[PrismaName].update({
+        where: { id: data.id },
+        data: updatePayload,
+        include: {
+          marka: { select: { id: true, ad: true } },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
     } catch (error) {
       throw error;
     }
@@ -106,12 +188,26 @@ const service = {
     try {
       await service.checkExistsById(data.id);
 
-      if (!Object.values(AuditStatusEnum).includes(data.status)) throw new Error(`Girilen '${data.status}' durumu geçerli bir durum değildir.`);
+      if (!Object.values(AuditStatusEnum).includes(data.status)) {
+        throw new Error(`Girilen '${data.status}' durumu geçerli bir durum değildir.`);
+      }
 
       const updatePayload = { updatedById: data.islemYapanKullanici };
       if (data.status !== undefined) updatePayload.status = data.status;
 
-      return await prisma[PrismaName].update({ where: { id: data.id }, data: updatePayload });
+      return await prisma[PrismaName].update({
+        where: { id: data.id },
+        data: updatePayload,
+        include: {
+          marka: { select: { id: true, ad: true } },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
     } catch (error) {
       throw error;
     }
@@ -121,8 +217,13 @@ const service = {
     try {
       await service.checkExistsById(data.id);
 
-      const bagliMalzemeler = await MalzemeService.checkModelCount(data.id);
-      if (bagliMalzemeler > 0) throw new Error(`Bu ${HumanName} silinemez çünkü bağlı ${bagliMalzemeler} aktif Malzeme bulunmaktadır.`);
+      const bagliMalzemeler = await prisma.malzeme.count({
+        where: { modelId: data.id, status: AuditStatusEnum.Aktif }
+      });
+      
+      if (bagliMalzemeler > 0) {
+        throw new Error(`Bu ${HumanName} silinemez çünkü bağlı ${bagliMalzemeler} aktif malzeme bulunmaktadır.`);
+      }
 
       return await prisma[PrismaName].update({
         where: { id: data.id },
@@ -141,12 +242,20 @@ const service = {
       const whereClause = { status: AuditStatusEnum.Aktif };
 
       if (data.ad) whereClause.ad = { contains: data.ad, mode: 'insensitive' };
-      if (data.markaId) whereClause.markaId = { contains: data.markaId, mode: 'insensitive' };
+      if (data.markaId) whereClause.markaId = data.markaId;
 
       return await prisma[PrismaName].findMany({
         where: whereClause,
-        orderBy: { ad: 'asc' },
-        include: { marka: { select: { id: true, ad: true } } },
+        orderBy: [{ marka: { ad: 'asc' } }, { ad: 'asc' }],
+        include: {
+          marka: { select: { id: true, ad: true } },
+          malzemeler: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, vidaNo: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
       });
     } catch (error) {
       throw error;

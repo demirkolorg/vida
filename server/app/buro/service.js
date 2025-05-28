@@ -14,22 +14,64 @@ const service = {
     return result;
   },
 
-  checkPersonelCount: async personelId => {
-    try {
-      return await prisma[PrismaName].count({ where: { personelId, status: AuditStatusEnum.Aktif } });
-    } catch (error) {
-      throw error;
-    }
-  },
-
   getAll: async () => {
     try {
       return await prisma[PrismaName].findMany({
         where: { status: AuditStatusEnum.Aktif },
         orderBy: { ad: 'asc' },
         include: {
-          sube: { select: { id: true, ad: true } },
-          amir: { select: { id: true, ad: true } },
+          sube: {
+            select: { 
+              id: true, 
+              ad: true,
+              birim: { select: { id: true, ad: true } }
+            },
+          },
+          amir: { 
+            select: { id: true, ad: true, sicil: true, avatar: true } 
+          },
+          personeller: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true, sicil: true, avatar: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getByQuery: async (data = {}) => {
+    try {
+      const whereClause = {};
+      if (data.status) whereClause.status = data.status;
+      if (data.ad) whereClause.ad = data.ad;
+      if (data.aciklama) whereClause.aciklama = data.aciklama;
+      if (data.subeId) whereClause.subeId = data.subeId;
+      if (data.amirId) whereClause.amirId = data.amirId;
+
+      return await prisma[PrismaName].findMany({
+        where: whereClause,
+        orderBy: { ad: 'asc' },
+        include: {
+          sube: {
+            select: { 
+              id: true, 
+              ad: true,
+              birim: { select: { id: true, ad: true } }
+            },
+          },
+          amir: { 
+            select: { id: true, ad: true, sicil: true, avatar: true } 
+          },
+          personeller: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true, sicil: true, avatar: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -44,8 +86,22 @@ const service = {
       return await prisma[PrismaName].findFirst({
         where: { id: data.id, status: AuditStatusEnum.Aktif },
         include: {
-          sube: { select: { id: true, ad: true } },
-          amir: { select: { id: true, ad: true } },
+          sube: {
+            select: { 
+              id: true, 
+              ad: true,
+              birim: { select: { id: true, ad: true } }
+            },
+          },
+          amir: { 
+            select: { id: true, ad: true, sicil: true, avatar: true } 
+          },
+          personeller: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true, sicil: true, avatar: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -57,11 +113,26 @@ const service = {
     try {
       await SubeService.checkExistsById(data.subeId);
 
-      return await prisma[PrismaName].findFirst({
+      return await prisma[PrismaName].findMany({
         where: { subeId: data.subeId, status: AuditStatusEnum.Aktif },
+        orderBy: { ad: 'asc' },
         include: {
-          sube: { select: { id: true, ad: true } },
-          amir: { select: { id: true, ad: true } },
+          sube: {
+            select: { 
+              id: true, 
+              ad: true,
+              birim: { select: { id: true, ad: true } }
+            },
+          },
+          amir: { 
+            select: { id: true, ad: true, sicil: true, avatar: true } 
+          },
+          personeller: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true, sicil: true, avatar: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -86,7 +157,27 @@ const service = {
       if (data.aciklama !== undefined) createPayload.aciklama = data.aciklama;
       if (data.amirId !== undefined) createPayload.amirId = data.amirId;
 
-      return await prisma[PrismaName].create({ data: createPayload });
+      return await prisma[PrismaName].create({
+        data: createPayload,
+        include: {
+          sube: {
+            select: { 
+              id: true, 
+              ad: true,
+              birim: { select: { id: true, ad: true } }
+            },
+          },
+          amir: { 
+            select: { id: true, ad: true, sicil: true, avatar: true } 
+          },
+          personeller: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true, sicil: true, avatar: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
     } catch (error) {
       throw error;
     }
@@ -94,26 +185,48 @@ const service = {
 
   update: async data => {
     try {
-      const existingEntity = await service.checkExistsById(data.id);
+      const existingBuro = await service.checkExistsById(data.id);
 
       const updatePayload = { updatedById: data.islemYapanKullanici };
       if (data.ad !== undefined) updatePayload.ad = data.ad;
       if (data.aciklama !== undefined) updatePayload.aciklama = data.aciklama;
 
       if (data.subeId !== undefined) {
-        if (data.subeId !== null && data.subeId !== existingEntity.subeId) {
+        if (data.subeId !== null && data.subeId !== existingBuro.subeId) {
           await SubeService.checkExistsById(data.subeId);
         }
         updatePayload.subeId = data.subeId;
       }
 
       if (data.amirId !== undefined) {
-        if (data.amirId !== null && data.amirId !== existingEntity.amirId) {
+        if (data.amirId !== null && data.amirId !== existingBuro.amirId) {
           await PersonelService.checkExistsById(data.amirId);
         }
         updatePayload.amirId = data.amirId;
       }
-      return await prisma[PrismaName].update({ where: { id: data.id }, data: updatePayload });
+
+      return await prisma[PrismaName].update({
+        where: { id: data.id },
+        data: updatePayload,
+        include: {
+          sube: {
+            select: { 
+              id: true, 
+              ad: true,
+              birim: { select: { id: true, ad: true } }
+            },
+          },
+          amir: { 
+            select: { id: true, ad: true, sicil: true, avatar: true } 
+          },
+          personeller: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true, sicil: true, avatar: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
     } catch (error) {
       throw error;
     }
@@ -128,7 +241,28 @@ const service = {
       const updatePayload = { updatedById: data.islemYapanKullanici };
       if (data.status !== undefined) updatePayload.status = data.status;
 
-      return await prisma[PrismaName].update({ where: { id: data.id }, data: updatePayload });
+      return await prisma[PrismaName].update({
+        where: { id: data.id },
+        data: updatePayload,
+        include: {
+          sube: {
+            select: { 
+              id: true, 
+              ad: true,
+              birim: { select: { id: true, ad: true } }
+            },
+          },
+          amir: { 
+            select: { id: true, ad: true, sicil: true, avatar: true } 
+          },
+          personeller: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true, sicil: true, avatar: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
+        },
+      });
     } catch (error) {
       throw error;
     }
@@ -138,8 +272,10 @@ const service = {
     try {
       await service.checkExistsById(data.id);
 
-      const bagliPersoneller = PersonelService.checkBuroCount(data.id);
-      if (bagliPersoneller > 0) throw new Error(`Bu ${HumanName} silinemez çünkü bağlı ${bagliPersoneller} aktif Personel bulunmaktadır.`);
+      const bagliPersoneller = await prisma.personel.count({ where: { buroId: data.id, status: AuditStatusEnum.Aktif } });
+      if (bagliPersoneller > 0) {
+        throw new Error(`Bu ${HumanName} silinemez çünkü bağlı ${bagliPersoneller} aktif Personel bulunmaktadır.`);
+      }
 
       return await prisma[PrismaName].update({
         where: { id: data.id },
@@ -164,8 +300,22 @@ const service = {
         where: whereClause,
         orderBy: { ad: 'asc' },
         include: {
-          sube: { select: { id: true, ad: true } },
-          amir: { select: { id: true, ad: true } },
+          sube: {
+            select: { 
+              id: true, 
+              ad: true,
+              birim: { select: { id: true, ad: true } }
+            },
+          },
+          amir: { 
+            select: { id: true, ad: true, sicil: true, avatar: true } 
+          },
+          personeller: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, ad: true, sicil: true, avatar: true },
+          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true } },
         },
       });
     } catch (error) {

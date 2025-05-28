@@ -6,15 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Menu, Package2, Search } from 'lucide-react';
-import { ThemeToggleButton } from '@/components/theme/theme-toggle-button';
+import { Menu, Package2 } from 'lucide-react';
 import { LogoutDropdownMenuItem } from '@/components/auth/LogoutDropdownMenuItem';
 import { VidaNavMenu } from './VidaNavMenu';
 import { VidaLogo } from './VidaLogo';
 import { ThemeSelector } from '../theme/ThemeSelector';
 import { NotificationMenu } from '../notification/NotificationMenu';
+import { useAuthStore } from '@/stores/authStore';
 
 export const VidaHeader = () => {
+  const user = useAuthStore(state => state.user);
   return (
     <header className="sticky  top-0 z-50 flex  items-center h-16  gap-4 border-b bg-primary/5 px-4 md:px-6 backdrop-blur-md">
       <div className=" flex-none">
@@ -32,7 +33,7 @@ export const VidaHeader = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full ">
               <Avatar className="h-10 w-10 border-2 bg-primary/50 hover:bg-primary/70">
-                <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                <AvatarImage src={user.avatar} alt="@shadcn" />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
               <span className="sr-only">Kullanıcı menüsünü aç</span>
