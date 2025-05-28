@@ -1785,6 +1785,14 @@
     transition-property: background-color, color;
     transition-duration: 0.3s;
     transition-timing-function: ease-in-out;
+
+    /* Metin Seçimi Renkleri */
+::selection {
+  background-color: var(--primary); /* Ana (primary) rengi arka plan olarak kullan */
+  color: var(--primary-foreground); /* Ana rengin ön plan rengini metin rengi olarak kullan */
+  text-shadow: none;
+}
+
   }
 }
 
