@@ -1,10 +1,10 @@
-// app/malzemeHareket/constants/schema.js
+// client/src/app/malzemeHareket/constants/schema.js - Basitleştirilmiş versiyon
 import { z } from 'zod';
 
 // Hareket türü enum'ı
-export const HareketTuruEnum = z.enum([ // Added export
+export const HareketTuruEnum = z.enum([
   'Zimmet',
-  'Iade',
+  'Iade', 
   'Kayit',
   'Devir',
   'Kayip',
@@ -14,229 +14,39 @@ export const HareketTuruEnum = z.enum([ // Added export
 ]);
 
 // Malzeme kondisyonu enum'ı
-export const MalzemeKondisyonuEnum = z.enum([ // Added export
+export const MalzemeKondisyonuEnum = z.enum([
   'Saglam',
-  'Arizali',
+  'Arizali', 
   'Hurda'
 ]);
 
-// Personel için temel şema
-export const Personel_BaseSchema_for_MalzemeHareket_Relation = z.object({
-  id: z.string().min(1, 'Geçersiz Personel ID.'),
-  ad: z.string().optional().nullable(),
-  sicil: z.string().optional().nullable(),
-  avatar: z.string().optional().nullable(),
-});
-
-// Malzeme için temel şema
-export const Malzeme_BaseSchema_for_MalzemeHareket_Relation = z.object({
-  id: z.string().min(1, 'Geçersiz Malzeme ID.'),
-  vidaNo: z.string().optional().nullable(),
-  sabitKodu: z.object({
-    id: z.string(),
-    ad: z.string()
-  }).optional().nullable(),
-  marka: z.object({
-    id: z.string(),
-    ad: z.string()
-  }).optional().nullable(),
-  model: z.object({
-    id: z.string(),
-    ad: z.string()
-  }).optional().nullable(),
-});
-
-// Konum için temel şema
-export const Konum_BaseSchema_for_MalzemeHareket_Relation = z.object({
-  id: z.string().min(1, 'Geçersiz Konum ID.'),
-  ad: z.string().min(1, { message: 'İlişkili Konum adı boş olamaz.' }),
-  depo: z.object({
-    id: z.string(),
-    ad: z.string()
-  }).optional().nullable(),
-});
-
-// --- Ana MalzemeHareket Şeması ---
-export const MalzemeHareket_Schema = z.object({
-  id: z.string().min(1, 'Geçersiz MalzemeHareket ID formatı.'),
-  islemTarihi: z.date().or(z.string().datetime()),
-  hareketTuru: HareketTuruEnum,
-  malzemeKondisyonu: MalzemeKondisyonuEnum,
-  malzemeId: z.string().min(1, 'Malzeme ID zorunludur.'),
-  kaynakPersonelId: z.string().optional().nullable(),
-  hedefPersonelId: z.string().optional().nullable(),
-  konumId: z.string().optional().nullable(),
-  aciklama: z.string().optional().nullable(),
-
-  // İlişkili veriler
-  malzeme: Malzeme_BaseSchema_for_MalzemeHareket_Relation.optional(),
-  kaynakPersonel: Personel_BaseSchema_for_MalzemeHareket_Relation.optional().nullable(),
-  hedefPersonel: Personel_BaseSchema_for_MalzemeHareket_Relation.optional().nullable(),
-  konum: Konum_BaseSchema_for_MalzemeHareket_Relation.optional().nullable(),
-
-  status: z.string().optional().default('Aktif'),
-  createdAt: z.date().or(z.string().datetime()).optional(),
-  createdById: z.string(),
-  createdBy: Personel_BaseSchema_for_MalzemeHareket_Relation.optional().nullable(),
-});
-
-// --- Oluşturma Şeması ---
+// --- Basitleştirilmiş Oluşturma Şeması ---
 export const MalzemeHareket_CreateSchema = z.object({
-  islemTarihi: z.string().or(z.date())
-    .transform((date) => {
-      if (typeof date === 'string') {
-        // YYYY-MM-DD formatını kontrol et ve dönüştür
-        const parsedDate = new Date(date);
-        if (isNaN(parsedDate.getTime())) {
-          throw new Error('Geçersiz tarih formatı');
-        }
-        return parsedDate.toISOString();
+  islemTarihi: z.string()
+    .min(1, 'İşlem tarihi zorunludur.')
+    .transform((str) => {
+      // YYYY-MM-DD formatını ISO string'e çevir
+      if (str.includes('T')) {
+        return str; // Zaten ISO format
       }
-      return date.toISOString();
+      return new Date(str + 'T12:00:00.000Z').toISOString();
     }),
   hareketTuru: HareketTuruEnum,
   malzemeKondisyonu: MalzemeKondisyonuEnum.default('Saglam'),
-  malzemeId: z.string({ required_error: 'Malzeme seçimi zorunludur.' })
-    .min(1, { message: 'Geçerli bir malzeme seçiniz.' }),
+  malzemeId: z.string().min(1, 'Malzeme seçimi zorunludur.'),
   kaynakPersonelId: z.string().optional().nullable(),
   hedefPersonelId: z.string().optional().nullable(),
   konumId: z.string().optional().nullable(),
   aciklama: z.string().optional().nullable(),
-})
-.refine((data) => {
-  // Hareket türüne göre özel validasyonlar
-  switch (data.hareketTuru) {
-    case 'Zimmet':
-      return !!data.hedefPersonelId;
-    case 'Iade':
-      return !!data.kaynakPersonelId;
-    case 'Devir':
-      return !!(data.kaynakPersonelId && data.hedefPersonelId && data.kaynakPersonelId !== data.hedefPersonelId);
-    case 'Kayip':
-      return !!(data.kaynakPersonelId && data.aciklama);
-    case 'DepoTransferi':
-      return !!data.konumId;
-    case 'Dusum':
-      return !!data.aciklama;
-    default:
-      return true;
-  }
-}, {
-  message: 'Seçilen hareket türü için gerekli alanlar eksik',
-  path: ['hareketTuru']
 });
 
 // --- Güncelleme Şeması ---
 export const MalzemeHareket_UpdateSchema = z.object({
-  islemTarihi: z.string().or(z.date()).optional()
-    .transform((date) => {
-      if (!date) return undefined;
-      if (typeof date === 'string') {
-        const parsedDate = new Date(date);
-        if (isNaN(parsedDate.getTime())) {
-          throw new Error('Geçersiz tarih formatı');
-        }
-        return parsedDate.toISOString();
-      }
-      return date.toISOString();
-    }),
-  hareketTuru: HareketTuruEnum.optional(),
-  malzemeKondisyonu: MalzemeKondisyonuEnum.optional(),
-  malzemeId: z.string().min(1, { message: 'Geçerli bir malzeme seçiniz.' }).optional(),
-  kaynakPersonelId: z.string().optional().nullable(),
-  hedefPersonelId: z.string().optional().nullable(),
-  konumId: z.string().optional().nullable(),
   aciklama: z.string().optional().nullable(),
 }).partial();
 
 // --- Form Girdi Şeması ---
-export const MalzemeHareket_FormInputSchema = z.object({
-  islemTarihi: z.string({ required_error: 'İşlem tarihi zorunludur.' })
-    .min(1, { message: 'İşlem tarihi boş olamaz.' }),
-  hareketTuru: HareketTuruEnum,
-  malzemeKondisyonu: MalzemeKondisyonuEnum.default('Saglam'),
-  malzemeId: z.string({ required_error: 'Malzeme seçimi zorunludur.' })
-    .min(1, { message: 'Geçerli bir malzeme seçiniz.' }),
-  kaynakPersonelId: z.string().optional().nullable(),
-  hedefPersonelId: z.string().optional().nullable(),
-  konumId: z.string().optional().nullable(),
-  aciklama: z.string().optional().nullable(),
-})
-.refine((data) => {
-  // Hareket türüne göre dinamik validasyonlar
-  const errors = [];
-
-  switch (data.hareketTuru) {
-    case 'Zimmet':
-      if (!data.hedefPersonelId) {
-        errors.push({ path: ['hedefPersonelId'], message: 'Zimmet işlemi için hedef personel seçimi zorunludur.' });
-      }
-      break;
-
-    case 'Iade':
-      if (!data.kaynakPersonelId) {
-        errors.push({ path: ['kaynakPersonelId'], message: 'İade işlemi için kaynak personel seçimi zorunludur.' });
-      }
-      break;
-
-    case 'Devir':
-      if (!data.kaynakPersonelId) {
-        errors.push({ path: ['kaynakPersonelId'], message: 'Devir işlemi için kaynak personel seçimi zorunludur.' });
-      }
-      if (!data.hedefPersonelId) {
-        errors.push({ path: ['hedefPersonelId'], message: 'Devir işlemi için hedef personel seçimi zorunludur.' });
-      }
-      if (data.kaynakPersonelId === data.hedefPersonelId) {
-        errors.push({ path: ['hedefPersonelId'], message: 'Kaynak ve hedef personel aynı olamaz.' });
-      }
-      break;
-
-    case 'Kayip':
-      if (!data.kaynakPersonelId) {
-        errors.push({ path: ['kaynakPersonelId'], message: 'Kayıp bildirimi için kaynak personel seçimi zorunludur.' });
-      }
-      if (!data.aciklama || data.aciklama.trim().length === 0) {
-        errors.push({ path: ['aciklama'], message: 'Kayıp bildirimi için açıklama zorunludur.' });
-      }
-      break;
-
-    case 'DepoTransferi':
-      if (!data.konumId) {
-        errors.push({ path: ['konumId'], message: 'Depo transferi için konum seçimi zorunludur.' });
-      }
-      break;
-
-    case 'Dusum':
-      if (!data.aciklama || data.aciklama.trim().length === 0) {
-        errors.push({ path: ['aciklama'], message: 'Düşüm işlemi için açıklama zorunludur.' });
-      }
-      break;
-
-    case 'Kayit':
-      if (!data.konumId) {
-        errors.push({ path: ['konumId'], message: 'Kayıt işlemi için konum seçimi zorunludur.' });
-      }
-      break;
-  }
-
-  return errors.length === 0;
-}, {
-  message: 'Seçilen hareket türü için gerekli alanlar tamamlanmamış.',
-});
-
-// --- Kondisyon Güncelleme Özel Şeması ---
-export const MalzemeHareket_KondisyonGuncellemeSchema = z.object({
-  malzemeId: z.string({ required_error: 'Malzeme ID zorunludur.' })
-    .min(1, { message: 'Geçerli bir malzeme seçiniz.' }),
-  malzemeKondisyonu: MalzemeKondisyonuEnum,
-  islemTarihi: z.string({ required_error: 'İşlem tarihi zorunludur.' })
-    .min(1, { message: 'İşlem tarihi boş olamaz.' }),
-  aciklama: z.string()
-    .optional()
-    .nullable()
-    .default('Kondisyon güncelleme işlemi'),
-});
-
+export const MalzemeHareket_FormInputSchema = MalzemeHareket_CreateSchema;
 
 // --- Helper Functions ---
 export const getHareketTuruDisplayName = (hareketTuru) => {
@@ -275,8 +85,7 @@ export const KondisyonOptions = MalzemeKondisyonuEnum.options.map(value => ({
   label: getMalzemeKondisyonuDisplayName(value)
 }));
 
-
-// --- Hareket Türü Validation Fonksiyonları ---
+// --- Hareket Türü Validation (Basitleştirilmiş) ---
 export const validateHareketTuruRequirements = (hareketTuru, data) => {
   const requirements = {
     Zimmet: ['hedefPersonelId'],
@@ -285,12 +94,12 @@ export const validateHareketTuruRequirements = (hareketTuru, data) => {
     Kayip: ['kaynakPersonelId', 'aciklama'],
     DepoTransferi: ['konumId'],
     Dusum: ['aciklama'],
-    Kayit: ['konumId'],
+    Kayit: [], // Kayıt için özel gereksinim yok
     KondisyonGuncelleme: ['malzemeKondisyonu']
   };
 
   const required = requirements[hareketTuru] || [];
-  const missing = required.filter(field => !data[field]);
+  const missing = required.filter(field => !data[field] || data[field].trim() === '');
 
   return {
     isValid: missing.length === 0,
@@ -299,8 +108,7 @@ export const validateHareketTuruRequirements = (hareketTuru, data) => {
   };
 };
 
-
-// --- Form Field Visibility Rules ---
+// --- Form Field Visibility Rules (Basitleştirilmiş) ---
 export const getFieldVisibilityRules = (hareketTuru) => {
   const rules = {
     Zimmet: {
@@ -329,7 +137,7 @@ export const getFieldVisibilityRules = (hareketTuru) => {
     },
     Kayit: {
       show: ['malzemeId', 'hareketTuru', 'konumId', 'malzemeKondisyonu', 'islemTarihi', 'aciklama'],
-      required: ['malzemeId', 'hareketTuru', 'konumId', 'islemTarihi']
+      required: ['malzemeId', 'hareketTuru', 'islemTarihi']
     },
     KondisyonGuncelleme: {
       show: ['malzemeId', 'hareketTuru', 'malzemeKondisyonu', 'islemTarihi', 'aciklama'],

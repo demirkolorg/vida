@@ -1,11 +1,75 @@
+// client/src/app/malzeme/constants/store.js - Create fonksiyonunu güncelleyin
 import { toast } from 'sonner';
 import { createCrudStore } from '@/stores/crudStoreFactory';
 import { EntityHuman } from './api';
 import { Malzeme_ApiService as EntityApiService } from "./api"
 
+// MalzemeHareket API'sini import et
+import { MalzemeHareket_ApiService } from '@/app/malzemeHareket/constants/api';
+import {HareketTuruEnum} from '@prisma/client';
+
+
 export const Malzeme_Store = createCrudStore(EntityHuman, EntityApiService,
   (set, get, baseStore) => {
     return {
+      // Orijinal Create fonksiyonunu override et
+      Create: async (newData, options) => {
+        const showSuccessToast = options?.showToast ?? true;
+        if (get().loadingAction) return null;
+        set({ loadingAction: true, error: null });
+        
+        try {
+          // 1. Önce malzemeyi oluştur
+          const createdMalzeme = await EntityApiService.create(newData);
+          if (!createdMalzeme) {
+            throw new Error("API'den geçerli bir yanıt alınamadı (create).");
+          }
+
+          // 2. Malzeme başarıyla oluştu, şimdi otomatik "Kayıt" hareketi oluştur
+          try {
+            const hareketData = {
+              islemTarihi: new Date().toISOString(),
+              hareketTuru: HareketTuruEnum.Kayit,
+              malzemeKondisyonu: 'Saglam',
+              malzemeId: createdMalzeme.id,
+              // Kayıt işlemi için konum gerekli - ilk konum ID'sini al veya null bırak
+              konumId: null, // Bu kısmı geliştirilebilir
+              aciklama: `${createdMalzeme.vidaNo || createdMalzeme.id} malzemesi sisteme kaydedildi.`,
+            };
+
+            // MalzemeHareket oluştur
+            await MalzemeHareket_ApiService.create(hareketData);
+            console.log('Otomatik kayıt hareketi oluşturuldu:', createdMalzeme.id);
+            
+            if (showSuccessToast) {
+              toast.success(`'${createdMalzeme.vidaNo || createdMalzeme.id}' malzemesi başarıyla oluşturuldu ve kayıt hareketi eklendi.`);
+            }
+          } catch (hareketError) {
+            console.error('Otomatik hareket kaydı oluşturulamadı:', hareketError);
+            // Hareket kaydı başarısız olsa da malzeme oluşturulmuş durumda
+            if (showSuccessToast) {
+              toast.success(`'${createdMalzeme.vidaNo || createdMalzeme.id}' malzemesi oluşturuldu.`);
+              toast.warning('Ancak otomatik hareket kaydı oluşturulamadı.');
+            }
+          }
+
+          // 3. Store'u güncelle
+          set(state => ({
+            datas: [...state.datas, createdMalzeme].sort((a, b) => (a.vidaNo || a.id || '').localeCompare(b.vidaNo || b.id || '', 'tr')),
+            loadingAction: false,
+            currentData: createdMalzeme,
+          }));
+
+          return createdMalzeme;
+        } catch (error) {
+          const apiError = error?.response?.data?.errors || error?.response?.data?.message;
+          const message = typeof apiError === 'string' ? apiError : error.message || `${EntityHuman} ekleme başarısız.`;
+          toast.error(`${EntityHuman} ekleme hatası: ${message}`);
+          set({ error: message, loadingAction: false });
+          return null;
+        }
+      },
+
       // Malzeme'ye özgü ek fonksiyonlar
       
       // Birim bazında malzeme listesi

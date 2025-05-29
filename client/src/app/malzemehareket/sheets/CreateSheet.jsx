@@ -1,5 +1,5 @@
+// client/src/app/malzemeHareket/sheets/CreateSheet.jsx
 import React, { useEffect, useMemo, useState } from 'react';
-import { FormFieldInput } from '@/components/form/FormFieldInput';
 import { FormFieldSelect } from '@/components/form/FormFieldSelect';
 import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 import { FormFieldDatePicker } from '@/components/form/FormFieldDatePicker';
@@ -10,13 +10,19 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { InfoIcon } from 'lucide-react';
 
 import { MalzemeHareket_Store as EntityStore } from '../constants/store'; 
-import { 
-  MalzemeHareket_CreateSchema as EntityCreateSchema,
-  getFieldVisibilityRules,
-  getHareketTuruDisplayName,
-  getMalzemeKondisyonuDisplayName,
-  validateHareketTuruRequirements
-} from '../constants/schema';
+import { z } from 'zod';
+
+// Basitleştirilmiş schema
+const MalzemeHareket_CreateSchema = z.object({
+  islemTarihi: z.string().min(1, 'İşlem tarihi zorunludur.'),
+  hareketTuru: z.string().min(1, 'Hareket türü zorunludur.'),
+  malzemeKondisyonu: z.string().default('Saglam'),
+  malzemeId: z.string().min(1, 'Malzeme seçimi zorunludur.'),
+  kaynakPersonelId: z.string().optional().nullable(),
+  hedefPersonelId: z.string().optional().nullable(),
+  konumId: z.string().optional().nullable(),
+  aciklama: z.string().optional().nullable(),
+});
 
 // Diğer store'lar
 import { Malzeme_Store } from '@/app/malzeme/constants/store';
@@ -47,13 +53,68 @@ const renderFormInputs = ({
   malzemeOptions, 
   personelOptions, 
   konumOptions,
-  preSelectedData,
-  isKondisyonGuncelleme,
-  fieldVisibility,
-  validationInfo
+  preSelectedData
 }) => {
-  const shouldShowField = (fieldName) => fieldVisibility.show.includes(fieldName);
-  const isFieldRequired = (fieldName) => fieldVisibility.required.includes(fieldName);
+  // Hangi alanların gösterileceğini belirle
+  const shouldShowField = (fieldName) => {
+    const hareketTuru = formData.hareketTuru;
+    
+    // Her zaman gösterilecek alanlar
+    if (['islemTarihi', 'hareketTuru', 'malzemeId', 'malzemeKondisyonu'].includes(fieldName)) {
+      return true;
+    }
+    
+    // Hareket türüne göre alanlar
+    switch (hareketTuru) {
+      case 'Zimmet':
+        return ['hedefPersonelId', 'aciklama'].includes(fieldName);
+      case 'Iade':
+        return ['kaynakPersonelId', 'aciklama'].includes(fieldName);
+      case 'Devir':
+        return ['kaynakPersonelId', 'hedefPersonelId', 'aciklama'].includes(fieldName);
+      case 'Kayip':
+        return ['kaynakPersonelId', 'aciklama'].includes(fieldName);
+      case 'DepoTransferi':
+        return ['konumId', 'aciklama'].includes(fieldName);
+      case 'Dusum':
+        return ['aciklama'].includes(fieldName);
+      case 'Kayit':
+        return ['konumId', 'aciklama'].includes(fieldName);
+      case 'KondisyonGuncelleme':
+        return ['aciklama'].includes(fieldName);
+      default:
+        return ['aciklama'].includes(fieldName);
+    }
+  };
+
+  const isFieldRequired = (fieldName) => {
+    const hareketTuru = formData.hareketTuru;
+    
+    // Her zaman zorunlu alanlar
+    if (['islemTarihi', 'hareketTuru', 'malzemeId'].includes(fieldName)) {
+      return true;
+    }
+    
+    // Hareket türüne göre zorunlu alanlar
+    switch (hareketTuru) {
+      case 'Zimmet':
+        return ['hedefPersonelId'].includes(fieldName);
+      case 'Iade':
+        return ['kaynakPersonelId'].includes(fieldName);
+      case 'Devir':
+        return ['kaynakPersonelId', 'hedefPersonelId'].includes(fieldName);
+      case 'Kayip':
+        return ['kaynakPersonelId', 'aciklama'].includes(fieldName);
+      case 'DepoTransferi':
+        return ['konumId'].includes(fieldName);
+      case 'Dusum':
+        return ['aciklama'].includes(fieldName);
+      case 'Kayit':
+        return ['konumId'].includes(fieldName);
+      default:
+        return false;
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -71,7 +132,7 @@ const renderFormInputs = ({
           )}
           {preSelectedData.preSelectedHareketTuru && (
             <div className="text-sm">
-              <span className="font-medium">İşlem:</span> {getHareketTuruDisplayName(preSelectedData.preSelectedHareketTuru)}
+              <span className="font-medium">İşlem:</span> {preSelectedData.preSelectedHareketTuru}
             </div>
           )}
         </div>
@@ -83,8 +144,14 @@ const renderFormInputs = ({
           label="İşlem Tarihi"
           name="islemTarihi"
           id={`create-${EntityType}-islemTarihi`}
-          value={formData.islemTarihi}
-          onChange={value => setFieldValue('islemTarihi', value)}
+          value={formData.islemTarihi ? new Date(formData.islemTarihi) : null}
+          onChange={value => {
+            if (value) {
+              setFieldValue('islemTarihi', value.toISOString().split('T')[0]);
+            } else {
+              setFieldValue('islemTarihi', '');
+            }
+          }}
           error={errors.islemTarihi}
           showRequiredStar={isFieldRequired('islemTarihi')}
           placeholder="Tarih seçiniz"
@@ -98,16 +165,7 @@ const renderFormInputs = ({
           name="hareketTuru"
           id={`create-${EntityType}-hareketTuru`}
           value={formData.hareketTuru || ''}
-          onChange={value => {
-            setFieldValue('hareketTuru', value);
-            // Hareket türü değiştiğinde form alanlarını temizle
-            if (value !== preSelectedData?.preSelectedHareketTuru) {
-              // Eski verilerle çelişebilecek alanları temizle
-              setFieldValue('kaynakPersonelId', '');
-              setFieldValue('hedefPersonelId', '');
-              setFieldValue('konumId', '');
-            }
-          }}
+          onChange={value => setFieldValue('hareketTuru', value)}
           error={errors.hareketTuru}
           showRequiredStar={isFieldRequired('hareketTuru')}
           placeholder="Hareket türü seçiniz"
@@ -136,25 +194,18 @@ const renderFormInputs = ({
 
       {/* Malzeme Kondisyonu */}
       {shouldShowField('malzemeKondisyonu') && (
-        <div className="space-y-2">
-          <FormFieldSelect
-            label="Malzeme Kondisyonu"
-            name="malzemeKondisyonu"
-            id={`create-${EntityType}-malzemeKondisyonu`}
-            value={formData.malzemeKondisyonu || 'Saglam'}
-            onChange={value => setFieldValue('malzemeKondisyonu', value)}
-            error={errors.malzemeKondisyonu}
-            showRequiredStar={isFieldRequired('malzemeKondisyonu')}
-            placeholder="Kondisyon seçiniz"
-            options={malzemeKondisyonuOptions}
-            emptyMessage="Kondisyon bulunamadı"
-          />
-          {preSelectedData?.currentMalzemeInfo?.kondisyon && (
-            <div className="text-xs text-muted-foreground">
-              Mevcut kondisyon: {getMalzemeKondisyonuDisplayName(preSelectedData.currentMalzemeInfo.kondisyon)}
-            </div>
-          )}
-        </div>
+        <FormFieldSelect
+          label="Malzeme Kondisyonu"
+          name="malzemeKondisyonu"
+          id={`create-${EntityType}-malzemeKondisyonu`}
+          value={formData.malzemeKondisyonu || 'Saglam'}
+          onChange={value => setFieldValue('malzemeKondisyonu', value)}
+          error={errors.malzemeKondisyonu}
+          showRequiredStar={isFieldRequired('malzemeKondisyonu')}
+          placeholder="Kondisyon seçiniz"
+          options={malzemeKondisyonuOptions}
+          emptyMessage="Kondisyon bulunamadı"
+        />
       )}
 
       {/* Kaynak Personel */}
@@ -215,11 +266,7 @@ const renderFormInputs = ({
           onChange={e => setFieldValue('aciklama', e.target.value)}
           error={errors.aciklama}
           showRequiredStar={isFieldRequired('aciklama')}
-          placeholder={
-            formData.hareketTuru === 'Kayip' ? 'Kayıp nedeni ve detayları...' :
-            formData.hareketTuru === 'Dusum' ? 'Düşüm nedeni ve detayları...' :
-            `${EntityHuman} ile ilgili açıklama`
-          }
+          placeholder={`${EntityHuman} ile ilgili açıklama`}
           rows={3}
         />
       )}
@@ -229,34 +276,7 @@ const renderFormInputs = ({
         <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
           <InfoIcon className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800 dark:text-blue-200">
-            {getHareketTuruInfo(formData.hareketTuru, preSelectedData)}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Kondisyon Güncelleme Özel Uyarısı */}
-      {isKondisyonGuncelleme && (
-        <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
-          <InfoIcon className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-800 dark:text-amber-200">
-            <strong>Not:</strong> Kondisyon güncelleme işleminde sadece malzemenin kondisyonu değiştirilecektir. 
-            Diğer tüm bilgiler (zimmet durumu, konum vb.) aynı kalacaktır.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Validation Uyarıları */}
-      {!validationInfo.isValid && formData.hareketTuru && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            {formData.hareketTuru} işlemi için aşağıdaki alanlar zorunludur:
-            <ul className="list-disc list-inside mt-2">
-              {validationInfo.missingFields.map(field => (
-                <li key={field}>
-                  {getFieldDisplayName(field)}
-                </li>
-              ))}
-            </ul>
+            {getHareketTuruInfo(formData.hareketTuru)}
           </AlertDescription>
         </Alert>
       )}
@@ -265,40 +285,19 @@ const renderFormInputs = ({
 };
 
 // Hareket türü bilgilerini döndüren yardımcı fonksiyon
-const getHareketTuruInfo = (hareketTuru, preSelectedData) => {
+const getHareketTuruInfo = (hareketTuru) => {
   const info = {
-    'Zimmet': 'Malzeme seçilen personele zimmetlenecektir. Malzeme o personelin sorumluluğuna geçecektir.',
-    'Iade': 'Zimmetli malzeme geri iade alınacaktır. Malzeme tekrar depoya girecektir.',
+    'Zimmet': 'Malzeme seçilen personele zimmetlenecektir.',
+    'Iade': 'Zimmetli malzeme geri iade alınacaktır.',
     'Devir': 'Malzeme mevcut personelden alınarak yeni personele devredilecektir.',
-    'Kayip': 'Malzemenin kaybolduğu kaydedilecektir. Bu işlem geri alınamaz.',
+    'Kayip': 'Malzemenin kaybolduğu kaydedilecektir.',
     'KondisyonGuncelleme': 'Sadece malzemenin fiziksel durumu güncellenecektir.',
     'DepoTransferi': 'Malzeme farklı bir depo konumuna taşınacaktır.',
     'Dusum': 'Malzeme kullanılamaz durumda olduğu için envanterden çıkarılacaktır.',
     'Kayit': 'Yeni malzeme kaydı oluşturulacaktır.'
   };
 
-  let baseInfo = info[hareketTuru] || '';
-  
-  // Ek bilgiler
-  if (preSelectedData?.currentMalzemeInfo?.isZimmetli && ['Zimmet'].includes(hareketTuru)) {
-    baseInfo += ' ⚠️ Bu malzeme zaten zimmetli durumda.';
-  }
-  
-  return baseInfo;
-};
-
-// Field display name mapping
-const getFieldDisplayName = (fieldName) => {
-  const names = {
-    'hedefPersonelId': 'Hedef Personel',
-    'kaynakPersonelId': 'Kaynak Personel', 
-    'konumId': 'Konum',
-    'malzemeKondisyonu': 'Malzeme Kondisyonu',
-    'aciklama': 'Açıklama',
-    'islemTarihi': 'İşlem Tarihi',
-    'malzemeId': 'Malzeme'
-  };
-  return names[fieldName] || fieldName;
+  return info[hareketTuru] || 'Seçilen hareket türü için işlem yapılacaktır.';
 };
 
 export const MalzemeHareket_CreateSheet = (props) => { 
@@ -317,15 +316,6 @@ export const MalzemeHareket_CreateSheet = (props) => {
 
   // Sheet parametreleri
   const preSelectedData = props.sheetParams;
-  const [currentHareketTuru, setCurrentHareketTuru] = useState(preSelectedData?.preSelectedHareketTuru || '');
-
-  // Field visibility ve validation
-  const fieldVisibility = useMemo(() => 
-    getFieldVisibilityRules(currentHareketTuru), 
-    [currentHareketTuru]
-  );
-
-  const [validationInfo, setValidationInfo] = useState({ isValid: true, missingFields: [] });
 
   useEffect(() => {
     // Gerekli listeleri yükle
@@ -365,9 +355,6 @@ export const MalzemeHareket_CreateSheet = (props) => {
     [konumList]
   );
 
-  // Kondisyon güncelleme kontrolü
-  const isKondisyonGuncelleme = preSelectedData?.preSelectedHareketTuru === 'KondisyonGuncelleme';
-
   // Form verilerini ön doldur
   const getInitialFormData = () => {
     const initialData = {};
@@ -378,7 +365,6 @@ export const MalzemeHareket_CreateSheet = (props) => {
     // Ön seçilmiş hareket türü
     if (preSelectedData?.preSelectedHareketTuru) {
       initialData.hareketTuru = preSelectedData.preSelectedHareketTuru;
-      setCurrentHareketTuru(preSelectedData.preSelectedHareketTuru);
     }
     
     // Ön seçilmiş malzeme
@@ -387,78 +373,19 @@ export const MalzemeHareket_CreateSheet = (props) => {
     }
     
     // Varsayılan kondisyon
-    initialData.malzemeKondisyonu = preSelectedData?.currentMalzemeInfo?.kondisyon || 'Saglam';
-    
-    // Kondisyon güncelleme için mevcut verileri koru
-    if (isKondisyonGuncelleme && preSelectedData?.preSelectedMalzeme) {
-      initialData.kaynakPersonelId = preSelectedData.preSelectedMalzeme.currentPersonelId;
-      initialData.hedefPersonelId = preSelectedData.preSelectedMalzeme.currentPersonelId;
-      initialData.konumId = preSelectedData.preSelectedMalzeme.currentKonumId;
-    }
+    initialData.malzemeKondisyonu = 'Saglam';
     
     return initialData;
-  };
-
-  // Form validation güncellemesi
-  const handleFormDataChange = (newFormData) => {
-    if (newFormData.hareketTuru && newFormData.hareketTuru !== currentHareketTuru) {
-      setCurrentHareketTuru(newFormData.hareketTuru);
-    }
-    
-    const validation = validateHareketTuruRequirements(newFormData.hareketTuru, newFormData);
-    setValidationInfo(validation);
-  };
-
-  // Özel submit handler
-  const handleCustomSubmit = async (formData) => {
-    // Validation kontrolü
-    const validation = validateHareketTuruRequirements(formData.hareketTuru, formData);
-    if (!validation.isValid) {
-      throw new Error(`Gerekli alanlar eksik: ${validation.missingFields.join(', ')}`);
-    }
-
-    if (isKondisyonGuncelleme) {
-      // Kondisyon güncelleme için özel payload
-      const payload = {
-        malzemeId: formData.malzemeId,
-        hareketTuru: 'KondisyonGuncelleme',
-        malzemeKondisyonu: formData.malzemeKondisyonu,
-        islemTarihi: formData.islemTarihi,
-        aciklama: formData.aciklama || `Kondisyon güncelleme: ${getMalzemeKondisyonuDisplayName(formData.malzemeKondisyonu)}`,
-        // Mevcut zimmet bilgilerini koru
-        kaynakPersonelId: preSelectedData?.preSelectedMalzeme?.currentPersonelId || null,
-        hedefPersonelId: preSelectedData?.preSelectedMalzeme?.currentPersonelId || null,
-        konumId: preSelectedData?.preSelectedMalzeme?.currentKonumId || null,
-      };
-      return createAction(payload);
-    } else {
-      // Normal işlem - form data'yı doğrudan kullan
-      const payload = {
-        ...formData,
-        // Tarih formatını kontrol et
-        islemTarihi: formData.islemTarihi || new Date().toISOString().split('T')[0]
-      };
-      
-      // Boş string değerleri null'a çevir
-      Object.keys(payload).forEach(key => {
-        if (payload[key] === '') {
-          payload[key] = null;
-        }
-      });
-      
-      return createAction(payload);
-    }
   };
 
   return (
     <BaseCreateSheet
       entityType={EntityType}
       title={`Yeni ${EntityHuman} Ekle`}
-      schema={EntityCreateSchema}
-      createAction={handleCustomSubmit}
+      schema={MalzemeHareket_CreateSchema}
+      createAction={createAction}
       loadingCreate={loadingCreate}
       initialFormData={getInitialFormData()}
-      onFormDataChange={handleFormDataChange}
       {...props}
     >
       {({ formData, setFieldValue, errors }) =>
@@ -469,10 +396,7 @@ export const MalzemeHareket_CreateSheet = (props) => {
           malzemeOptions, 
           personelOptions, 
           konumOptions,
-          preSelectedData,
-          isKondisyonGuncelleme,
-          fieldVisibility,
-          validationInfo
+          preSelectedData
         })
       }
     </BaseCreateSheet>

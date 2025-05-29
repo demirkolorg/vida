@@ -1,3 +1,4 @@
+// client/src/app/malzeme/table/contextMenu.jsx
 import { useCallback } from 'react';
 import { ContextMenuItem } from '@/components/ui/context-menu';
 import { BaseContextMenu } from '@/components/contextMenu/BaseContextMenu';
@@ -13,7 +14,64 @@ import {
   TrendingDownIcon,
   PackageIcon 
 } from 'lucide-react';
-import { getAvailableHareketTurleri, getCurrentPersonel, getCurrentKonum } from '../helpers/hareketBusinessLogic';
+
+// Simplified hareket türleri - iş mantığını basitleştirdik
+const getAvailableHareketTurleri = (item) => {
+  if (!item) return [];
+
+  // Tüm temel hareket türlerini döndür - karmaşık iş mantığını kaldırdık
+  return [
+    {
+      key: 'Zimmet',
+      label: 'Zimmet Ver',
+      description: 'Malzemeyi personele zimmet ver',
+      icon: 'UserIcon',
+      color: 'blue',
+    },
+    {
+      key: 'Iade',
+      label: 'İade Al',
+      description: 'Zimmetli malzemeyi iade al',
+      icon: 'ArrowLeftIcon',
+      color: 'green',
+    },
+    {
+      key: 'Devir',
+      label: 'Devir Et',
+      description: 'Malzemeyi başka personele devret',
+      icon: 'ArrowRightIcon',
+      color: 'orange',
+    },
+    {
+      key: 'KondisyonGuncelleme',
+      label: 'Kondisyon Güncelle',
+      description: 'Malzemenin kondisyonunu güncelle',
+      icon: 'RefreshCwIcon',
+      color: 'purple',
+    },
+    {
+      key: 'DepoTransferi',
+      label: 'Depo Transfer',
+      description: 'Malzemeyi başka depoya transfer et',
+      icon: 'TruckIcon',
+      color: 'indigo',
+    },
+    {
+      key: 'Kayip',
+      label: 'Kayıp Bildir',
+      description: 'Malzemenin kayıp olduğunu bildir',
+      icon: 'AlertTriangleIcon',
+      color: 'red',
+    },
+    {
+      key: 'Dusum',
+      label: 'Düşüm Yap',
+      description: 'Malzemeyi envanterden düş',
+      icon: 'TrendingDownIcon',
+      color: 'gray',
+    },
+  ];
+};
 
 // Icon mapping
 const ICON_MAP = {
@@ -43,10 +101,8 @@ export function Malzeme_ContextMenu({ item }) {
   const { openSheet } = useSheetStore();
   const menuTitle = item?.vidaNo ? `${item.vidaNo} ${EntityHuman} Kaydı` : `${EntityHuman} İşlemleri`;
 
-  // İş mantığına göre uygun hareket türlerini al
+  // Basitleştirilmiş hareket türleri
   const availableHareketler = getAvailableHareketTurleri(item);
-  const currentPersonel = getCurrentPersonel(item);
-  const currentKonum = getCurrentKonum(item);
 
   const handleHareketEkle = useCallback((hareketKey, hareketData) => {
     // MalzemeHareket create sheet'ini aç ve ilgili verileri gönder
@@ -57,21 +113,15 @@ export function Malzeme_ContextMenu({ item }) {
         sabitKodu: item.sabitKodu,
         marka: item.marka,
         model: item.model,
-        currentPersonelId: currentPersonel?.id,
-        currentKonumId: currentKonum?.id,
       },
       preSelectedHareketTuru: hareketKey,
       currentDate: new Date().toISOString().split('T')[0], // Bugünün tarihi
-      hareketConfig: hareketData, // Hareket türü konfigürasyonu
-      currentMalzemeInfo: {
-        kondisyon: hareketData.currentInfo?.currentKondisyon,
-        isZimmetli: hareketData.currentInfo?.isZimmetli,
-        lastPersonel: hareketData.currentInfo?.lastPersonel,
-      }
+      hareketConfig: hareketData,
     };
 
+    console.log('Hareket ekle:', hareketKey, sheetParams); // Debug için
     openSheet('create', null, 'malzemeHareket', sheetParams);
-  }, [item, currentPersonel, currentKonum, openSheet]);
+  }, [item, openSheet]);
 
   return (
     <BaseContextMenu item={item} entityType={EntityType} entityHuman={EntityHuman} menuTitle={menuTitle}>
@@ -95,17 +145,6 @@ export function Malzeme_ContextMenu({ item }) {
                 <div className="flex flex-col">
                   <span>{hareket.label}</span>
                   <span className="text-xs text-muted-foreground">{hareket.description}</span>
-                  {/* Ek bilgi gösterimi */}
-                  {hareket.currentInfo && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {hareket.currentInfo.isZimmetli && hareket.currentInfo.lastPersonel && (
-                        <span>Zimmetli: {hareket.currentInfo.lastPersonel}</span>
-                      )}
-                      {hareket.currentInfo.currentKondisyon && (
-                        <span>Kondisyon: {hareket.currentInfo.currentKondisyon}</span>
-                      )}
-                    </div>
-                  )}
                 </div>
               </ContextMenuItem>
             );
@@ -114,28 +153,9 @@ export function Malzeme_ContextMenu({ item }) {
         </>
       )}
 
-      {/* Eğer hiç hareket yapılamıyorsa bilgilendirme */}
-      {availableHareketler.length === 0 && (
-        <>
-          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-            Hızlı İşlemler
-          </div>
-          <ContextMenuItem className="cursor-default" disabled>
-            <AlertTriangleIcon className="mr-2 h-4 w-4 text-amber-500" />
-            <div className="flex flex-col">
-              <span className="text-sm">Yapılabilecek işlem yok</span>
-              <span className="text-xs text-muted-foreground">
-                Malzemenin mevcut durumu işlem yapılmasına uygun değil
-              </span>
-            </div>
-          </ContextMenuItem>
-          <div className="h-1 border-b border-border my-1" />
-        </>
-      )}
-
-      {/* Malzeme Mevcut Durum Bilgileri */}
+      {/* Malzeme Bilgileri */}
       <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-        Mevcut Durum
+        Malzeme Bilgileri
       </div>
       
       {/* Sabit Kod Bilgisi */}
@@ -156,44 +176,6 @@ export function Malzeme_ContextMenu({ item }) {
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">Marka/Model</span>
             <span className="text-sm">{item.marka.ad} / {item.model.ad}</span>
-          </div>
-        </ContextMenuItem>
-      )}
-
-      {/* Zimmet Durumu */}
-      {currentPersonel && (
-        <ContextMenuItem className="cursor-default" disabled>
-          <UserIcon className="mr-2 h-4 w-4 text-blue-400" />
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Zimmetli Personel</span>
-            <span className="text-sm">{currentPersonel.ad} ({currentPersonel.sicil})</span>
-          </div>
-        </ContextMenuItem>
-      )}
-
-      {/* Konum Bilgisi */}
-      {currentKonum && (
-        <ContextMenuItem className="cursor-default" disabled>
-          <TruckIcon className="mr-2 h-4 w-4 text-indigo-400" />
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Mevcut Konum</span>
-            <span className="text-sm">{currentKonum.ad} - {currentKonum.depo?.ad}</span>
-          </div>
-        </ContextMenuItem>
-      )}
-
-      {/* Kondisyon Bilgisi */}
-      {availableHareketler.length > 0 && availableHareketler[0]?.currentInfo?.currentKondisyon && (
-        <ContextMenuItem className="cursor-default" disabled>
-          <RefreshCwIcon className="mr-2 h-4 w-4 text-purple-400" />
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Kondisyon</span>
-            <span className="text-sm">
-              {availableHareketler[0].currentInfo.currentKondisyon === 'Saglam' ? 'Sağlam' :
-               availableHareketler[0].currentInfo.currentKondisyon === 'Arizali' ? 'Arızalı' :
-               availableHareketler[0].currentInfo.currentKondisyon === 'Hurda' ? 'Hurda' :
-               availableHareketler[0].currentInfo.currentKondisyon}
-            </span>
           </div>
         </ContextMenuItem>
       )}

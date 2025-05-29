@@ -125,9 +125,45 @@ const service = {
 
   // Hareket türü validasyonu
   validateHareketTuru: async data => {
+    // malzemeId boş veya tanımsızsa hata fırlat
+    if (!data.malzemeId) {
+      throw new Error('Validasyon için Malzeme ID zorunludur.');
+    }
+
     const malzemeDurum = await service.checkMalzemeZimmetDurumu(data.malzemeId);
 
+    // `malzemeDurum` içinde malzemenin daha önce herhangi bir hareketi olup olmadığını
+    // belirten bir alan olduğunu varsayalım, örneğin `hasAnyMovement`.
+    // Eğer böyle bir alan yoksa, alternatif bir kontrol (örn: ilk hareket kaydı mı?) yapılabilir.
+    // Şimdilik, eğer malzeme zaten zimmetliyse (veya herhangi bir hareketi varsa) `Kayit` yapılamaz.
+
     switch (data.hareketTuru) {
+      case 'Kayit':
+        // Eğer malzeme daha önce sisteme bir şekilde dahil edilmişse (örn: zimmetli, iadeli, kayıp vb.)
+        // yeni bir "Kayit" işlemi mantıksız olabilir. Bu kontrol, `malzemeDurum` objesinin
+        // içeriğine göre şekillenecektir.
+        // Örneğin, `malzemeDurum.isZimmetli` veya `malzemeDurum.hasAnyMovement` gibi bir alan olabilir.
+        // Ya da malzeme hareket geçmişinin boş olup olmadığına bakılabilir.
+        // Şimdilik basit bir kontrol: Eğer malzeme zaten "zimmetli" ise veya bir "mevcut konumu" varsa,
+        // bu daha önce bir işlem gördüğünü gösterir.
+        if (malzemeDurum.isZimmetli || malzemeDurum.currentKonum) { // currentKonum gibi bir alan varsa
+          throw new Error('Bu malzeme daha önce işlem görmüş. "Kayıt" işlemi yapılamaz.');
+        }
+        // Başka bir kontrol: Malzemenin hiç hareket geçmişi olmamalı.
+        // Bu, `service.checkMalzemeZimmetDurumu` veya ayrı bir servis çağrısı ile doğrulanabilir.
+        // Örnek: const hareketGecmisi = await service.getMalzemeHareketleri(data.malzemeId);
+        // if (hareketGecmisi && hareketGecmisi.length > 0) {
+        //   throw new Error('Bu malzemenin zaten hareket geçmişi var. "Kayıt" işlemi yapılamaz.');
+        // }
+
+        if (!data.konumId) {
+          throw new Error('Kayıt işlemi için başlangıç konumu zorunludur.');
+        }
+        if (!data.malzemeKondisyonu) { // Genellikle varsayılan 'Saglam' olur ama yine de kontrol edelim
+          throw new Error('Kayıt işlemi için malzeme kondisyonu zorunludur.');
+        }
+        break;
+
       case 'Zimmet':
         if (malzemeDurum.isZimmetli) {
           throw new Error('Bu malzeme zaten zimmetli durumda. Önce iade alınmalı.');
@@ -149,7 +185,7 @@ const service = {
         }
         // Kaynak personel kontrolü
         if (malzemeDurum.currentPersonel && data.kaynakPersonelId !== malzemeDurum.currentPersonel.id) {
-          throw new Error(`Bu malzeme ${malzemeDurum.currentPersonel.ad} adlı personelde zimmetli. İade işlemi sadece o personel tarafından yapılabilir.`);
+          throw new Error(`Bu malzeme "${malzemeDurum.currentPersonel.ad}" adlı personelde zimmetli. İade işlemi sadece o personel tarafından yapılabilir.`);
         }
         break;
 
@@ -165,16 +201,21 @@ const service = {
         }
         // Kaynak personel kontrolü
         if (malzemeDurum.currentPersonel && data.kaynakPersonelId !== malzemeDurum.currentPersonel.id) {
-          throw new Error(`Bu malzeme ${malzemeDurum.currentPersonel.ad} adlı personelde zimmetli. Devir işlemi sadece o personel tarafından yapılabilir.`);
+          throw new Error(`Bu malzeme "${malzemeDurum.currentPersonel.ad}" adlı personelde zimmetli. Devir işlemi sadece o personel tarafından yapılabilir.`);
         }
         break;
 
       case 'Kayip':
-        if (!malzemeDurum.isZimmetli) {
-          throw new Error('Bu malzeme zimmetli değil. Kayıp bildirimi yapılamaz.');
+        // Kayıp bildirimi için malzemenin zimmetli olması şart mı? Bazen depodayken de kaybolabilir.
+        // Bu iş kuralınıza bağlı. Şimdilik zimmetli olma şartını koruyorum.
+        if (!malzemeDurum.isZimmetli && !malzemeDurum.currentKonum) { // Ya zimmetli olmalı ya da bir depoda olmalı
+             throw new Error('Malzeme ne zimmetli ne de bir depoda kayıtlı. Kayıp bildirimi yapılamaz.');
         }
-        if (!data.kaynakPersonelId || !data.aciklama) {
-          throw new Error('Kayıp bildirimi için kaynak personel ve açıklama zorunludur.');
+        if (!data.kaynakPersonelId && malzemeDurum.isZimmetli) { // Eğer zimmetliyse kaynak personel zorunlu
+          throw new Error('Zimmetli malzemenin kayıp bildirimi için kaynak personel zorunludur.');
+        }
+        if (!data.aciklama) {
+          throw new Error('Kayıp bildirimi için açıklama zorunludur.');
         }
         break;
 
@@ -182,8 +223,14 @@ const service = {
         if (malzemeDurum.isZimmetli) {
           throw new Error('Zimmetli malzemeler depo transferi yapılamaz. Önce iade alınmalı.');
         }
+        if (!malzemeDurum.currentKonum) { // Transfer edilecekse bir mevcut konumu olmalı
+            throw new Error('Malzemenin transfer edilebilmesi için mevcut bir konumda olması gerekir.');
+        }
         if (!data.konumId) {
-          throw new Error('Depo transferi için konum zorunludur.');
+          throw new Error('Depo transferi için hedef konum zorunludur.');
+        }
+        if (malzemeDurum.currentKonum?.id === data.konumId) {
+            throw new Error('Malzeme zaten bu konumda. Farklı bir hedef konum seçin.');
         }
         break;
 
@@ -200,19 +247,27 @@ const service = {
         break;
 
       case 'KondisyonGuncelleme':
-        // Her zaman yapılabilir, özel kontrol yok
         if (!data.malzemeKondisyonu) {
           throw new Error('Kondisyon güncelleme için yeni kondisyon zorunludur.');
+        }
+        // Eğer yeni kondisyon mevcut kondisyonla aynıysa hata verilebilir (opsiyonel)
+        if (malzemeDurum.currentKondisyon === data.malzemeKondisyonu) {
+            // throw new Error('Yeni kondisyon mevcut kondisyon ile aynı olamaz.');
+            // Ya da sadece bir uyarı loglanabilir, işlem devam edebilir.
+            console.warn("Kondisyon güncelleme: Yeni kondisyon mevcut kondisyon ile aynı.");
         }
         break;
 
       default:
-        throw new Error('Geçersiz hareket türü.');
+        // `data.hareketTuru` tanımsız veya boşsa da buraya düşebilir.
+        if (!data.hareketTuru) {
+            throw new Error('Hareket türü belirtilmemiş.');
+        }
+        throw new Error(`Geçersiz hareket türü: ${data.hareketTuru}`);
     }
 
-    return malzemeDurum;
+    return malzemeDurum; // Başarılı validasyon sonrası malzemeDurum'u döndür.
   },
-
   getAll: async () => {
     try {
       return await prisma[PrismaName].findMany({
