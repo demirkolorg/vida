@@ -1,60 +1,334 @@
-// client/src/app/malzemeHareket/sheets/CreateSheet.jsx - Güncellenmiş versiyon
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FormFieldInput } from '@/components/form/FormFieldInput';
-import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 import { FormFieldSelect } from '@/components/form/FormFieldSelect';
+import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 import { FormFieldDatePicker } from '@/components/form/FormFieldDatePicker';
 import { BaseCreateSheet } from '@/components/sheet/BaseCreateSheet';
 import { EntityType, EntityHuman } from '../constants/api';
+import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info } from 'lucide-react';
-import { useSheetStore } from '@/stores/sheetStore';
+import { InfoIcon } from 'lucide-react';
 
-import { MalzemeHareket_Store as EntityStore } from '../constants/store';
-import { MalzemeHareket_CreateSchema as EntityCreateSchema, HareketTuruOptions, KondisyonOptions, HareketTuruEnum } from '../constants/schema';
+import { MalzemeHareket_Store as EntityStore } from '../constants/store'; 
+import { 
+  MalzemeHareket_CreateSchema as EntityCreateSchema,
+  getFieldVisibilityRules,
+  getHareketTuruDisplayName,
+  getMalzemeKondisyonuDisplayName,
+  validateHareketTuruRequirements
+} from '../constants/schema';
 
-// Malzeme, Personel, Konum seçenekleri için store'lar
+// Diğer store'lar
 import { Malzeme_Store } from '@/app/malzeme/constants/store';
 import { Personel_Store } from '@/app/personel/constants/store';
 import { Konum_Store } from '@/app/konum/constants/store';
 
-const getHareketAciklamasi = (hareketTuru) => {
-  switch (hareketTuru) {
-    case HareketTuruEnum.Kayit:
-      return "Malzemenin sisteme ilk kayıt hareketi. Konum belirtilmelidir.";
-    case HareketTuruEnum.Zimmet:
-      return "Depodan personele malzeme verilmesi. Hedef personel belirtilmelidir.";
-    case HareketTuruEnum.Iade:
-      return "Personelden depoya malzeme iadesi. Kaynak personel ve konum belirtilmelidir.";
-    case HareketTuruEnum.Devir:
-      return "Personeller arası malzeme devri. Kaynak ve hedef personel belirtilmelidir.";
-    case HareketTuruEnum.DepoTransferi:
-      return "Depo içi konum değişikliği. Hedef konum belirtilmelidir.";
-    case HareketTuruEnum.KondisyonGuncelleme:
-      return "Malzeme kondisyon durumu güncelleme. Ek bilgi gerekmez.";
-    case HareketTuruEnum.Kayip:
-      return "Malzeme kayıp kaydı. Ek bilgi gerekmez.";
-    case HareketTuruEnum.Dusum:
-      return "Malzeme sistemden düşüm kaydı. Ek bilgi gerekmez.";
-    default:
-      return "";
-  }
+const hareketTuruOptions = [
+  { value: 'Zimmet', label: 'Zimmet Ver' },
+  { value: 'Iade', label: 'İade Al' },
+  { value: 'Kayit', label: 'Kayıt' },
+  { value: 'Devir', label: 'Devir Et' },
+  { value: 'Kayip', label: 'Kayıp Bildir' },
+  { value: 'KondisyonGuncelleme', label: 'Kondisyon Güncelle' },
+  { value: 'DepoTransferi', label: 'Depo Transfer' },
+  { value: 'Dusum', label: 'Düşüm Yap' },
+];
+
+const malzemeKondisyonuOptions = [
+  { value: 'Saglam', label: 'Sağlam' },
+  { value: 'Arizali', label: 'Arızalı' },
+  { value: 'Hurda', label: 'Hurda' },
+];
+
+const renderFormInputs = ({ 
+  formData, 
+  setFieldValue, 
+  errors, 
+  malzemeOptions, 
+  personelOptions, 
+  konumOptions,
+  preSelectedData,
+  isKondisyonGuncelleme,
+  fieldVisibility,
+  validationInfo
+}) => {
+  const shouldShowField = (fieldName) => fieldVisibility.show.includes(fieldName);
+  const isFieldRequired = (fieldName) => fieldVisibility.required.includes(fieldName);
+
+  return (
+    <div className="space-y-4">
+      {/* Ön Seçilmiş Veriler Bilgi Kartı */}
+      {preSelectedData && (
+        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="secondary" className="text-xs">Ön Seçilmiş</Badge>
+            <InfoIcon className="h-3 w-3 text-blue-600" />
+          </div>
+          {preSelectedData.preSelectedMalzeme && (
+            <div className="text-sm mb-1">
+              <span className="font-medium">Malzeme:</span> {preSelectedData.preSelectedMalzeme.vidaNo || 'N/A'} - {preSelectedData.preSelectedMalzeme.sabitKodu?.ad}
+            </div>
+          )}
+          {preSelectedData.preSelectedHareketTuru && (
+            <div className="text-sm">
+              <span className="font-medium">İşlem:</span> {getHareketTuruDisplayName(preSelectedData.preSelectedHareketTuru)}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* İşlem Tarihi */}
+      {shouldShowField('islemTarihi') && (
+        <FormFieldDatePicker
+          label="İşlem Tarihi"
+          name="islemTarihi"
+          id={`create-${EntityType}-islemTarihi`}
+          value={formData.islemTarihi}
+          onChange={value => setFieldValue('islemTarihi', value)}
+          error={errors.islemTarihi}
+          showRequiredStar={isFieldRequired('islemTarihi')}
+          placeholder="Tarih seçiniz"
+        />
+      )}
+
+      {/* Hareket Türü */}
+      {shouldShowField('hareketTuru') && (
+        <FormFieldSelect
+          label="Hareket Türü"
+          name="hareketTuru"
+          id={`create-${EntityType}-hareketTuru`}
+          value={formData.hareketTuru || ''}
+          onChange={value => {
+            setFieldValue('hareketTuru', value);
+            // Hareket türü değiştiğinde form alanlarını temizle
+            if (value !== preSelectedData?.preSelectedHareketTuru) {
+              // Eski verilerle çelişebilecek alanları temizle
+              setFieldValue('kaynakPersonelId', '');
+              setFieldValue('hedefPersonelId', '');
+              setFieldValue('konumId', '');
+            }
+          }}
+          error={errors.hareketTuru}
+          showRequiredStar={isFieldRequired('hareketTuru')}
+          placeholder="Hareket türü seçiniz"
+          options={hareketTuruOptions}
+          emptyMessage="Hareket türü bulunamadı"
+          disabled={!!preSelectedData?.preSelectedHareketTuru}
+        />
+      )}
+
+      {/* Malzeme Seçimi */}
+      {shouldShowField('malzemeId') && (
+        <FormFieldSelect
+          label="Malzeme"
+          name="malzemeId"
+          id={`create-${EntityType}-malzemeId`}
+          value={formData.malzemeId || ''}
+          onChange={value => setFieldValue('malzemeId', value)}
+          error={errors.malzemeId}
+          showRequiredStar={isFieldRequired('malzemeId')}
+          placeholder="Malzeme seçiniz"
+          options={malzemeOptions}
+          emptyMessage="Malzeme bulunamadı"
+          disabled={!!preSelectedData?.preSelectedMalzeme}
+        />
+      )}
+
+      {/* Malzeme Kondisyonu */}
+      {shouldShowField('malzemeKondisyonu') && (
+        <div className="space-y-2">
+          <FormFieldSelect
+            label="Malzeme Kondisyonu"
+            name="malzemeKondisyonu"
+            id={`create-${EntityType}-malzemeKondisyonu`}
+            value={formData.malzemeKondisyonu || 'Saglam'}
+            onChange={value => setFieldValue('malzemeKondisyonu', value)}
+            error={errors.malzemeKondisyonu}
+            showRequiredStar={isFieldRequired('malzemeKondisyonu')}
+            placeholder="Kondisyon seçiniz"
+            options={malzemeKondisyonuOptions}
+            emptyMessage="Kondisyon bulunamadı"
+          />
+          {preSelectedData?.currentMalzemeInfo?.kondisyon && (
+            <div className="text-xs text-muted-foreground">
+              Mevcut kondisyon: {getMalzemeKondisyonuDisplayName(preSelectedData.currentMalzemeInfo.kondisyon)}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Kaynak Personel */}
+      {shouldShowField('kaynakPersonelId') && (
+        <FormFieldSelect
+          label="Kaynak Personel"
+          name="kaynakPersonelId"
+          id={`create-${EntityType}-kaynakPersonelId`}
+          value={formData.kaynakPersonelId || ''}
+          onChange={value => setFieldValue('kaynakPersonelId', value)}
+          error={errors.kaynakPersonelId}
+          showRequiredStar={isFieldRequired('kaynakPersonelId')}
+          placeholder="Kaynak personeli seçiniz"
+          options={personelOptions}
+          emptyMessage="Personel bulunamadı"
+        />
+      )}
+
+      {/* Hedef Personel */}
+      {shouldShowField('hedefPersonelId') && (
+        <FormFieldSelect
+          label="Hedef Personel"
+          name="hedefPersonelId"
+          id={`create-${EntityType}-hedefPersonelId`}
+          value={formData.hedefPersonelId || ''}
+          onChange={value => setFieldValue('hedefPersonelId', value)}
+          error={errors.hedefPersonelId}
+          showRequiredStar={isFieldRequired('hedefPersonelId')}
+          placeholder="Hedef personeli seçiniz"
+          options={personelOptions}
+          emptyMessage="Personel bulunamadı"
+        />
+      )}
+
+      {/* Konum */}
+      {shouldShowField('konumId') && (
+        <FormFieldSelect
+          label="Konum"
+          name="konumId"
+          id={`create-${EntityType}-konumId`}
+          value={formData.konumId || ''}
+          onChange={value => setFieldValue('konumId', value)}
+          error={errors.konumId}
+          showRequiredStar={isFieldRequired('konumId')}
+          placeholder="Konum seçiniz"
+          options={konumOptions}
+          emptyMessage="Konum bulunamadı"
+        />
+      )}
+
+      {/* Açıklama */}
+      {shouldShowField('aciklama') && (
+        <FormFieldTextarea
+          label="Açıklama"
+          name="aciklama"
+          id={`create-${EntityType}-aciklama`}
+          value={formData.aciklama || ''}
+          onChange={e => setFieldValue('aciklama', e.target.value)}
+          error={errors.aciklama}
+          showRequiredStar={isFieldRequired('aciklama')}
+          placeholder={
+            formData.hareketTuru === 'Kayip' ? 'Kayıp nedeni ve detayları...' :
+            formData.hareketTuru === 'Dusum' ? 'Düşüm nedeni ve detayları...' :
+            `${EntityHuman} ile ilgili açıklama`
+          }
+          rows={3}
+        />
+      )}
+
+      {/* Hareket Türü Bilgilendirmesi */}
+      {formData.hareketTuru && (
+        <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+          <InfoIcon className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800 dark:text-blue-200">
+            {getHareketTuruInfo(formData.hareketTuru, preSelectedData)}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Kondisyon Güncelleme Özel Uyarısı */}
+      {isKondisyonGuncelleme && (
+        <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
+          <InfoIcon className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-800 dark:text-amber-200">
+            <strong>Not:</strong> Kondisyon güncelleme işleminde sadece malzemenin kondisyonu değiştirilecektir. 
+            Diğer tüm bilgiler (zimmet durumu, konum vb.) aynı kalacaktır.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Validation Uyarıları */}
+      {!validationInfo.isValid && formData.hareketTuru && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            {formData.hareketTuru} işlemi için aşağıdaki alanlar zorunludur:
+            <ul className="list-disc list-inside mt-2">
+              {validationInfo.missingFields.map(field => (
+                <li key={field}>
+                  {getFieldDisplayName(field)}
+                </li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
 };
 
-const renderFormInputs = ({ formData, setFieldValue, errors }) => {
-  // Sheet store'dan pre-filled data'yı al
-  const sheetData = useSheetStore(state => state.sheetData?.malzemeHareket);
+// Hareket türü bilgilerini döndüren yardımcı fonksiyon
+const getHareketTuruInfo = (hareketTuru, preSelectedData) => {
+  const info = {
+    'Zimmet': 'Malzeme seçilen personele zimmetlenecektir. Malzeme o personelin sorumluluğuna geçecektir.',
+    'Iade': 'Zimmetli malzeme geri iade alınacaktır. Malzeme tekrar depoya girecektir.',
+    'Devir': 'Malzeme mevcut personelden alınarak yeni personele devredilecektir.',
+    'Kayip': 'Malzemenin kaybolduğu kaydedilecektir. Bu işlem geri alınamaz.',
+    'KondisyonGuncelleme': 'Sadece malzemenin fiziksel durumu güncellenecektir.',
+    'DepoTransferi': 'Malzeme farklı bir depo konumuna taşınacaktır.',
+    'Dusum': 'Malzeme kullanılamaz durumda olduğu için envanterden çıkarılacaktır.',
+    'Kayit': 'Yeni malzeme kaydı oluşturulacaktır.'
+  };
+
+  let baseInfo = info[hareketTuru] || '';
   
-  // Store'lardan gerekli verileri al
+  // Ek bilgiler
+  if (preSelectedData?.currentMalzemeInfo?.isZimmetli && ['Zimmet'].includes(hareketTuru)) {
+    baseInfo += ' ⚠️ Bu malzeme zaten zimmetli durumda.';
+  }
+  
+  return baseInfo;
+};
+
+// Field display name mapping
+const getFieldDisplayName = (fieldName) => {
+  const names = {
+    'hedefPersonelId': 'Hedef Personel',
+    'kaynakPersonelId': 'Kaynak Personel', 
+    'konumId': 'Konum',
+    'malzemeKondisyonu': 'Malzeme Kondisyonu',
+    'aciklama': 'Açıklama',
+    'islemTarihi': 'İşlem Tarihi',
+    'malzemeId': 'Malzeme'
+  };
+  return names[fieldName] || fieldName;
+};
+
+export const MalzemeHareket_CreateSheet = (props) => { 
+  const createAction = EntityStore(state => state.Create);
+  const loadingCreate = EntityStore(state => state.loadingAction);
+
+  // Store'lar
   const malzemeList = Malzeme_Store(state => state.datas);
   const loadMalzemeList = Malzeme_Store(state => state.GetAll);
+  
   const personelList = Personel_Store(state => state.datas);
   const loadPersonelList = Personel_Store(state => state.GetAll);
+  
   const konumList = Konum_Store(state => state.datas);
   const loadKonumList = Konum_Store(state => state.GetAll);
 
-  // Component mount olduğunda listeleri yükle
+  // Sheet parametreleri
+  const preSelectedData = props.sheetParams;
+  const [currentHareketTuru, setCurrentHareketTuru] = useState(preSelectedData?.preSelectedHareketTuru || '');
+
+  // Field visibility ve validation
+  const fieldVisibility = useMemo(() => 
+    getFieldVisibilityRules(currentHareketTuru), 
+    [currentHareketTuru]
+  );
+
+  const [validationInfo, setValidationInfo] = useState({ isValid: true, missingFields: [] });
+
   useEffect(() => {
+    // Gerekli listeleri yükle
     if (!malzemeList || malzemeList.length === 0) {
       loadMalzemeList({ showToast: false });
     }
@@ -66,198 +340,140 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
     }
   }, [malzemeList, personelList, konumList, loadMalzemeList, loadPersonelList, loadKonumList]);
 
-  // Pre-filled data varsa form alanlarını doldur
-  useEffect(() => {
-    if (sheetData) {
-      if (sheetData.malzemeId && !formData.malzemeId) {
-        setFieldValue('malzemeId', sheetData.malzemeId);
-      }
-      if (sheetData.hareketTuru && !formData.hareketTuru) {
-        setFieldValue('hareketTuru', sheetData.hareketTuru);
-      }
-      if (sheetData.malzemeKondisyonu && !formData.malzemeKondisyonu) {
-        setFieldValue('malzemeKondisyonu', sheetData.malzemeKondisyonu);
-      }
-    }
-  }, [sheetData, formData, setFieldValue]);
-
-  // Seçenekleri hazırla
-  const malzemeOptions = malzemeList?.filter(m => m.status === 'Aktif').map(malzeme => ({
-    value: malzeme.id,
-    label: `${malzeme.vidaNo || 'N/A'} - ${malzeme.sabitKodu?.ad || 'Bilinmeyen'}`
-  })) || [];
-
-  const personelOptions = personelList?.filter(p => p.status === 'Aktif').map(personel => ({
-    value: personel.id,
-    label: `${personel.ad} (${personel.sicil})`
-  })) || [];
-
-  const konumOptions = konumList?.filter(k => k.status === 'Aktif').map(konum => ({
-    value: konum.id,
-    label: `${konum.ad} - ${konum.depo?.ad || 'Depo Belirtilmemiş'}`
-  })) || [];
-
-  // Seçili malzeme bilgisini göster
-  const selectedMalzeme = malzemeList?.find(m => m.id === formData.malzemeId);
-
-  // Hareket türüne göre hangi alanların gösterileceğini belirle
-  const showKaynakPersonel = [HareketTuruEnum.Iade, HareketTuruEnum.Devir].includes(formData.hareketTuru);
-  const showHedefPersonel = [HareketTuruEnum.Zimmet, HareketTuruEnum.Devir].includes(formData.hareketTuru);
-  const showKonum = [HareketTuruEnum.Kayit, HareketTuruEnum.Iade, HareketTuruEnum.DepoTransferi].includes(formData.hareketTuru);
-
-  return (
-    <div className="space-y-4">
-      <FormFieldSelect
-        label="Malzeme"
-        name="malzemeId"
-        id={`create-${EntityType}-malzemeId`}
-        value={formData.malzemeId || ''}
-        onChange={value => setFieldValue('malzemeId', value)}
-        error={errors.malzemeId}
-        showRequiredStar={true}
-        placeholder="Malzeme seçiniz"
-        options={malzemeOptions}
-        emptyMessage="Malzeme bulunamadı"
-        disabled={!!sheetData?.malzemeId} // Pre-filled ise disable et
-      />
-
-      {/* Seçili malzeme bilgisi */}
-      {selectedMalzeme && (
-        <div className="p-3 bg-muted/30 rounded-lg">
-          <div className="text-sm font-medium mb-1">Seçili Malzeme:</div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div><span className="text-muted-foreground">Vida No:</span> {selectedMalzeme.vidaNo || '-'}</div>
-            <div><span className="text-muted-foreground">Sabit Kodu:</span> {selectedMalzeme.sabitKodu?.ad || '-'}</div>
-            <div><span className="text-muted-foreground">Marka:</span> {selectedMalzeme.marka?.ad || '-'}</div>
-            <div><span className="text-muted-foreground">Model:</span> {selectedMalzeme.model?.ad || '-'}</div>
-          </div>
-        </div>
-      )}
-
-      <FormFieldSelect
-        label="Hareket Türü"
-        name="hareketTuru"
-        id={`create-${EntityType}-hareketTuru`}
-        value={formData.hareketTuru || ''}
-        onChange={value => {
-          setFieldValue('hareketTuru', value);
-          // Hareket türü değiştiğinde ilgili alanları temizle
-          if (!sheetData?.kaynakPersonelId) setFieldValue('kaynakPersonelId', null);
-          if (!sheetData?.hedefPersonelId) setFieldValue('hedefPersonelId', null);
-          if (!sheetData?.konumId) setFieldValue('konumId', null);
-        }}
-        error={errors.hareketTuru}
-        showRequiredStar={true}
-        placeholder="Hareket türü seçiniz"
-        options={HareketTuruOptions}
-        disabled={!!sheetData?.hareketTuru} // Pre-filled ise disable et
-      />
-
-      {formData.hareketTuru && (
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            {getHareketAciklamasi(formData.hareketTuru)}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <FormFieldSelect
-        label="Malzeme Kondisyonu"
-        name="malzemeKondisyonu"
-        id={`create-${EntityType}-malzemeKondisyonu`}
-        value={formData.malzemeKondisyonu || ''}
-        onChange={value => setFieldValue('malzemeKondisyonu', value)}
-        error={errors.malzemeKondisyonu}
-        showRequiredStar={true}
-        placeholder="Kondisyon seçiniz"
-        options={KondisyonOptions}
-      />
-
-      <FormFieldDatePicker
-        label="İşlem Tarihi"
-        name="islemTarihi"
-        id={`create-${EntityType}-islemTarihi`}
-        value={formData.islemTarihi}
-        onChange={value => setFieldValue('islemTarihi', value)}
-        error={errors.islemTarihi}
-        placeholder="İşlem tarihini seçiniz (opsiyonel)"
-      />
-
-      {showKaynakPersonel && (
-        <FormFieldSelect
-          label="Kaynak Personel"
-          name="kaynakPersonelId"
-          id={`create-${EntityType}-kaynakPersonelId`}
-          value={formData.kaynakPersonelId || ''}
-          onChange={value => setFieldValue('kaynakPersonelId', value)}
-          error={errors.kaynakPersonelId}
-          showRequiredStar={true}
-          placeholder="Kaynak personel seçiniz"
-          options={personelOptions}
-          emptyMessage="Personel bulunamadı"
-        />
-      )}
-
-      {showHedefPersonel && (
-        <FormFieldSelect
-          label="Hedef Personel"
-          name="hedefPersonelId"
-          id={`create-${EntityType}-hedefPersonelId`}
-          value={formData.hedefPersonelId || ''}
-          onChange={value => setFieldValue('hedefPersonelId', value)}
-          error={errors.hedefPersonelId}
-          showRequiredStar={true}
-          placeholder="Hedef personel seçiniz"
-          options={personelOptions}
-          emptyMessage="Personel bulunamadı"
-        />
-      )}
-
-      {showKonum && (
-        <FormFieldSelect
-          label="Konum"
-          name="konumId"
-          id={`create-${EntityType}-konumId`}
-          value={formData.konumId || ''}
-          onChange={value => setFieldValue('konumId', value)}
-          error={errors.konumId}
-          showRequiredStar={true}
-          placeholder="Konum seçiniz"
-          options={konumOptions}
-          emptyMessage="Konum bulunamadı"
-        />
-      )}
-
-      <FormFieldTextarea
-        label="Açıklama"
-        name="aciklama"
-        id={`create-${EntityType}-aciklama`}
-        value={formData.aciklama || ''}
-        onChange={e => setFieldValue('aciklama', e.target.value)}
-        error={errors.aciklama}
-        placeholder="Hareket ile ilgili ek açıklama (opsiyonel)"
-        rows={3}
-      />
-    </div>
+  // Seçenek listelerini hazırla
+  const malzemeOptions = useMemo(() => 
+    malzemeList?.map(malzeme => ({
+      value: malzeme.id,
+      label: `${malzeme.vidaNo || 'N/A'} - ${malzeme.sabitKodu?.ad || 'N/A'}`
+    })) || [], 
+    [malzemeList]
   );
-};
 
-export const MalzemeHareket_CreateSheet = (props) => {
-  const createAction = EntityStore(state => state.Create);
-  const loadingCreate = EntityStore(state => state.loadingAction);
+  const personelOptions = useMemo(() => 
+    personelList?.map(personel => ({
+      value: personel.id,
+      label: `${personel.ad} (${personel.sicil})`
+    })) || [], 
+    [personelList]
+  );
+
+  const konumOptions = useMemo(() => 
+    konumList?.map(konum => ({
+      value: konum.id,
+      label: `${konum.ad} - ${konum.depo?.ad || 'N/A'}`
+    })) || [], 
+    [konumList]
+  );
+
+  // Kondisyon güncelleme kontrolü
+  const isKondisyonGuncelleme = preSelectedData?.preSelectedHareketTuru === 'KondisyonGuncelleme';
+
+  // Form verilerini ön doldur
+  const getInitialFormData = () => {
+    const initialData = {};
+    
+    // Bugünün tarihini varsayılan olarak ata
+    initialData.islemTarihi = preSelectedData?.currentDate || new Date().toISOString().split('T')[0];
+    
+    // Ön seçilmiş hareket türü
+    if (preSelectedData?.preSelectedHareketTuru) {
+      initialData.hareketTuru = preSelectedData.preSelectedHareketTuru;
+      setCurrentHareketTuru(preSelectedData.preSelectedHareketTuru);
+    }
+    
+    // Ön seçilmiş malzeme
+    if (preSelectedData?.preSelectedMalzeme) {
+      initialData.malzemeId = preSelectedData.preSelectedMalzeme.id;
+    }
+    
+    // Varsayılan kondisyon
+    initialData.malzemeKondisyonu = preSelectedData?.currentMalzemeInfo?.kondisyon || 'Saglam';
+    
+    // Kondisyon güncelleme için mevcut verileri koru
+    if (isKondisyonGuncelleme && preSelectedData?.preSelectedMalzeme) {
+      initialData.kaynakPersonelId = preSelectedData.preSelectedMalzeme.currentPersonelId;
+      initialData.hedefPersonelId = preSelectedData.preSelectedMalzeme.currentPersonelId;
+      initialData.konumId = preSelectedData.preSelectedMalzeme.currentKonumId;
+    }
+    
+    return initialData;
+  };
+
+  // Form validation güncellemesi
+  const handleFormDataChange = (newFormData) => {
+    if (newFormData.hareketTuru && newFormData.hareketTuru !== currentHareketTuru) {
+      setCurrentHareketTuru(newFormData.hareketTuru);
+    }
+    
+    const validation = validateHareketTuruRequirements(newFormData.hareketTuru, newFormData);
+    setValidationInfo(validation);
+  };
+
+  // Özel submit handler
+  const handleCustomSubmit = async (formData) => {
+    // Validation kontrolü
+    const validation = validateHareketTuruRequirements(formData.hareketTuru, formData);
+    if (!validation.isValid) {
+      throw new Error(`Gerekli alanlar eksik: ${validation.missingFields.join(', ')}`);
+    }
+
+    if (isKondisyonGuncelleme) {
+      // Kondisyon güncelleme için özel payload
+      const payload = {
+        malzemeId: formData.malzemeId,
+        hareketTuru: 'KondisyonGuncelleme',
+        malzemeKondisyonu: formData.malzemeKondisyonu,
+        islemTarihi: formData.islemTarihi,
+        aciklama: formData.aciklama || `Kondisyon güncelleme: ${getMalzemeKondisyonuDisplayName(formData.malzemeKondisyonu)}`,
+        // Mevcut zimmet bilgilerini koru
+        kaynakPersonelId: preSelectedData?.preSelectedMalzeme?.currentPersonelId || null,
+        hedefPersonelId: preSelectedData?.preSelectedMalzeme?.currentPersonelId || null,
+        konumId: preSelectedData?.preSelectedMalzeme?.currentKonumId || null,
+      };
+      return createAction(payload);
+    } else {
+      // Normal işlem - form data'yı doğrudan kullan
+      const payload = {
+        ...formData,
+        // Tarih formatını kontrol et
+        islemTarihi: formData.islemTarihi || new Date().toISOString().split('T')[0]
+      };
+      
+      // Boş string değerleri null'a çevir
+      Object.keys(payload).forEach(key => {
+        if (payload[key] === '') {
+          payload[key] = null;
+        }
+      });
+      
+      return createAction(payload);
+    }
+  };
 
   return (
     <BaseCreateSheet
       entityType={EntityType}
       title={`Yeni ${EntityHuman} Ekle`}
       schema={EntityCreateSchema}
-      createAction={createAction}
+      createAction={handleCustomSubmit}
       loadingCreate={loadingCreate}
+      initialFormData={getInitialFormData()}
+      onFormDataChange={handleFormDataChange}
       {...props}
     >
       {({ formData, setFieldValue, errors }) =>
-        renderFormInputs({ formData, setFieldValue, errors })
+        renderFormInputs({ 
+          formData, 
+          setFieldValue, 
+          errors, 
+          malzemeOptions, 
+          personelOptions, 
+          konumOptions,
+          preSelectedData,
+          isKondisyonGuncelleme,
+          fieldVisibility,
+          validationInfo
+        })
       }
     </BaseCreateSheet>
   );

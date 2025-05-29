@@ -9,7 +9,7 @@ import { BaseDetailSheet } from '@/components/sheet/BaseDetailSheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { statusStyles } from '@/components/table/Functions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { History, Plus, UserCheck, RotateCcw, ArrowUpDown, Package } from 'lucide-react';
 
 import { EntityType, EntityHuman } from '../constants/api';
@@ -20,21 +20,52 @@ const renderTitle = itemData => {
   return itemData?.vidaNo ? `${itemData.vidaNo} ${EntityHuman} Detayı` : `${EntityHuman} Detayı`;
 };
 
-const renderDetails = itemData => {
+// Hook'ları kullanan ayrı bir component oluşturuyoruz
+const MalzemeDetailContent = ({ itemData }) => {
+  // Hook'lar artık component seviyesinde
   const [activeTab, setActiveTab] = useState('bilgiler');
   const { openSheet } = useSheetStore();
   
-  // Malzeme hareket store
-  const malzemeHareketStore = MalzemeHareket_Store();
-  const hareketler = malzemeHareketStore.malzemeGecmisi;
-  const loadingHareketler = malzemeHareketStore.loadingMalzemeGecmisi;
+  // Malzeme hareket store - DÜZELTME: Store hook'ları doğru şekilde kullan
+  const hareketler = MalzemeHareket_Store(state => state.malzemeGecmisi);
+  const loadingHareketler = MalzemeHareket_Store(state => state.loadingMalzemeGecmisi);
+  const getMalzemeGecmisi = MalzemeHareket_Store(state => state.GetMalzemeGecmisi);
 
-  // Malzeme hareket geçmişini yükle
+  // Loading state kontrolü için ref
+  const loadingRef = useRef(false);
+  const lastMalzemeIdRef = useRef(null);
+
+  // DÜZELTME: useCallback kullanarak function'ı stable yap
+  const fetchMalzemeGecmisi = useCallback(async (malzemeId) => {
+    if (loadingRef.current || !malzemeId) return;
+    if (lastMalzemeIdRef.current === malzemeId) return; // Aynı malzeme için tekrar yükleme
+    
+    loadingRef.current = true;
+    lastMalzemeIdRef.current = malzemeId;
+    
+    try {
+      await getMalzemeGecmisi(malzemeId, { showToast: false });
+    } catch (error) {
+      console.error('Malzeme geçmişi yüklenirken hata:', error);
+    } finally {
+      loadingRef.current = false;
+    }
+  }, [getMalzemeGecmisi]);
+
+  // DÜZELTME: Dependency array'i düzelt ve loading guard ekle
   useEffect(() => {
     if (itemData?.id && activeTab === 'hareketler') {
-      malzemeHareketStore.GetMalzemeGecmisi(itemData.id, { showToast: false });
+      fetchMalzemeGecmisi(itemData.id);
     }
-  }, [itemData?.id, activeTab, malzemeHareketStore]);
+  }, [itemData?.id, activeTab, fetchMalzemeGecmisi]);
+
+  // DÜZELTME: Component unmount'ta cleanup yap
+  useEffect(() => {
+    return () => {
+      loadingRef.current = false;
+      lastMalzemeIdRef.current = null;
+    };
+  }, []);
 
   if (!itemData) {
     return <div className="p-4 text-center text-muted-foreground">{EntityHuman} bilgisi bulunamadı.</div>;
@@ -43,53 +74,81 @@ const renderDetails = itemData => {
   const createdByAvatar = itemData.createdBy?.avatar || '/placeholder.png';
   const updatedByAvatar = itemData.updatedBy?.avatar || '/placeholder.png';
 
-  // Hızlı hareket işlemleri
-  const handleYeniZimmet = () => {
-    openSheet('create', { 
-      malzemeId: itemData.id, 
-      hareketTuru: 'Zimmet',
-      malzemeKondisyonu: itemData.malzemeKondisyonu || 'Saglam'
-    }, 'malzemeHareket');
-  };
+  // DÜZELTME: Event handler'ları useCallback ile optimize et
+  const handleYeniZimmet = useCallback(() => {
+    openSheet(
+      'create',
+      {
+        malzemeId: itemData.id,
+        hareketTuru: 'Zimmet',
+        malzemeKondisyonu: itemData.malzemeKondisyonu || 'Saglam',
+      },
+      'malzemeHareket',
+    );
+  }, [openSheet, itemData.id, itemData.malzemeKondisyonu]);
 
-  const handleYeniIade = () => {
-    openSheet('create', { 
-      malzemeId: itemData.id, 
-      hareketTuru: 'Iade',
-      malzemeKondisyonu: itemData.malzemeKondisyonu || 'Saglam'
-    }, 'malzemeHareket');
-  };
+  const handleYeniIade = useCallback(() => {
+    openSheet(
+      'create',
+      {
+        malzemeId: itemData.id,
+        hareketTuru: 'Iade',
+        malzemeKondisyonu: itemData.malzemeKondisyonu || 'Saglam',
+      },
+      'malzemeHareket',
+    );
+  }, [openSheet, itemData.id, itemData.malzemeKondisyonu]);
 
-  const handleYeniDevir = () => {
-    openSheet('create', { 
-      malzemeId: itemData.id, 
-      hareketTuru: 'Devir',
-      malzemeKondisyonu: itemData.malzemeKondisyonu || 'Saglam'
-    }, 'malzemeHareket');
-  };
+  const handleYeniDevir = useCallback(() => {
+    openSheet(
+      'create',
+      {
+        malzemeId: itemData.id,
+        hareketTuru: 'Devir',
+        malzemeKondisyonu: itemData.malzemeKondisyonu || 'Saglam',
+      },
+      'malzemeHareket',
+    );
+  }, [openSheet, itemData.id, itemData.malzemeKondisyonu]);
 
-  const handleKondisyonGuncelle = () => {
-    openSheet('create', { 
-      malzemeId: itemData.id, 
-      hareketTuru: 'KondisyonGuncelleme',
-      malzemeKondisyonu: itemData.malzemeKondisyonu || 'Saglam'
-    }, 'malzemeHareket');
-  };
+  const handleKondisyonGuncelle = useCallback(() => {
+    openSheet(
+      'create',
+      {
+        malzemeId: itemData.id,
+        hareketTuru: 'KondisyonGuncelleme',
+        malzemeKondisyonu: itemData.malzemeKondisyonu || 'Saglam',
+      },
+      'malzemeHareket',
+    );
+  }, [openSheet, itemData.id, itemData.malzemeKondisyonu]);
 
-  // Hareket türü badge renkleri
-  const getHareketTuruVariant = (hareketTuru) => {
+  const handleYeniHareket = useCallback(() => {
+    openSheet('create', { malzemeId: itemData.id }, 'malzemeHareket');
+  }, [openSheet, itemData.id]);
+
+  const getHareketTuruVariant = useCallback((hareketTuru) => {
     switch (hareketTuru) {
-      case 'Kayit': return 'default';
-      case 'Zimmet': return 'destructive';
-      case 'Iade': return 'success';
-      case 'Devir': return 'warning';
-      case 'DepoTransferi': return 'secondary';
-      case 'KondisyonGuncelleme': return 'outline';
-      case 'Kayip': return 'destructive';
-      case 'Dusum': return 'destructive';
-      default: return 'outline';
+      case 'Kayit':
+        return 'default';
+      case 'Zimmet':
+        return 'destructive';
+      case 'Iade':
+        return 'success';
+      case 'Devir':
+        return 'warning';
+      case 'DepoTransferi':
+        return 'secondary';
+      case 'KondisyonGuncelleme':
+        return 'outline';
+      case 'Kayip':
+        return 'destructive';
+      case 'Dusum':
+        return 'destructive';
+      default:
+        return 'outline';
     }
-  };
+  }, []);
 
   return (
     <ScrollArea className="h-[calc(100vh-230px)]">
@@ -108,9 +167,7 @@ const renderDetails = itemData => {
                 </Badge>
               </DetailItem>
               <DetailItem label="Vida No">{itemData.vidaNo || '-'}</DetailItem>
-              <DetailItem label="Kayıt Tarihi">
-                {itemData.kayitTarihi ? format(new Date(itemData.kayitTarihi), 'dd MMMM yyyy', { locale: tr }) : '-'}
-              </DetailItem>
+              <DetailItem label="Kayıt Tarihi">{itemData.kayitTarihi ? format(new Date(itemData.kayitTarihi), 'dd MMMM yyyy', { locale: tr }) : '-'}</DetailItem>
               <DetailItem label="Malzeme Tipi">
                 <Badge variant={itemData.malzemeTipi === 'Demirbas' ? 'default' : 'secondary'} className="text-xs">
                   {itemData.malzemeTipi}
@@ -159,9 +216,7 @@ const renderDetails = itemData => {
                   </div>
                 </DetailItem>
               )}
-              <DetailItem label="Oluşturulma Tarihi">
-                {itemData.createdAt ? format(new Date(itemData.createdAt), 'dd MMMM yyyy, HH:mm', { locale: tr }) : '-'}
-              </DetailItem>
+              <DetailItem label="Oluşturulma Tarihi">{itemData.createdAt ? format(new Date(itemData.createdAt), 'dd MMMM yyyy, HH:mm', { locale: tr }) : '-'}</DetailItem>
 
               {itemData.updatedBy && (
                 <DetailItem label="Güncelleyen Personel">
@@ -174,11 +229,7 @@ const renderDetails = itemData => {
                   </div>
                 </DetailItem>
               )}
-              {itemData.updatedAt && (
-                <DetailItem label="Son Güncelleme Tarihi">
-                  {format(new Date(itemData.updatedAt), 'dd MMMM yyyy, HH:mm', { locale: tr })}
-                </DetailItem>
-              )}
+              {itemData.updatedAt && <DetailItem label="Son Güncelleme Tarihi">{format(new Date(itemData.updatedAt), 'dd MMMM yyyy, HH:mm', { locale: tr })}</DetailItem>}
             </DetailSection>
           </TabsContent>
 
@@ -201,10 +252,7 @@ const renderDetails = itemData => {
                 <Package className="mr-2 h-4 w-4" />
                 Kondisyon Güncelle
               </Button>
-              <Button 
-                size="sm" 
-                onClick={() => openSheet('create', { malzemeId: itemData.id }, 'malzemeHareket')}
-              >
+              <Button size="sm" onClick={handleYeniHareket}>
                 <Plus className="mr-2 h-4 w-4" />
                 Yeni Hareket
               </Button>
@@ -213,24 +261,22 @@ const renderDetails = itemData => {
             {/* Hareket Geçmişi */}
             {loadingHareketler ? (
               <div className="text-center py-4">Hareket geçmişi yükleniyor...</div>
-            ) : hareketler.length === 0 ? (
+            ) : !hareketler || hareketler.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Henüz hareket kaydı bulunmuyor.</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {hareketler.map((hareket, index) => (
+                {hareketler.map(hareket => (
                   <div key={hareket.id} className="border rounded-lg p-3 bg-card">
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant={getHareketTuruVariant(hareket.hareketTuru)} className="text-xs">
                         {hareket.hareketTuru}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(hareket.islemTarihi), 'dd.MM.yyyy HH:mm', { locale: tr })}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{format(new Date(hareket.islemTarihi), 'dd.MM.yyyy HH:mm', { locale: tr })}</span>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       {hareket.kaynakPersonel && (
                         <div>
@@ -257,10 +303,8 @@ const renderDetails = itemData => {
                         </Badge>
                       </div>
                     </div>
-                    
-                    {hareket.aciklama && (
-                      <p className="text-xs text-muted-foreground mt-2">{hareket.aciklama}</p>
-                    )}
+
+                    {hareket.aciklama && <p className="text-xs text-muted-foreground mt-2">{hareket.aciklama}</p>}
                   </div>
                 ))}
               </div>
@@ -272,10 +316,15 @@ const renderDetails = itemData => {
   );
 };
 
+// Hook'ları kullanmayan basit render fonksiyonu
+const renderDetails = itemData => {
+  return <MalzemeDetailContent itemData={itemData} />;
+};
+
 export const Malzeme_DetailSheet = props => {
   return (
     <BaseDetailSheet entityType={EntityType} title={renderTitle} {...props}>
-      {item => renderDetails(item)}
+      {renderDetails}
     </BaseDetailSheet>
   );
 };

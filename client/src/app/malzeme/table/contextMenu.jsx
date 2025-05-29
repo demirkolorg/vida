@@ -1,111 +1,202 @@
-// client/src/app/malzeme/table/contextMenu.jsx
 import { useCallback } from 'react';
 import { ContextMenuItem } from '@/components/ui/context-menu';
 import { BaseContextMenu } from '@/components/contextMenu/BaseContextMenu';
 import { EntityHuman, EntityType } from '../constants/api';
-import { History, Plus, Package, UserCheck, RotateCcw, ArrowUpDown } from 'lucide-react';
 import { useSheetStore } from '@/stores/sheetStore';
-import { MalzemeHareket_Store } from '@/app/malzemeHareket/constants/store';
+import { 
+  UserIcon, 
+  ArrowRightIcon, 
+  ArrowLeftIcon, 
+  RefreshCwIcon, 
+  AlertTriangleIcon, 
+  TruckIcon, 
+  TrendingDownIcon,
+  PackageIcon 
+} from 'lucide-react';
+import { getAvailableHareketTurleri, getCurrentPersonel, getCurrentKonum } from '../helpers/hareketBusinessLogic';
+
+// Icon mapping
+const ICON_MAP = {
+  UserIcon: UserIcon,
+  ArrowRightIcon: ArrowRightIcon,
+  ArrowLeftIcon: ArrowLeftIcon,
+  RefreshCwIcon: RefreshCwIcon,
+  AlertTriangleIcon: AlertTriangleIcon,
+  TruckIcon: TruckIcon,
+  TrendingDownIcon: TrendingDownIcon,
+  PackageIcon: PackageIcon,
+};
+
+// Color mapping for icons
+const COLOR_MAP = {
+  blue: 'text-blue-500',
+  green: 'text-green-500',
+  orange: 'text-orange-500',
+  purple: 'text-purple-500',
+  red: 'text-red-500',
+  indigo: 'text-indigo-500',
+  gray: 'text-gray-500',
+  emerald: 'text-emerald-500',
+};
 
 export function Malzeme_ContextMenu({ item }) {
   const { openSheet } = useSheetStore();
-  const malzemeHareketStore = MalzemeHareket_Store();
-  
-  const menuTitle = item?.vidaNo 
-    ? `${item.vidaNo} ${EntityHuman} Kaydı` 
-    : `${EntityHuman} İşlemleri`;
+  const menuTitle = item?.vidaNo ? `${item.vidaNo} ${EntityHuman} Kaydı` : `${EntityHuman} İşlemleri`;
 
-  // Malzeme hareket geçmişini göster
-  const handleShowMalzemeGecmisi = useCallback(() => {
-    if (!item?.id) return;
-    malzemeHareketStore.GetMalzemeGecmisi(item.id, { showToast: true });
-    // Hareket geçmişi için ayrı bir dialog veya sheet açılabilir
-  }, [item, malzemeHareketStore]);
+  // İş mantığına göre uygun hareket türlerini al
+  const availableHareketler = getAvailableHareketTurleri(item);
+  const currentPersonel = getCurrentPersonel(item);
+  const currentKonum = getCurrentKonum(item);
 
-  // Yeni zimmet işlemi başlat
-  const handleYeniZimmet = useCallback(() => {
-    if (!item?.id) return;
-    // MalzemeHareket create sheet'ini malzeme ile birlikte aç
-    openSheet('create', { 
-      malzemeId: item.id, 
-      hareketTuru: 'Zimmet',
-      malzemeKondisyonu: 'Saglam' // varsayılan
-    }, 'malzemeHareket');
-  }, [item, openSheet]);
+  const handleHareketEkle = useCallback((hareketKey, hareketData) => {
+    // MalzemeHareket create sheet'ini aç ve ilgili verileri gönder
+    const sheetParams = {
+      preSelectedMalzeme: {
+        id: item.id,
+        vidaNo: item.vidaNo,
+        sabitKodu: item.sabitKodu,
+        marka: item.marka,
+        model: item.model,
+        currentPersonelId: currentPersonel?.id,
+        currentKonumId: currentKonum?.id,
+      },
+      preSelectedHareketTuru: hareketKey,
+      currentDate: new Date().toISOString().split('T')[0], // Bugünün tarihi
+      hareketConfig: hareketData, // Hareket türü konfigürasyonu
+      currentMalzemeInfo: {
+        kondisyon: hareketData.currentInfo?.currentKondisyon,
+        isZimmetli: hareketData.currentInfo?.isZimmetli,
+        lastPersonel: hareketData.currentInfo?.lastPersonel,
+      }
+    };
 
-  // Yeni iade işlemi başlat
-  const handleYeniIade = useCallback(() => {
-    if (!item?.id) return;
-    openSheet('create', { 
-      malzemeId: item.id, 
-      hareketTuru: 'Iade',
-      malzemeKondisyonu: 'Saglam'
-    }, 'malzemeHareket');
-  }, [item, openSheet]);
-
-  // Yeni devir işlemi başlat
-  const handleYeniDevir = useCallback(() => {
-    if (!item?.id) return;
-    openSheet('create', { 
-      malzemeId: item.id, 
-      hareketTuru: 'Devir',
-      malzemeKondisyonu: 'Saglam'
-    }, 'malzemeHareket');
-  }, [item, openSheet]);
-
-  // Kondisyon güncelleme
-  const handleKondisyonGuncelle = useCallback(() => {
-    if (!item?.id) return;
-    openSheet('create', { 
-      malzemeId: item.id, 
-      hareketTuru: 'KondisyonGuncelleme',
-      malzemeKondisyonu: item.malzemeKondisyonu || 'Saglam'
-    }, 'malzemeHareket');
-  }, [item, openSheet]);
+    openSheet('create', null, 'malzemeHareket', sheetParams);
+  }, [item, currentPersonel, currentKonum, openSheet]);
 
   return (
-    <BaseContextMenu 
-      item={item} 
-      entityType={EntityType} 
-      entityHuman={EntityHuman} 
-      menuTitle={menuTitle}
-    >
-      {/* Malzeme hareket geçmişi */}
-      <ContextMenuItem onSelect={handleShowMalzemeGecmisi}>
-        <History className="mr-2 h-4 w-4 text-blue-500" />
-        <span>Hareket Geçmişini Göster</span>
-      </ContextMenuItem>
+    <BaseContextMenu item={item} entityType={EntityType} entityHuman={EntityHuman} menuTitle={menuTitle}>
+      {/* Hızlı İşlemler Bölümü */}
+      {availableHareketler.length > 0 && (
+        <>
+          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+            Hızlı İşlemler
+          </div>
+          {availableHareketler.map((hareket) => {
+            const IconComponent = ICON_MAP[hareket.icon] || PackageIcon;
+            const iconColorClass = COLOR_MAP[hareket.color] || 'text-gray-500';
+            
+            return (
+              <ContextMenuItem 
+                key={hareket.key}
+                onSelect={() => handleHareketEkle(hareket.key, hareket)}
+                className="cursor-pointer"
+              >
+                <IconComponent className={`mr-2 h-4 w-4 ${iconColorClass}`} />
+                <div className="flex flex-col">
+                  <span>{hareket.label}</span>
+                  <span className="text-xs text-muted-foreground">{hareket.description}</span>
+                  {/* Ek bilgi gösterimi */}
+                  {hareket.currentInfo && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {hareket.currentInfo.isZimmetli && hareket.currentInfo.lastPersonel && (
+                        <span>Zimmetli: {hareket.currentInfo.lastPersonel}</span>
+                      )}
+                      {hareket.currentInfo.currentKondisyon && (
+                        <span>Kondisyon: {hareket.currentInfo.currentKondisyon}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </ContextMenuItem>
+            );
+          })}
+          <div className="h-1 border-b border-border my-1" />
+        </>
+      )}
 
-      {/* Hızlı hareket işlemleri */}
-      <div className="px-2 py-1.5">
-        <div className="text-xs font-medium text-muted-foreground mb-1">Hızlı İşlemler</div>
+      {/* Eğer hiç hareket yapılamıyorsa bilgilendirme */}
+      {availableHareketler.length === 0 && (
+        <>
+          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+            Hızlı İşlemler
+          </div>
+          <ContextMenuItem className="cursor-default" disabled>
+            <AlertTriangleIcon className="mr-2 h-4 w-4 text-amber-500" />
+            <div className="flex flex-col">
+              <span className="text-sm">Yapılabilecek işlem yok</span>
+              <span className="text-xs text-muted-foreground">
+                Malzemenin mevcut durumu işlem yapılmasına uygun değil
+              </span>
+            </div>
+          </ContextMenuItem>
+          <div className="h-1 border-b border-border my-1" />
+        </>
+      )}
+
+      {/* Malzeme Mevcut Durum Bilgileri */}
+      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+        Mevcut Durum
       </div>
+      
+      {/* Sabit Kod Bilgisi */}
+      {item?.sabitKodu && (
+        <ContextMenuItem className="cursor-default" disabled>
+          <PackageIcon className="mr-2 h-4 w-4 text-gray-400" />
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Sabit Kod</span>
+            <span className="text-sm">{item.sabitKodu.ad}</span>
+          </div>
+        </ContextMenuItem>
+      )}
+      
+      {/* Marka/Model Bilgisi */}
+      {item?.marka && item?.model && (
+        <ContextMenuItem className="cursor-default" disabled>
+          <PackageIcon className="mr-2 h-4 w-4 text-gray-400" />
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Marka/Model</span>
+            <span className="text-sm">{item.marka.ad} / {item.model.ad}</span>
+          </div>
+        </ContextMenuItem>
+      )}
 
-      <ContextMenuItem onSelect={handleYeniZimmet}>
-        <UserCheck className="mr-2 h-4 w-4 text-red-500" />
-        <span>Zimmet Ver</span>
-      </ContextMenuItem>
+      {/* Zimmet Durumu */}
+      {currentPersonel && (
+        <ContextMenuItem className="cursor-default" disabled>
+          <UserIcon className="mr-2 h-4 w-4 text-blue-400" />
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Zimmetli Personel</span>
+            <span className="text-sm">{currentPersonel.ad} ({currentPersonel.sicil})</span>
+          </div>
+        </ContextMenuItem>
+      )}
 
-      <ContextMenuItem onSelect={handleYeniIade}>
-        <RotateCcw className="mr-2 h-4 w-4 text-green-500" />
-        <span>İade Al</span>
-      </ContextMenuItem>
+      {/* Konum Bilgisi */}
+      {currentKonum && (
+        <ContextMenuItem className="cursor-default" disabled>
+          <TruckIcon className="mr-2 h-4 w-4 text-indigo-400" />
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Mevcut Konum</span>
+            <span className="text-sm">{currentKonum.ad} - {currentKonum.depo?.ad}</span>
+          </div>
+        </ContextMenuItem>
+      )}
 
-      <ContextMenuItem onSelect={handleYeniDevir}>
-        <ArrowUpDown className="mr-2 h-4 w-4 text-yellow-500" />
-        <span>Devir Yap</span>
-      </ContextMenuItem>
-
-      <ContextMenuItem onSelect={handleKondisyonGuncelle}>
-        <Package className="mr-2 h-4 w-4 text-purple-500" />
-        <span>Kondisyon Güncelle</span>
-      </ContextMenuItem>
-
-      {/* Genel hareket ekleme */}
-      <ContextMenuItem onSelect={() => openSheet('create', { malzemeId: item.id }, 'malzemeHareket')}>
-        <Plus className="mr-2 h-4 w-4 text-primary" />
-        <span>Yeni Hareket Ekle</span>
-      </ContextMenuItem>
+      {/* Kondisyon Bilgisi */}
+      {availableHareketler.length > 0 && availableHareketler[0]?.currentInfo?.currentKondisyon && (
+        <ContextMenuItem className="cursor-default" disabled>
+          <RefreshCwIcon className="mr-2 h-4 w-4 text-purple-400" />
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Kondisyon</span>
+            <span className="text-sm">
+              {availableHareketler[0].currentInfo.currentKondisyon === 'Saglam' ? 'Sağlam' :
+               availableHareketler[0].currentInfo.currentKondisyon === 'Arizali' ? 'Arızalı' :
+               availableHareketler[0].currentInfo.currentKondisyon === 'Hurda' ? 'Hurda' :
+               availableHareketler[0].currentInfo.currentKondisyon}
+            </span>
+          </div>
+        </ContextMenuItem>
+      )}
     </BaseContextMenu>
   );
 }

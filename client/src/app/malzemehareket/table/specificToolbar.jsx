@@ -2,17 +2,17 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { MalzemeHareket_Store } from "../constants/store";
-import { 
-  Package, 
-  UserCheck, 
-  RotateCcw, 
-  ArrowUpDown, 
+import {
+  Package,
+  UserCheck,
+  RotateCcw,
+  ArrowUpDown,
   Warehouse,
   Settings,
   AlertTriangle,
   FileX
 } from "lucide-react";
-import { HareketTuruEnum } from "../constants/schema";
+import { HareketTuruEnum } from "../constants/schema"; // This import will now work
 
 export const MalzemeHareket_SpecificToolbar = () => {
   const store = MalzemeHareket_Store();
@@ -22,31 +22,31 @@ export const MalzemeHareket_SpecificToolbar = () => {
   };
 
   const handleShowZimmetler = () => {
-    handleFilterByHareketTuru(HareketTuruEnum.Zimmet);
+    handleFilterByHareketTuru(HareketTuruEnum.enum.Zimmet); // Corrected usage
   };
 
   const handleShowIadeler = () => {
-    handleFilterByHareketTuru(HareketTuruEnum.Iade);
+    handleFilterByHareketTuru(HareketTuruEnum.enum.Iade); // Corrected usage
   };
 
   const handleShowDevirler = () => {
-    handleFilterByHareketTuru(HareketTuruEnum.Devir);
+    handleFilterByHareketTuru(HareketTuruEnum.enum.Devir); // Corrected usage
   };
 
   const handleShowDepoTransferleri = () => {
-    handleFilterByHareketTuru(HareketTuruEnum.DepoTransferi);
+    handleFilterByHareketTuru(HareketTuruEnum.enum.DepoTransferi); // Corrected usage
   };
 
   const handleShowKondisyonGuncellemeleri = () => {
-    handleFilterByHareketTuru(HareketTuruEnum.KondisyonGuncelleme);
+    handleFilterByHareketTuru(HareketTuruEnum.enum.KondisyonGuncelleme); // Corrected usage
   };
 
   const handleShowKayiplar = () => {
-    handleFilterByHareketTuru(HareketTuruEnum.Kayip);
+    handleFilterByHareketTuru(HareketTuruEnum.enum.Kayip); // Corrected usage
   };
 
   const handleShowDusumler = () => {
-    handleFilterByHareketTuru(HareketTuruEnum.Dusum);
+    handleFilterByHareketTuru(HareketTuruEnum.enum.Dusum); // Corrected usage
   };
 
   const handleShowTumHareketler = () => {
@@ -55,9 +55,9 @@ export const MalzemeHareket_SpecificToolbar = () => {
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={handleShowTumHareketler}
         className="text-gray-700"
       >
@@ -65,9 +65,9 @@ export const MalzemeHareket_SpecificToolbar = () => {
         Tüm Hareketler
       </Button>
 
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={handleShowZimmetler}
         className="text-red-700 border-red-300 hover:bg-red-50"
       >
@@ -75,9 +75,9 @@ export const MalzemeHareket_SpecificToolbar = () => {
         Zimmetler
       </Button>
 
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={handleShowIadeler}
         className="text-green-700 border-green-300 hover:bg-green-50"
       >
@@ -85,9 +85,9 @@ export const MalzemeHareket_SpecificToolbar = () => {
         İadeler
       </Button>
 
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={handleShowDevirler}
         className="text-yellow-700 border-yellow-300 hover:bg-yellow-50"
       >
@@ -95,9 +95,9 @@ export const MalzemeHareket_SpecificToolbar = () => {
         Devirler
       </Button>
 
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={handleShowDepoTransferleri}
         className="text-blue-700 border-blue-300 hover:bg-blue-50"
       >
@@ -105,9 +105,9 @@ export const MalzemeHareket_SpecificToolbar = () => {
         Depo Transferleri
       </Button>
 
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={handleShowKondisyonGuncellemeleri}
         className="text-purple-700 border-purple-300 hover:bg-purple-50"
       >
@@ -115,9 +115,9 @@ export const MalzemeHareket_SpecificToolbar = () => {
         Kondisyon Güncellemeleri
       </Button>
 
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={handleShowKayiplar}
         className="text-red-700 border-red-300 hover:bg-red-50"
       >
@@ -125,9 +125,9 @@ export const MalzemeHareket_SpecificToolbar = () => {
         Kayıplar
       </Button>
 
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={handleShowDusumler}
         className="text-gray-700 border-gray-300 hover:bg-gray-50"
       >
