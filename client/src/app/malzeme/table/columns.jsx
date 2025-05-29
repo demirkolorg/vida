@@ -70,6 +70,31 @@ export const Malzeme_Columns = () => {
       },
     },
     {
+      accessorKey: 'sonHareketTuru',
+      accessorFn: row => {
+        if (row.malzemeHareketleri && row.malzemeHareketleri.length > 0) {
+          return row.malzemeHareketleri[0].hareketTuru || '';
+        }
+        return '';
+      },
+      header: ({ column }) => <HeaderButton column={column} title="Son Hareketi" />,
+      cell: ({ row }) => {
+        const hareketler = row.original.malzemeHareketleri;
+        if (hareketler && hareketler.length > 0) {
+          const sonHareket = hareketler[0];
+          const hareketTuru = sonHareket.hareketTuru;
+          return hareketTuru ? <div className="font-medium text-sm">{hareketTuru}</div> : <span className="text-muted-foreground text-sm">-</span>;
+        }
+        return <span className="text-muted-foreground text-sm">-</span>;
+      },
+      filterFn: inArrayFilterFn,
+      size: 120,
+      meta: {
+        exportHeader: 'Son Hareketi',
+        filterVariant: 'text',
+      },
+    },
+    {
       accessorKey: 'model',
       accessorFn: row => row.model?.ad || '',
       header: ({ column }) => <HeaderButton column={column} title="Model" />,

@@ -58,8 +58,8 @@ const service = {
               islemTarihi: true,
               malzemeKondisyonu: true 
             },
-            orderBy: { islemTarihi: 'desc' },
-            take: 5
+            orderBy: { createdAt: 'desc' },
+            take: 1
           },
           createdBy: { select: { id: true, ad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, avatar: true } },
@@ -99,8 +99,8 @@ const service = {
               islemTarihi: true,
               malzemeKondisyonu: true 
             },
-            orderBy: { islemTarihi: 'desc' },
-            take: 5
+            orderBy: { createdAt: 'desc' },
+            take: 1
           },
           createdBy: { select: { id: true, ad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, avatar: true } },
@@ -231,6 +231,17 @@ const service = {
           model: { select: { id: true, ad: true } },
           createdBy: { select: { id: true, ad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, avatar: true } },
+          malzemeHareketleri: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { 
+              id: true, 
+              hareketTuru: true, 
+              islemTarihi: true,
+              malzemeKondisyonu: true 
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 1
+          },
         },
       });
     } catch (error) {
