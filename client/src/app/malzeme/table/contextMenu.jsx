@@ -1,49 +1,89 @@
 import { useCallback } from 'react';
-import { ContextMenuItem } from '@/components/ui/context-menu';
+import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu';
 import { BaseContextMenu } from '@/components/contextMenu/BaseContextMenu';
 import { EntityHuman, EntityType } from '../constants/api';
-import { Building2Icon, HomeIcon, PackageIcon, HistoryIcon, TagIcon } from 'lucide-react';
+import { 
+  PackageIcon, 
+  BuildingIcon, 
+  ArrowRightLeft,
+  ArrowLeftRight,
+  Users,
+  MapPin,
+  AlertTriangle,
+  Settings,
+  HistoryIcon,
+  ClipboardListIcon
+} from 'lucide-react';
+import { useSheetStore } from '@/stores/sheetStore';
 
 export function Malzeme_ContextMenu({ item }) {
+  const { openSheet } = useSheetStore();
   const menuTitle = item?.vidaNo 
-    ? `${item.vidaNo} ${EntityHuman} Kaydı` 
+    ? `${item.vidaNo} - ${item.sabitKodu?.ad || 'Malzeme'} İşlemleri` 
     : `${EntityHuman} İşlemleri`;
 
+  // Birim detayını görüntüle
   const handleViewBirim = useCallback(() => {
     if (!item?.birim) return;
-    // Kuvve birimi detayını göster
-    // Örnek: router.push(`/birimler/${item.birim.id}`);
+    console.log('Birim detayı:', item.birim);
   }, [item]);
 
+  // Şube detayını görüntüle
   const handleViewSube = useCallback(() => {
     if (!item?.sube) return;
-    // İş karşılığı şube detayını göster
-    // Örnek: router.push(`/subeler/${item.sube.id}`);
+    console.log('Şube detayı:', item.sube);
   }, [item]);
 
-  const handleViewSabitKodu = useCallback(() => {
-    if (!item?.sabitKodu) return;
-    // Sabit kodu detayını göster
-    // Örnek: router.push(`/sabit-kodlar/${item.sabitKodu.id}`);
-  }, [item]);
-
-  const handleViewMarka = useCallback(() => {
-    if (!item?.marka) return;
-    // Marka detayını göster
-    // Örnek: router.push(`/markalar/${item.marka.id}`);
-  }, [item]);
-
-  const handleViewModel = useCallback(() => {
-    if (!item?.model) return;
-    // Model detayını göster
-    // Örnek: router.push(`/modeller/${item.model.id}`);
-  }, [item]);
-
-  const handleViewHareketler = useCallback(() => {
+  // Malzeme hareket geçmişini görüntüle
+  const handleViewHareketGecmisi = useCallback(() => {
     if (!item) return;
-    // Malzeme hareketlerini listele
-    // Örnek: router.push(`/malzeme-hareketleri?malzemeId=${item.id}`);
+    // Malzeme hareket geçmişi sayfasına yönlendir
+    console.log('Malzeme hareket geçmişi:', item.id);
   }, [item]);
+
+  // === MALZEME HAREKET İŞLEMLERİ ===
+
+  // Zimmet Ver
+  const handleZimmetVer = useCallback(() => {
+    if (!item) return;
+    console.log('Zimmet Ver - Malzeme:', item); // Debug log
+    openSheet('zimmet', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
+  }, [item, openSheet]);
+
+  // İade Al
+  const handleIadeAl = useCallback(() => {
+    if (!item) return;
+    console.log('İade Al - Malzeme:', item); // Debug log
+    openSheet('iade', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
+  }, [item, openSheet]);
+
+  // Devir Yap
+  const handleDevirYap = useCallback(() => {
+    if (!item) return;
+    console.log('Devir Yap - Malzeme:', item); // Debug log
+    openSheet('devir', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
+  }, [item, openSheet]);
+
+  // Depo Transferi
+  const handleDepoTransferi = useCallback(() => {
+    if (!item) return;
+    console.log('Depo Transferi - Malzeme:', item); // Debug log
+    openSheet('depoTransfer', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
+  }, [item, openSheet]);
+
+  // Kayıp Bildir
+  const handleKayipBildir = useCallback(() => {
+    if (!item) return;
+    console.log('Kayıp Bildir - Malzeme:', item); // Debug log
+    openSheet('kayip', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
+  }, [item, openSheet]);
+
+  // Kondisyon Güncelle
+  const handleKondisyonGuncelle = useCallback(() => {
+    if (!item) return;
+    console.log('Kondisyon Güncelle - Malzeme:', item); // Debug log
+    openSheet('kondisyon', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
+  }, [item, openSheet]);
 
   return (
     <BaseContextMenu 
@@ -52,50 +92,60 @@ export function Malzeme_ContextMenu({ item }) {
       entityHuman={EntityHuman} 
       menuTitle={menuTitle}
     >
-      {/* Kuvve Birimi Görüntüleme */}
+      {/* Malzeme Bilgileri */}
       {item?.birim && (
-        <ContextMenuItem className="" onSelect={handleViewBirim}>
-          <Building2Icon className="mr-2 h-4 w-4 text-blue-500" />
-          <span>Kuvve Birimini Görüntüle ({item.birim.ad})</span>
+        <ContextMenuItem onSelect={handleViewBirim}>
+          <BuildingIcon className="mr-2 h-4 w-4 text-blue-500" />
+          <span>Bağlı Birim Detayı ({item.birim.ad})</span>
         </ContextMenuItem>
       )}
 
-      {/* İş Karşılığı Şube Görüntüleme */}
       {item?.sube && (
-        <ContextMenuItem className="" onSelect={handleViewSube}>
-          <HomeIcon className="mr-2 h-4 w-4 text-green-500" />
-          <span>İş Karşılığı Şubeyi Görüntüle ({item.sube.ad})</span>
+        <ContextMenuItem onSelect={handleViewSube}>
+          <BuildingIcon className="mr-2 h-4 w-4 text-green-500" />
+          <span>Bağlı Şube Detayı ({item.sube.ad})</span>
         </ContextMenuItem>
       )}
 
-      {/* Sabit Kodu Görüntüleme */}
-      {item?.sabitKodu && (
-        <ContextMenuItem className="" onSelect={handleViewSabitKodu}>
-          <TagIcon className="mr-2 h-4 w-4 text-purple-500" />
-          <span>Sabit Kodunu Görüntüle ({item.sabitKodu.ad})</span>
-        </ContextMenuItem>
-      )}
+      <ContextMenuItem onSelect={handleViewHareketGecmisi}>
+        <HistoryIcon className="mr-2 h-4 w-4 text-purple-500" />
+        <span>Hareket Geçmişini Görüntüle</span>
+      </ContextMenuItem>
 
-      {/* Marka Görüntüleme */}
-      {item?.marka && (
-        <ContextMenuItem className="" onSelect={handleViewMarka}>
-          <PackageIcon className="mr-2 h-4 w-4 text-orange-500" />
-          <span>Markayı Görüntüle ({item.marka.ad})</span>
-        </ContextMenuItem>
-      )}
+      <ContextMenuSeparator />
 
-      {/* Model Görüntüleme */}
-      {item?.model && (
-        <ContextMenuItem className="" onSelect={handleViewModel}>
-          <PackageIcon className="mr-2 h-4 w-4 text-teal-500" />
-          <span>Modeli Görüntüle ({item.model.ad})</span>
-        </ContextMenuItem>
-      )}
+      {/* Malzeme Hareket İşlemleri */}
+      <ContextMenuItem onSelect={handleZimmetVer}>
+        <ArrowRightLeft className="mr-2 h-4 w-4 text-blue-600" />
+        <span>Zimmet Ver</span>
+      </ContextMenuItem>
 
-      {/* Malzeme Hareketleri */}
-      <ContextMenuItem className="" onSelect={handleViewHareketler}>
-        <HistoryIcon className="mr-2 h-4 w-4 text-indigo-500" />
-        <span>Malzeme Hareketlerini Görüntüle</span>
+      <ContextMenuItem onSelect={handleIadeAl}>
+        <ArrowLeftRight className="mr-2 h-4 w-4 text-green-600" />
+        <span>İade Al</span>
+      </ContextMenuItem>
+
+      <ContextMenuItem onSelect={handleDevirYap}>
+        <Users className="mr-2 h-4 w-4 text-purple-600" />
+        <span>Devir Yap</span>
+      </ContextMenuItem>
+
+      <ContextMenuItem onSelect={handleDepoTransferi}>
+        <MapPin className="mr-2 h-4 w-4 text-orange-600" />
+        <span>Depo Transferi</span>
+      </ContextMenuItem>
+
+      <ContextMenuItem onSelect={handleKondisyonGuncelle}>
+        <Settings className="mr-2 h-4 w-4 text-indigo-600" />
+        <span>Kondisyon Güncelle</span>
+      </ContextMenuItem>
+
+      <ContextMenuSeparator />
+
+      {/* Özel Durumlar */}
+      <ContextMenuItem onSelect={handleKayipBildir} className="text-red-600">
+        <AlertTriangle className="mr-2 h-4 w-4 text-red-600" />
+        <span>Kayıp Bildir</span>
       </ContextMenuItem>
     </BaseContextMenu>
   );

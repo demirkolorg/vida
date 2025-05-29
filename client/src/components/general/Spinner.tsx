@@ -36,10 +36,10 @@ interface SpinnerContentProps extends VariantProps<typeof spinnerVariants>, Vari
 
 export function Spinner({ wText, size, show, children, className }: SpinnerContentProps) {
   return (
-    <div className='flex items-center justify-center w-full h-full z-[999999] bg-background/50'>
+    <div className='flex items-center justify-center w-full h-full z-[999999] bg-background '>
       <span className={spinnerVariants({ show })}>
         <Loader2 className={cn(loaderVariants({ size }), className)} />
-        {wText && <span className="mt-2 text-sm text-muted-foreground">Yükleniyor...</span>}
+        {wText && <span className="mt-2 text-sm ">Yükleniyor...</span>}
         {children}
       </span>
     </div>

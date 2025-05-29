@@ -14,7 +14,7 @@ export const NavMainData = [
     icon: Package,
   },
   {
-    to: '/malzemehareketleri',
+    to: '/malzeme-hareketleri',
     label: 'Malzeme Hareketleri',
     icon: Route,
   },

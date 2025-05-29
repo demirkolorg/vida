@@ -21,6 +21,7 @@ import { Model_ListPage } from '@/app/model/pages/ListPage'; // YENİ EKLENEN
 import { Depo_ListPage } from '@/app/depo/pages/ListPage';
 import { Konum_ListPage } from '@/app/konum/pages/ListPage';
 import { Malzeme_ListPage } from '@/app/malzeme/pages/ListPage';
+import { MalzemeHareket_ListPage } from '@/app/malzemeHareket/pages/ListPage';
 
 const router = createBrowserRouter([
   {
@@ -99,6 +100,10 @@ const router = createBrowserRouter([
                 element: <Malzeme_ListPage />,
                 handle: { breadcrumb: 'Malzeme' },
               },
+              {
+                path: '/malzeme-hareketleri',
+                element: <MalzemeHareket_ListPage />,
+              },
             ],
           },
         ],
@@ -129,9 +134,9 @@ export function AppRouter() {
 
   if (!initialCheckPerformed) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex h-full w-full h-screen items-center justify-center">
         <Spinner size="large">
-          <span className="mt-2 text-sm text-muted-foreground">Kimlik doğrulanıyor...</span>
+          <span className="mt-2 text-sm ">Kimlik doğrulanıyor...</span>
         </Spinner>
       </div>
     );

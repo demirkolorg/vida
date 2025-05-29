@@ -28,17 +28,17 @@ const service = {
               vidaNo: true,
               sabitKodu: { select: { ad: true } },
               marka: { select: { ad: true } },
-              model: { select: { ad: true } }
-            }
+              model: { select: { ad: true } },
+            },
           },
           kaynakPersonel: { select: { id: true, ad: true, sicil: true } },
           hedefPersonel: { select: { id: true, ad: true, sicil: true } },
-          konum: { 
-            select: { 
-              id: true, 
+          konum: {
+            select: {
+              id: true,
               ad: true,
-              depo: { select: { ad: true } }
-            }
+              depo: { select: { ad: true } },
+            },
           },
           createdBy: { select: { id: true, ad: true, sicil: true } },
         },
@@ -76,17 +76,17 @@ const service = {
               vidaNo: true,
               sabitKodu: { select: { ad: true } },
               marka: { select: { ad: true } },
-              model: { select: { ad: true } }
-            }
+              model: { select: { ad: true } },
+            },
           },
           kaynakPersonel: { select: { id: true, ad: true, sicil: true } },
           hedefPersonel: { select: { id: true, ad: true, sicil: true } },
-          konum: { 
-            select: { 
-              id: true, 
+          konum: {
+            select: {
+              id: true,
               ad: true,
-              depo: { select: { ad: true } }
-            }
+              depo: { select: { ad: true } },
+            },
           },
           createdBy: { select: { id: true, ad: true, sicil: true } },
         },
@@ -109,39 +109,39 @@ const service = {
               marka: true,
               model: true,
               birim: { select: { ad: true } },
-              sube: { select: { ad: true } }
-            }
+              sube: { select: { ad: true } },
+            },
           },
-          kaynakPersonel: { 
-            select: { 
-              id: true, 
-              ad: true, 
+          kaynakPersonel: {
+            select: {
+              id: true,
+              ad: true,
               sicil: true,
               buro: {
                 select: {
                   ad: true,
-                  sube: { select: { ad: true } }
-                }
-              }
-            }
+                  sube: { select: { ad: true } },
+                },
+              },
+            },
           },
-          hedefPersonel: { 
-            select: { 
-              id: true, 
-              ad: true, 
+          hedefPersonel: {
+            select: {
+              id: true,
+              ad: true,
               sicil: true,
               buro: {
                 select: {
                   ad: true,
-                  sube: { select: { ad: true } }
-                }
-              }
-            }
+                  sube: { select: { ad: true } },
+                },
+              },
+            },
           },
-          konum: { 
-            include: { 
-              depo: { select: { ad: true } }
-            }
+          konum: {
+            include: {
+              depo: { select: { ad: true } },
+            },
           },
           createdBy: { select: { id: true, ad: true, sicil: true } },
         },
@@ -152,7 +152,7 @@ const service = {
   },
 
   // İş süreçlerine özel fonksiyonlar
-  
+
   // Malzeme Zimmet İşlemi
   zimmetVer: async data => {
     try {
@@ -162,7 +162,7 @@ const service = {
       if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
 
       const yeniId = helper.generateId(HizmetName);
-      
+
       const createPayload = {
         id: yeniId,
         hareketTuru: HareketTuruEnum.Zimmet,
@@ -187,8 +187,8 @@ const service = {
           malzeme: {
             select: {
               vidaNo: true,
-              sabitKodu: { select: { ad: true } }
-            }
+              sabitKodu: { select: { ad: true } },
+            },
           },
           hedefPersonel: { select: { ad: true, sicil: true } },
         },
@@ -206,7 +206,7 @@ const service = {
       if (data.hedefPersonelId) await PersonelService.checkExistsById(data.hedefPersonelId);
 
       const yeniId = helper.generateId(HizmetName);
-      
+
       const createPayload = {
         id: yeniId,
         hareketTuru: HareketTuruEnum.Iade,
@@ -231,8 +231,8 @@ const service = {
           malzeme: {
             select: {
               vidaNo: true,
-              sabitKodu: { select: { ad: true } }
-            }
+              sabitKodu: { select: { ad: true } },
+            },
           },
           kaynakPersonel: { select: { ad: true, sicil: true } },
         },
@@ -250,7 +250,7 @@ const service = {
       await PersonelService.checkExistsById(data.hedefPersonelId);
 
       const yeniId = helper.generateId(HizmetName);
-      
+
       const createPayload = {
         id: yeniId,
         hareketTuru: HareketTuruEnum.Devir,
@@ -275,8 +275,8 @@ const service = {
           malzeme: {
             select: {
               vidaNo: true,
-              sabitKodu: { select: { ad: true } }
-            }
+              sabitKodu: { select: { ad: true } },
+            },
           },
           kaynakPersonel: { select: { ad: true, sicil: true } },
           hedefPersonel: { select: { ad: true, sicil: true } },
@@ -295,7 +295,7 @@ const service = {
       if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
 
       const yeniId = helper.generateId(HizmetName);
-      
+
       const createPayload = {
         id: yeniId,
         hareketTuru: HareketTuruEnum.DepoTransferi,
@@ -317,14 +317,14 @@ const service = {
           malzeme: {
             select: {
               vidaNo: true,
-              sabitKodu: { select: { ad: true } }
-            }
+              sabitKodu: { select: { ad: true } },
+            },
           },
           konum: {
             select: {
               ad: true,
-              depo: { select: { ad: true } }
-            }
+              depo: { select: { ad: true } },
+            },
           },
         },
       });
@@ -340,7 +340,7 @@ const service = {
       if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
 
       const yeniId = helper.generateId(HizmetName);
-      
+
       const createPayload = {
         id: yeniId,
         hareketTuru: HareketTuruEnum.Kayip,
@@ -360,8 +360,8 @@ const service = {
           malzeme: {
             select: {
               vidaNo: true,
-              sabitKodu: { select: { ad: true } }
-            }
+              sabitKodu: { select: { ad: true } },
+            },
           },
           kaynakPersonel: { select: { ad: true, sicil: true } },
         },
@@ -378,7 +378,7 @@ const service = {
       if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
 
       const yeniId = helper.generateId(HizmetName);
-      
+
       const createPayload = {
         id: yeniId,
         hareketTuru: HareketTuruEnum.KondisyonGuncelleme,
@@ -398,8 +398,8 @@ const service = {
           malzeme: {
             select: {
               vidaNo: true,
-              sabitKodu: { select: { ad: true } }
-            }
+              sabitKodu: { select: { ad: true } },
+            },
           },
           kaynakPersonel: { select: { ad: true, sicil: true } },
         },
@@ -419,7 +419,7 @@ const service = {
       if (data.konumId) await KonumService.checkExistsById(data.konumId);
 
       const yeniId = helper.generateId(HizmetName);
-      
+
       const createPayload = {
         id: yeniId,
         hareketTuru: data.hareketTuru,
@@ -444,17 +444,17 @@ const service = {
               vidaNo: true,
               sabitKodu: { select: { ad: true } },
               marka: { select: { ad: true } },
-              model: { select: { ad: true } }
-            }
+              model: { select: { ad: true } },
+            },
           },
           kaynakPersonel: { select: { id: true, ad: true, sicil: true } },
           hedefPersonel: { select: { id: true, ad: true, sicil: true } },
-          konum: { 
-            select: { 
-              id: true, 
+          konum: {
+            select: {
+              id: true,
               ad: true,
-              depo: { select: { ad: true } }
-            }
+              depo: { select: { ad: true } },
+            },
           },
           createdBy: { select: { id: true, ad: true, sicil: true } },
         },
@@ -469,25 +469,25 @@ const service = {
       await service.checkExistsById(data.id);
 
       const updatePayload = {};
-      
+
       if (data.hareketTuru !== undefined) updatePayload.hareketTuru = data.hareketTuru;
       if (data.malzemeKondisyonu !== undefined) updatePayload.malzemeKondisyonu = data.malzemeKondisyonu;
-      
+
       if (data.kaynakPersonelId !== undefined) {
         if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
         updatePayload.kaynakPersonelId = data.kaynakPersonelId;
       }
-      
+
       if (data.hedefPersonelId !== undefined) {
         if (data.hedefPersonelId) await PersonelService.checkExistsById(data.hedefPersonelId);
         updatePayload.hedefPersonelId = data.hedefPersonelId;
       }
-      
+
       if (data.konumId !== undefined) {
         if (data.konumId) await KonumService.checkExistsById(data.konumId);
         updatePayload.konumId = data.konumId;
       }
-      
+
       if (data.aciklama !== undefined) updatePayload.aciklama = data.aciklama;
       if (data.islemTarihi !== undefined) updatePayload.islemTarihi = new Date(data.islemTarihi);
 
@@ -501,17 +501,17 @@ const service = {
               vidaNo: true,
               sabitKodu: { select: { ad: true } },
               marka: { select: { ad: true } },
-              model: { select: { ad: true } }
-            }
+              model: { select: { ad: true } },
+            },
           },
           kaynakPersonel: { select: { id: true, ad: true, sicil: true } },
           hedefPersonel: { select: { id: true, ad: true, sicil: true } },
-          konum: { 
-            select: { 
-              id: true, 
+          konum: {
+            select: {
+              id: true,
               ad: true,
-              depo: { select: { ad: true } }
-            }
+              depo: { select: { ad: true } },
+            },
           },
           createdBy: { select: { id: true, ad: true, sicil: true } },
         },
@@ -536,8 +536,8 @@ const service = {
           malzeme: {
             select: {
               vidaNo: true,
-              sabitKodu: { select: { ad: true } }
-            }
+              sabitKodu: { select: { ad: true } },
+            },
           },
         },
       });
@@ -587,17 +587,17 @@ const service = {
               vidaNo: true,
               sabitKodu: { select: { ad: true } },
               marka: { select: { ad: true } },
-              model: { select: { ad: true } }
-            }
+              model: { select: { ad: true } },
+            },
           },
           kaynakPersonel: { select: { id: true, ad: true, sicil: true } },
           hedefPersonel: { select: { id: true, ad: true, sicil: true } },
-          konum: { 
-            select: { 
-              id: true, 
+          konum: {
+            select: {
+              id: true,
               ad: true,
-              depo: { select: { ad: true } }
-            }
+              depo: { select: { ad: true } },
+            },
           },
           createdBy: { select: { id: true, ad: true, sicil: true } },
         },
@@ -613,19 +613,19 @@ const service = {
       await MalzemeService.checkExistsById(data.malzemeId);
 
       return await prisma[PrismaName].findMany({
-        where: { 
+        where: {
           malzemeId: data.malzemeId,
-          status: AuditStatusEnum.Aktif 
+          status: AuditStatusEnum.Aktif,
         },
         orderBy: { islemTarihi: 'desc' },
         include: {
           kaynakPersonel: { select: { ad: true, sicil: true } },
           hedefPersonel: { select: { ad: true, sicil: true } },
-          konum: { 
-            select: { 
+          konum: {
+            select: {
               ad: true,
-              depo: { select: { ad: true } }
-            }
+              depo: { select: { ad: true } },
+            },
           },
           createdBy: { select: { ad: true, sicil: true } },
         },
@@ -640,10 +640,10 @@ const service = {
       await PersonelService.checkExistsById(data.personelId);
 
       return await prisma[PrismaName].findMany({
-        where: { 
+        where: {
           hedefPersonelId: data.personelId,
           hareketTuru: HareketTuruEnum.Zimmet,
-          status: AuditStatusEnum.Aktif 
+          status: AuditStatusEnum.Aktif,
         },
         orderBy: { islemTarihi: 'desc' },
         include: {
@@ -652,8 +652,8 @@ const service = {
               vidaNo: true,
               sabitKodu: { select: { ad: true } },
               marka: { select: { ad: true } },
-              model: { select: { ad: true } }
-            }
+              model: { select: { ad: true } },
+            },
           },
         },
       });
@@ -665,12 +665,12 @@ const service = {
   getHareketIstatistikleri: async (data = {}) => {
     try {
       const whereClause = { status: AuditStatusEnum.Aktif };
-      
+
       if (data.startDate) whereClause.islemTarihi = { gte: new Date(data.startDate) };
       if (data.endDate) {
-        whereClause.islemTarihi = { 
+        whereClause.islemTarihi = {
           ...whereClause.islemTarihi,
-          lte: new Date(data.endDate) 
+          lte: new Date(data.endDate),
         };
       }
 
