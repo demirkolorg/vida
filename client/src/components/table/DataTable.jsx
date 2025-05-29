@@ -15,7 +15,6 @@ import { toast } from 'sonner'; // Assuming you use sonner for toasts
 import { HeaderContextMenu } from '@/components/contextMenu/HeaderContextMenu';
 import { useEffect } from 'react';
 
-
 export function DataTable({
   entityType,
   entityHuman,
@@ -37,8 +36,7 @@ export function DataTable({
   includeAuditColumns = true,
   renderCollapsibleToolbarContent,
   displayStatusFilter,
-    enableColumnReordering = false, 
-
+  enableColumnReordering = false,
 }) {
   const openSheet = useSheetStore(state => state.openSheet);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -49,11 +47,6 @@ export function DataTable({
   const [sorting, setSorting] = useState(initialSortingState);
   const [isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen] = useState(false);
   const [columnOrder, setColumnOrder] = useState([]);
-
-  
-
-  
-
 
   const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
@@ -109,7 +102,7 @@ export function DataTable({
       globalFilter: activeGlobalFilter,
       columnVisibility,
       rowSelection,
-      columnOrder
+      columnOrder,
     },
     initialState: { pagination: { pageSize: 10 } },
   });
@@ -250,14 +243,13 @@ export function DataTable({
     return hasColumnFilters || hasGlobalFilter;
   }, [table.getState().columnFilters, table.getState().globalFilter]); // Bağımlılıkları state'ten al
 
-    useEffect(() => {
+  useEffect(() => {
     if (enableColumnReordering) {
       console.log('Yeni Sütun Sırası:', columnOrder);
       // Burası, bir sonraki adımda bu `columnOrder`'ı
       // `useUserSettingsStore`'a kaydetmek için kullanılacak yer olacak.
     }
   }, [columnOrder, enableColumnReordering]);
-
 
   return (
     <div className="w-full space-y-2">
@@ -310,9 +302,7 @@ export function DataTable({
                     >
                       <HeaderContextMenu column={header.column} table={table}>
                         <div className="flex items-center justify-between w-full">
-                          <div className="flex-grow">
-                            {headerContent}
-                          </div>
+                          <div className="flex-grow">{headerContent}</div>
                           {header.column.getCanResize() && (
                             <div
                               onMouseDown={header.getResizeHandler()}
@@ -399,7 +389,6 @@ export function DataTable({
       </div>
 
       <DataTablePagination table={table} />
-      
     </div>
   );
 }

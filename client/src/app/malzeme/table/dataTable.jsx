@@ -16,11 +16,11 @@ export function Malzeme_DataTable() {
   const isLoading = useEntityStore(state => state.loadingList);
   const toggleDisplayStatusFilter = useEntityStore(state => state.ToggleDisplayStatusFilter);
   const displayStatusFilter = useEntityStore(state => state.displayStatusFilter);
-  
+
   // Columns'ı dinamik olarak oluştur
   const columns = useMemo(() => {
     const baseColumns = EntityColumns();
-    
+
     // Sabit Kodu filter options'ını data'dan oluştur
     const uniqueSabitKodlar = [...new Set(datas.map(item => item.sabitKodu?.ad).filter(Boolean))];
     const sabitKoduFilterOptions = uniqueSabitKodlar.map(sabitKoduAd => ({
@@ -63,40 +63,40 @@ export function Malzeme_DataTable() {
           ...column,
           meta: {
             ...column.meta,
-            filterOptions: sabitKoduFilterOptions
-          }
+            filterOptions: sabitKoduFilterOptions,
+          },
         };
       } else if (column.accessorKey === 'marka') {
         return {
           ...column,
           meta: {
             ...column.meta,
-            filterOptions: markaFilterOptions
-          }
+            filterOptions: markaFilterOptions,
+          },
         };
       } else if (column.accessorKey === 'model') {
         return {
           ...column,
           meta: {
             ...column.meta,
-            filterOptions: modelFilterOptions
-          }
+            filterOptions: modelFilterOptions,
+          },
         };
       } else if (column.accessorKey === 'birim') {
         return {
           ...column,
           meta: {
             ...column.meta,
-            filterOptions: birimFilterOptions
-          }
+            filterOptions: birimFilterOptions,
+          },
         };
       } else if (column.accessorKey === 'sube') {
         return {
           ...column,
           meta: {
             ...column.meta,
-            filterOptions: subeFilterOptions
-          }
+            filterOptions: subeFilterOptions,
+          },
         };
       }
       return column;
@@ -106,16 +106,19 @@ export function Malzeme_DataTable() {
   }, [datas]);
 
   // Faceted filter data'ya options'ları ekle
-  const facesFilterData = useMemo(() => [
-    { columnId: 'status', title: 'Durum' },
-    { columnId: 'malzemeTipi', title: 'Malzeme Tipi' },
-    { columnId: 'sabitKodu', title: 'Sabit Kodu' },
-    { columnId: 'marka', title: 'Marka' },
-    { columnId: 'model', title: 'Model' },
-    { columnId: 'birim', title: 'Kuvve Birimi' },
-    { columnId: 'sube', title: 'İş Karşılığı Şube' },
-    { columnId: 'createdBy', title: 'Oluşturan' },
-  ], []);
+  const facesFilterData = useMemo(
+    () => [
+      { columnId: 'status', title: 'Durum' },
+      { columnId: 'malzemeTipi', title: 'Malzeme Tipi' },
+      { columnId: 'sabitKodu', title: 'Sabit Kodu' },
+      { columnId: 'marka', title: 'Marka' },
+      { columnId: 'model', title: 'Model' },
+      { columnId: 'birim', title: 'Kuvve Birimi' },
+      { columnId: 'sube', title: 'İş Karşılığı Şube' },
+      { columnId: 'createdBy', title: 'Oluşturan' },
+    ],
+    [],
+  );
 
   const contextMenu = row => <EntityContextMenu item={row.original} />;
 

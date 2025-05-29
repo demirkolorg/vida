@@ -54,6 +54,7 @@ export function MalzemeHareket_DataTable() {
       columnVisibilityData={columnVisibilityData}
       renderCollapsibleToolbarContent={() => <EntitySpecificToolbar />}
       displayStatusFilter={displayStatusFilter}
+      hideNewButton={true}
     />
   );
 }
