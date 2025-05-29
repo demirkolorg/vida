@@ -6,12 +6,45 @@ import { Malzeme_ApiService as EntityApiService } from "./api"
 
 // MalzemeHareket API'sini import et
 import { MalzemeHareket_ApiService } from '@/app/malzemeHareket/constants/api';
-import {HareketTuruEnum} from '@prisma/client';
-
+// Konum API'sini import et
+import { createBaseApiService } from '@/api/BaseApiServices';
+const KonumApiService = createBaseApiService('konum', 'Konum');
 
 export const Malzeme_Store = createCrudStore(EntityHuman, EntityApiService,
   (set, get, baseStore) => {
     return {
+      // Varsayılan konum cache'i
+      _defaultKonumId: null,
+
+      // Varsayılan konum ID'sini getir
+      getDefaultKonumId: async () => {
+        if (get()._defaultKonumId) {
+          return get()._defaultKonumId;
+        }
+
+        try {
+          // İlk aktif konumu getir
+          const konumlar = await KonumApiService.getAll();
+          const aktifKonum = konumlar.find(k => k.status === 'Aktif');
+          
+          if (aktifKonum) {
+            set({ _defaultKonumId: aktifKonum.id });
+            return aktifKonum.id;
+          }
+          
+          // Hiç aktif konum yoksa ilkini al
+          if (konumlar.length > 0) {
+            set({ _defaultKonumId: konumlar[0].id });
+            return konumlar[0].id;
+          }
+          
+          return null;
+        } catch (error) {
+          console.error('Varsayılan konum alınamadı:', error);
+          return null;
+        }
+      },
+
       // Orijinal Create fonksiyonunu override et
       Create: async (newData, options) => {
         const showSuccessToast = options?.showToast ?? true;
@@ -27,13 +60,20 @@ export const Malzeme_Store = createCrudStore(EntityHuman, EntityApiService,
 
           // 2. Malzeme başarıyla oluştu, şimdi otomatik "Kayıt" hareketi oluştur
           try {
+            // Varsayılan konum ID'sini al
+            const defaultKonumId = await get().getDefaultKonumId();
+            
+            if (!defaultKonumId) {
+              console.warn('Varsayılan konum bulunamadı, hareket kaydı oluşturulamayacak');
+              throw new Error('Sistemde aktif konum bulunamadı');
+            }
+
             const hareketData = {
               islemTarihi: new Date().toISOString(),
-              hareketTuru: HareketTuruEnum.Kayit,
+              hareketTuru: 'Kayit',
               malzemeKondisyonu: 'Saglam',
               malzemeId: createdMalzeme.id,
-              // Kayıt işlemi için konum gerekli - ilk konum ID'sini al veya null bırak
-              konumId: null, // Bu kısmı geliştirilebilir
+              konumId: defaultKonumId, // Varsayılan konum ID'si
               aciklama: `${createdMalzeme.vidaNo || createdMalzeme.id} malzemesi sisteme kaydedildi.`,
             };
 
@@ -49,7 +89,7 @@ export const Malzeme_Store = createCrudStore(EntityHuman, EntityApiService,
             // Hareket kaydı başarısız olsa da malzeme oluşturulmuş durumda
             if (showSuccessToast) {
               toast.success(`'${createdMalzeme.vidaNo || createdMalzeme.id}' malzemesi oluşturuldu.`);
-              toast.warning('Ancak otomatik hareket kaydı oluşturulamadı.');
+              toast.warning('Ancak otomatik hareket kaydı oluşturulamadı: ' + (hareketError.message || 'Bilinmeyen hata'));
             }
           }
 
