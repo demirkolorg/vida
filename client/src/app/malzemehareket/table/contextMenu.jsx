@@ -1,65 +1,37 @@
+// client/src/app/malzemeHareket/table/contextMenu.jsx
 import { useCallback } from 'react';
 import { ContextMenuItem } from '@/components/ui/context-menu';
 import { BaseContextMenu } from '@/components/contextMenu/BaseContextMenu';
 import { EntityHuman, EntityType } from '../constants/api';
-import { 
-  PackageIcon, 
-  UserIcon, 
-  ClipboardListIcon, 
-  MapPinIcon,
-  HistoryIcon,
-  ExternalLinkIcon,
-  InfoIcon
-} from 'lucide-react';
+import { Package, History, User } from 'lucide-react';
+import { MalzemeHareket_Store } from '../constants/store';
 
 export function MalzemeHareket_ContextMenu({ item }) {
-  const menuTitle = item?.hareketTuru 
-    ? `${item.hareketTuru} - ${item.malzeme?.vidaNo || 'Malzeme'} İşlemi` 
+  const store = MalzemeHareket_Store();
+  
+  const menuTitle = item?.malzeme?.vidaNo 
+    ? `${item.malzeme.vidaNo} - ${item.hareketTuru} İşlemleri` 
     : `${EntityHuman} İşlemleri`;
 
-  // Malzeme detayını görüntüle
-  const handleViewMalzeme = useCallback(() => {
-    if (!item?.malzeme) return;
-    // Malzeme detay sayfasına yönlendir
-    console.log('Malzeme detayı:', item.malzeme);
-  }, [item]);
+  const handleShowMalzemeGecmisi = useCallback(() => {
+    if (!item?.malzemeId) return;
+    store.GetMalzemeGecmisi(item.malzemeId, { showToast: true });
+  }, [item, store]);
 
-  // Malzeme sayfasında bu malzemeyi bul
-  const handleGoToMalzeme = useCallback(() => {
-    if (!item?.malzeme) return;
-    // Malzeme listesi sayfasına git ve bu malzemeyi vurgula
-    console.log('Malzeme sayfasına git:', item.malzeme.id);
-  }, [item]);
+  const handleShowMalzemeHareketleri = useCallback(() => {
+    if (!item?.malzemeId) return;
+    store.GetByMalzemeId(item.malzemeId, { showToast: true });
+  }, [item, store]);
 
-  // Kaynak personel detayını görüntüle
-  const handleViewKaynakPersonel = useCallback(() => {
-    if (!item?.kaynakPersonel) return;
-    console.log('Kaynak personel detayı:', item.kaynakPersonel);
-  }, [item]);
+  const handleShowPersonelZimmetleri = useCallback(() => {
+    if (!item?.hedefPersonelId) return;
+    store.GetPersonelZimmetleri(item.hedefPersonelId, { showToast: true });
+  }, [item, store]);
 
-  // Hedef personel detayını görüntüle
-  const handleViewHedefPersonel = useCallback(() => {
-    if (!item?.hedefPersonel) return;
-    console.log('Hedef personel detayı:', item.hedefPersonel);
-  }, [item]);
-
-  // Konum detayını görüntüle
-  const handleViewKonum = useCallback(() => {
-    if (!item?.konum) return;
-    console.log('Konum detayı:', item.konum);
-  }, [item]);
-
-  // Malzeme geçmişini görüntüle
-  const handleViewMalzemeGecmisi = useCallback(() => {
-    if (!item?.malzeme) return;
-    console.log('Malzeme geçmişi:', item.malzeme.id);
-  }, [item]);
-
-  // Personel zimmet listesini görüntüle
-  const handleViewPersonelZimmetleri = useCallback((personelId, personelAd) => {
-    if (!personelId) return;
-    console.log('Personel zimmetleri:', personelId, personelAd);
-  }, []);
+  const handleShowPersonelHareketleri = useCallback(() => {
+    if (!item?.hedefPersonelId) return;
+    store.GetByPersonelId(item.hedefPersonelId, 'hedef', { showToast: true });
+  }, [item, store]);
 
   return (
     <BaseContextMenu 
@@ -67,72 +39,35 @@ export function MalzemeHareket_ContextMenu({ item }) {
       entityType={EntityType} 
       entityHuman={EntityHuman} 
       menuTitle={menuTitle}
-      // Sadece DetailSheet aktif, Edit/Delete/Create yok
-      showEdit={false}
-      showDelete={false}
-      showCreate={false}
     >
-      {/* Bilgilendirme */}
-      <ContextMenuItem className="text-blue-600 cursor-default" disabled>
-        <InfoIcon className="mr-2 h-4 w-4" />
-        <span className="text-xs">Hareket işlemleri Malzeme sayfasından yapılır</span>
-      </ContextMenuItem>
-      
-      {/* Malzeme İşlemleri */}
-      {item?.malzeme && (
+      {/* Malzeme bazlı işlemler */}
+      {item?.malzemeId && (
         <>
-          <ContextMenuItem onSelect={handleViewMalzeme}>
-            <PackageIcon className="mr-2 h-4 w-4 text-blue-500" />
-            <span>Malzeme Detayını Görüntüle</span>
+          <ContextMenuItem onSelect={handleShowMalzemeGecmisi}>
+            <History className="mr-2 h-4 w-4 text-blue-500" />
+            <span>Malzeme Geçmişini Göster</span>
           </ContextMenuItem>
           
-          <ContextMenuItem onSelect={handleGoToMalzeme}>
-            <ExternalLinkIcon className="mr-2 h-4 w-4 text-purple-500" />
-            <span>Malzeme Sayfasına Git</span>
-          </ContextMenuItem>
-          
-          <ContextMenuItem onSelect={handleViewMalzemeGecmisi}>
-            <HistoryIcon className="mr-2 h-4 w-4 text-purple-500" />
-            <span>Bu Malzemenin Tüm Geçmişi</span>
+          <ContextMenuItem onSelect={handleShowMalzemeHareketleri}>
+            <Package className="mr-2 h-4 w-4 text-green-500" />
+            <span>Bu Malzemenin Tüm Hareketleri</span>
           </ContextMenuItem>
         </>
       )}
 
-      {/* Personel İşlemleri - Sadece Görüntüleme */}
-      {item?.kaynakPersonel && (
+      {/* Personel bazlı işlemler */}
+      {item?.hedefPersonelId && (
         <>
-          <ContextMenuItem onSelect={handleViewKaynakPersonel}>
-            <UserIcon className="mr-2 h-4 w-4 text-blue-600" />
-            <span>Kaynak Personel Detayı ({item.kaynakPersonel.ad})</span>
+          <ContextMenuItem onSelect={handleShowPersonelZimmetleri}>
+            <User className="mr-2 h-4 w-4 text-orange-500" />
+            <span>Personel Zimmetlerini Göster</span>
           </ContextMenuItem>
           
-          <ContextMenuItem onSelect={() => handleViewPersonelZimmetleri(item.kaynakPersonel.id, item.kaynakPersonel.ad)}>
-            <ClipboardListIcon className="mr-2 h-4 w-4 text-indigo-500" />
-            <span>Kaynak Personel Zimmet Listesi</span>
+          <ContextMenuItem onSelect={handleShowPersonelHareketleri}>
+            <User className="mr-2 h-4 w-4 text-purple-500" />
+            <span>Personelin Tüm Hareketleri</span>
           </ContextMenuItem>
         </>
-      )}
-
-      {item?.hedefPersonel && (
-        <>
-          <ContextMenuItem onSelect={handleViewHedefPersonel}>
-            <UserIcon className="mr-2 h-4 w-4 text-green-600" />
-            <span>Hedef Personel Detayı ({item.hedefPersonel.ad})</span>
-          </ContextMenuItem>
-          
-          <ContextMenuItem onSelect={() => handleViewPersonelZimmetleri(item.hedefPersonel.id, item.hedefPersonel.ad)}>
-            <ClipboardListIcon className="mr-2 h-4 w-4 text-emerald-500" />
-            <span>Hedef Personel Zimmet Listesi</span>
-          </ContextMenuItem>
-        </>
-      )}
-
-      {/* Konum İşlemleri - Sadece Görüntüleme */}
-      {item?.konum && (
-        <ContextMenuItem onSelect={handleViewKonum}>
-          <MapPinIcon className="mr-2 h-4 w-4 text-red-500" />
-          <span>Konum Detayı ({item.konum.ad})</span>
-        </ContextMenuItem>
       )}
     </BaseContextMenu>
   );

@@ -1,41 +1,33 @@
 // client/src/app/malzemeHareket/table/columns.jsx
-import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
 import { HeaderButton } from '@/components/table/HeaderButton';
 import { Badge } from '@/components/ui/badge';
 import { EntityHuman } from '../constants/api';
-import { HareketTuruOptions, MalzemeKondisyonuOptions } from '../constants/schema';
+import { HareketTuruOptions, KondisyonOptions } from '../constants/schema';
+import { format } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 export const MalzemeHareket_Columns = () => {
-  const inArrayFilterFn = (row, columnId, filterValueArray) => {
-    if (!filterValueArray || filterValueArray.length === 0) {
-      return true;
-    }
-    const rowValue = row.getValue(columnId);
-    return filterValueArray.includes(rowValue);
-  };
-
-  // Hareket türü renk eşlemeleri
-  const getHareketTuruBadgeVariant = (hareketTuru) => {
+  // Hareket türü renk kodları
+  const getHareketTuruVariant = (hareketTuru) => {
     switch (hareketTuru) {
-      case 'Zimmet': return 'default';
-      case 'Iade': return 'secondary';
-      case 'Devir': return 'outline';
-      case 'DepoTransferi': return 'destructive';
+      case 'Kayit': return 'default';
+      case 'Zimmet': return 'destructive';
+      case 'Iade': return 'success';
+      case 'Devir': return 'warning';
+      case 'DepoTransferi': return 'secondary';
+      case 'KondisyonGuncelleme': return 'outline';
       case 'Kayip': return 'destructive';
-      case 'KondisyonGuncelleme': return 'warning_muted';
-      case 'Kayit': return 'success_muted';
-      case 'Dusum': return 'destructive_muted';
+      case 'Dusum': return 'destructive';
       default: return 'outline';
     }
   };
 
-  // Kondisyon renk eşlemeleri
-  const getKondisyonBadgeVariant = (kondisyon) => {
+  // Kondisyon renk kodları
+  const getKondisyonVariant = (kondisyon) => {
     switch (kondisyon) {
-      case 'Saglam': return 'success_muted';
-      case 'Arizali': return 'warning_muted';
-      case 'Hurda': return 'destructive_muted';
+      case 'Saglam': return 'success';
+      case 'Arizali': return 'warning';
+      case 'Hurda': return 'destructive';
       default: return 'outline';
     }
   };
@@ -45,45 +37,17 @@ export const MalzemeHareket_Columns = () => {
       accessorKey: 'islemTarihi',
       header: ({ column }) => <HeaderButton column={column} title="İşlem Tarihi" />,
       cell: ({ row }) => {
-        const islemTarihi = row.getValue('islemTarihi');
-        if (!islemTarihi) return '-';
+        const tarih = row.getValue('islemTarihi');
         return (
           <div className="text-sm">
-            {format(new Date(islemTarihi), 'dd.MM.yyyy', { locale: tr })}
-            <div className="text-xs text-muted-foreground">
-              {format(new Date(islemTarihi), 'HH:mm', { locale: tr })}
-            </div>
+            {tarih ? format(new Date(tarih), 'dd.MM.yyyy HH:mm', { locale: tr }) : '-'}
           </div>
         );
       },
-      enableHiding: false,
-      size: 120,
-      filterFn: inArrayFilterFn,
+      size: 140,
       meta: {
         exportHeader: 'İşlem Tarihi',
         filterVariant: 'date',
-      },
-    },
-    {
-      accessorKey: 'hareketTuru',
-      header: ({ column }) => <HeaderButton column={column} title="Hareket Türü" />,
-      cell: ({ row }) => {
-        const hareketTuru = row.getValue('hareketTuru');
-        const hareketOption = HareketTuruOptions.find(option => option.value === hareketTuru);
-        const label = hareketOption?.label || hareketTuru;
-        
-        return (
-          <Badge variant={getHareketTuruBadgeVariant(hareketTuru)} className="text-xs">
-            {label}
-          </Badge>
-        );
-      },
-      size: 150,
-      filterFn: inArrayFilterFn,
-      meta: {
-        exportHeader: 'Hareket Türü',
-        filterVariant: 'select',
-        filterOptions: HareketTuruOptions,
       },
     },
     {
@@ -92,20 +56,16 @@ export const MalzemeHareket_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Malzeme" />,
       cell: ({ row }) => {
         const malzeme = row.original.malzeme;
-        if (!malzeme) return '-';
-        
         return (
-          <div className="max-w-xs">
-            <div className="font-medium text-sm truncate">
-              {malzeme.vidaNo || 'Vida No Yok'}
+          <div className="space-y-1">
+            <div className="font-medium text-sm">
+              {malzeme?.vidaNo || '-'}
             </div>
-            {malzeme.sabitKodu?.ad && (
-              <div className="text-xs text-muted-foreground truncate">
-                {malzeme.sabitKodu.ad}
-              </div>
-            )}
-            {malzeme.marka?.ad && malzeme.model?.ad && (
-              <div className="text-xs text-gray-500 truncate">
+            <div className="text-xs text-muted-foreground">
+              {malzeme?.sabitKodu?.ad || '-'}
+            </div>
+            {malzeme?.marka?.ad && malzeme?.model?.ad && (
+              <div className="text-xs text-muted-foreground">
                 {malzeme.marka.ad} - {malzeme.model.ad}
               </div>
             )}
@@ -113,10 +73,28 @@ export const MalzemeHareket_Columns = () => {
         );
       },
       size: 200,
-      filterFn: inArrayFilterFn,
       meta: {
         exportHeader: 'Malzeme',
         filterVariant: 'text',
+      },
+    },
+    {
+      accessorKey: 'hareketTuru',
+      header: ({ column }) => <HeaderButton column={column} title="Hareket Türü" />,
+      cell: ({ row }) => {
+        const hareketTuru = row.getValue('hareketTuru');
+        const option = HareketTuruOptions.find(opt => opt.value === hareketTuru);
+        return (
+          <Badge variant={getHareketTuruVariant(hareketTuru)} className="text-xs">
+            {option?.label || hareketTuru}
+          </Badge>
+        );
+      },
+      size: 120,
+      meta: {
+        exportHeader: 'Hareket Türü',
+        filterVariant: 'select',
+        filterOptions: HareketTuruOptions,
       },
     },
     {
@@ -124,21 +102,18 @@ export const MalzemeHareket_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Kondisyon" />,
       cell: ({ row }) => {
         const kondisyon = row.getValue('malzemeKondisyonu');
-        const kondisyonOption = MalzemeKondisyonuOptions.find(option => option.value === kondisyon);
-        const label = kondisyonOption?.label || kondisyon;
-        
+        const option = KondisyonOptions.find(opt => opt.value === kondisyon);
         return (
-          <Badge variant={getKondisyonBadgeVariant(kondisyon)} className="text-xs">
-            {label}
+          <Badge variant={getKondisyonVariant(kondisyon)} className="text-xs">
+            {option?.label || kondisyon}
           </Badge>
         );
       },
       size: 100,
-      filterFn: inArrayFilterFn,
       meta: {
-        exportHeader: 'Malzeme Kondisyonu',
+        exportHeader: 'Kondisyon',
         filterVariant: 'select',
-        filterOptions: MalzemeKondisyonuOptions,
+        filterOptions: KondisyonOptions,
       },
     },
     {
@@ -146,22 +121,17 @@ export const MalzemeHareket_Columns = () => {
       accessorFn: row => row.kaynakPersonel?.ad || '',
       header: ({ column }) => <HeaderButton column={column} title="Kaynak Personel" />,
       cell: ({ row }) => {
-        const kaynakPersonel = row.original.kaynakPersonel;
-        if (!kaynakPersonel) return '-';
-        
-        return (
-          <div className="text-sm">
-            <div className="font-medium">{kaynakPersonel.ad}</div>
-            {kaynakPersonel.sicil && (
-              <div className="text-xs text-muted-foreground">
-                Sicil: {kaynakPersonel.sicil}
-              </div>
-            )}
+        const kaynak = row.original.kaynakPersonel;
+        return kaynak ? (
+          <div className="space-y-1">
+            <div className="text-sm font-medium">{kaynak.ad}</div>
+            <div className="text-xs text-muted-foreground">{kaynak.sicil}</div>
           </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">-</div>
         );
       },
       size: 150,
-      filterFn: inArrayFilterFn,
       meta: {
         exportHeader: 'Kaynak Personel',
         filterVariant: 'text',
@@ -172,22 +142,17 @@ export const MalzemeHareket_Columns = () => {
       accessorFn: row => row.hedefPersonel?.ad || '',
       header: ({ column }) => <HeaderButton column={column} title="Hedef Personel" />,
       cell: ({ row }) => {
-        const hedefPersonel = row.original.hedefPersonel;
-        if (!hedefPersonel) return '-';
-        
-        return (
-          <div className="text-sm">
-            <div className="font-medium">{hedefPersonel.ad}</div>
-            {hedefPersonel.sicil && (
-              <div className="text-xs text-muted-foreground">
-                Sicil: {hedefPersonel.sicil}
-              </div>
-            )}
+        const hedef = row.original.hedefPersonel;
+        return hedef ? (
+          <div className="space-y-1">
+            <div className="text-sm font-medium">{hedef.ad}</div>
+            <div className="text-xs text-muted-foreground">{hedef.sicil}</div>
           </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">-</div>
         );
       },
       size: 150,
-      filterFn: inArrayFilterFn,
       meta: {
         exportHeader: 'Hedef Personel',
         filterVariant: 'text',
@@ -199,21 +164,18 @@ export const MalzemeHareket_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Konum" />,
       cell: ({ row }) => {
         const konum = row.original.konum;
-        if (!konum) return '-';
-        
-        return (
-          <div className="text-sm">
-            <div className="font-medium">{konum.ad}</div>
+        return konum ? (
+          <div className="space-y-1">
+            <div className="text-sm font-medium">{konum.ad}</div>
             {konum.depo?.ad && (
-              <div className="text-xs text-muted-foreground">
-                Depo: {konum.depo.ad}
-              </div>
+              <div className="text-xs text-muted-foreground">{konum.depo.ad}</div>
             )}
           </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">-</div>
         );
       },
-      size: 130,
-      filterFn: inArrayFilterFn,
+      size: 150,
       meta: {
         exportHeader: 'Konum',
         filterVariant: 'text',
@@ -224,16 +186,13 @@ export const MalzemeHareket_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Açıklama" />,
       cell: ({ row }) => {
         const aciklama = row.getValue('aciklama');
-        if (!aciklama) return '-';
-        
         return (
           <div className="text-sm text-gray-600 truncate max-w-xs" title={aciklama}>
-            {aciklama}
+            {aciklama || '-'}
           </div>
         );
       },
       size: 200,
-      filterFn: inArrayFilterFn,
       meta: {
         exportHeader: 'Açıklama',
         filterVariant: 'text',
@@ -242,26 +201,18 @@ export const MalzemeHareket_Columns = () => {
     {
       accessorKey: 'createdBy',
       accessorFn: row => row.createdBy?.ad || '',
-      header: ({ column }) => <HeaderButton column={column} title="İşlemi Yapan" />,
+      header: ({ column }) => <HeaderButton column={column} title="İşlem Yapan" />,
       cell: ({ row }) => {
         const createdBy = row.original.createdBy;
-        if (!createdBy) return '-';
-        
-        return (
-          <div className="text-sm">
-            <div className="font-medium">{createdBy.ad}</div>
-            {createdBy.sicil && (
-              <div className="text-xs text-muted-foreground">
-                {createdBy.sicil}
-              </div>
-            )}
-          </div>
+        return createdBy ? (
+          <div className="text-sm">{createdBy.ad}</div>
+        ) : (
+          <div className="text-sm text-muted-foreground">-</div>
         );
       },
-      size: 130,
-      filterFn: inArrayFilterFn,
+      size: 120,
       meta: {
-        exportHeader: 'İşlemi Yapan',
+        exportHeader: 'İşlem Yapan',
         filterVariant: 'text',
       },
     },

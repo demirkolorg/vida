@@ -40,113 +40,6 @@ const controller = {
     }
   },
 
-  // İş süreçlerine özel controller fonksiyonları
-
-  zimmetVer: async (req, res) => {
-    const rota = 'zimmetVer';
-    try {
-      const data = req.body;
-      data.islemYapanKullanici = req.user.id;
-
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.add.error, message.required.islemYapanKullanici);
-      if (!data.malzemeId) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeId);
-      if (!data.hedefPersonelId) return response.error(req, res, HizmetName, rota, message.add.error, message.required.hedefPersonelId);
-      if (!data.malzemeKondisyonu) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeKondisyonu);
-
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.special.success.zimmet, result);
-    } catch (error) {
-      response.error(req, res, HizmetName, rota, message.special.error.zimmet, error.message);
-    }
-  },
-
-  iadeAl: async (req, res) => {
-    const rota = 'iadeAl';
-    try {
-      const data = req.body;
-      data.islemYapanKullanici = req.user.id;
-
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.add.error, message.required.islemYapanKullanici);
-      if (!data.malzemeId) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeId);
-      if (!data.malzemeKondisyonu) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeKondisyonu);
-
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.special.success.iade, result);
-    } catch (error) {
-      response.error(req, res, HizmetName, rota, message.special.error.iade, error.message);
-    }
-  },
-
-  devirYap: async (req, res) => {
-    const rota = 'devirYap';
-    try {
-      const data = req.body;
-      data.islemYapanKullanici = req.user.id;
-
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.add.error, message.required.islemYapanKullanici);
-      if (!data.malzemeId) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeId);
-      if (!data.kaynakPersonelId) return response.error(req, res, HizmetName, rota, message.add.error, message.required.kaynakPersonelId);
-      if (!data.hedefPersonelId) return response.error(req, res, HizmetName, rota, message.add.error, message.required.hedefPersonelId);
-      if (!data.malzemeKondisyonu) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeKondisyonu);
-
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.special.success.devir, result);
-    } catch (error) {
-      response.error(req, res, HizmetName, rota, message.special.error.devir, error.message);
-    }
-  },
-
-  depoTransferi: async (req, res) => {
-    const rota = 'depoTransferi';
-    try {
-      const data = req.body;
-      data.islemYapanKullanici = req.user.id;
-
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.add.error, message.required.islemYapanKullanici);
-      if (!data.malzemeId) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeId);
-      if (!data.konumId) return response.error(req, res, HizmetName, rota, message.add.error, message.required.konumId);
-      if (!data.malzemeKondisyonu) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeKondisyonu);
-
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.special.success.depoTransfer, result);
-    } catch (error) {
-      response.error(req, res, HizmetName, rota, message.special.error.depoTransfer, error.message);
-    }
-  },
-
-  kayipBildir: async (req, res) => {
-    const rota = 'kayipBildir';
-    try {
-      const data = req.body;
-      data.islemYapanKullanici = req.user.id;
-
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.add.error, message.required.islemYapanKullanici);
-      if (!data.malzemeId) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeId);
-
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.special.success.kayip, result);
-    } catch (error) {
-      response.error(req, res, HizmetName, rota, message.special.error.kayip, error.message);
-    }
-  },
-
-  kondisyonGuncelle: async (req, res) => {
-    const rota = 'kondisyonGuncelle';
-    try {
-      const data = req.body;
-      data.islemYapanKullanici = req.user.id;
-
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.add.error, message.required.islemYapanKullanici);
-      if (!data.malzemeId) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeId);
-      if (!data.malzemeKondisyonu) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeKondisyonu);
-
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.special.success.kondisyon, result);
-    } catch (error) {
-      response.error(req, res, HizmetName, rota, message.special.error.kondisyon, error.message);
-    }
-  },
-
   create: async (req, res) => {
     const rota = 'create';
     try {
@@ -154,12 +47,15 @@ const controller = {
       data.islemYapanKullanici = req.user.id;
 
       if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.add.error, message.required.islemYapanKullanici);
-      if (!data.malzemeId) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeId);
-      if (!data.hareketTuru) return response.error(req, res, HizmetName, rota, message.add.error, 'Hareket türü gerekli');
-      if (!data.malzemeKondisyonu) return response.error(req, res, HizmetName, rota, message.add.error, message.required.malzemeKondisyonu);
+      if (!data.malzemeId) return response.error(req, res, HizmetName, rota, message.add.error, message.special.error.malzemeGerekli);
+      if (!data.hareketTuru) return response.error(req, res, HizmetName, rota, message.add.error, message.special.error.hareketTuruGerekli);
+      if (!data.malzemeKondisyonu) return response.error(req, res, HizmetName, rota, message.add.error, message.special.error.malzemeKondisyonuGerekli);
 
       const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.add.ok, result);
+      
+      // Hareket türüne göre özel başarı mesajı
+      const successMessage = message.special.success[data.hareketTuru.toLowerCase()] || message.add.ok;
+      response.success(req, res, HizmetName, rota, successMessage, result);
     } catch (error) {
       response.error(req, res, HizmetName, rota, message.add.error, error.message);
     }
@@ -173,23 +69,6 @@ const controller = {
 
       if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.update.error, message.required.islemYapanKullanici);
       if (!data.id) return response.error(req, res, HizmetName, rota, message.update.error, message.required.id);
-
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.update.ok, result);
-    } catch (error) {
-      response.error(req, res, HizmetName, rota, message.update.error, error.message);
-    }
-  },
-
-  updateStatus: async (req, res) => {
-    const rota = 'updateStatus';
-    try {
-      const data = req.body;
-      data.islemYapanKullanici = req.user.id;
-
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.update.error, message.required.islemYapanKullanici);
-      if (!data.id) return response.error(req, res, HizmetName, rota, message.update.error, message.required.id);
-      if (!data.status) return response.error(req, res, HizmetName, rota, message.update.error, message.required.status);
 
       const result = await service[rota](data);
       response.success(req, res, HizmetName, rota, message.update.ok, result);
@@ -214,6 +93,16 @@ const controller = {
     }
   },
 
+  health: async (req, res) => {
+    const rota = 'health';
+    try {
+      const result = { status: `${HumanName} Servisi Aktif`, timestamp: new Date().toISOString() };
+      response.success(req, res, HizmetName, rota, message.health.ok, result);
+    } catch (error) {
+      return response.error(req, res, HizmetName, rota, message.health.error, error.message);
+    }
+  },
+
   search: async (req, res) => {
     const rota = 'search';
     try {
@@ -230,62 +119,33 @@ const controller = {
     }
   },
 
-  // Raporlama endpoint'leri
-
+  // Malzeme geçmişi için özel endpoint
   getMalzemeGecmisi: async (req, res) => {
     const rota = 'getMalzemeGecmisi';
     try {
       const data = req.body;
-      data.islemYapanKullanici = req.user.id;
 
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.get.error, message.required.islemYapanKullanici);
-      if (!data.malzemeId) return response.error(req, res, HizmetName, rota, message.get.error, message.required.malzemeId);
+      if (!data.malzemeId) return response.error(req, res, HizmetName, rota, message.get.error, message.special.error.malzemeGerekli);
 
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.special.success.malzemeGecmisi, result);
+      const result = await service.getByQuery({ malzemeId: data.malzemeId });
+      response.success(req, res, HizmetName, rota, `${HumanName} geçmişi başarıyla getirildi.`, result);
     } catch (error) {
-      response.error(req, res, HizmetName, rota, message.special.error.malzemeGecmisi, error.message);
+      response.error(req, res, HizmetName, rota, message.get.error, error.message);
     }
   },
 
+  // Personel zimmetli malzemeler için özel endpoint
   getPersonelZimmetleri: async (req, res) => {
     const rota = 'getPersonelZimmetleri';
     try {
       const data = req.body;
-      data.islemYapanKullanici = req.user.id;
 
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.get.error, message.required.islemYapanKullanici);
       if (!data.personelId) return response.error(req, res, HizmetName, rota, message.get.error, message.required.personelId);
 
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.special.success.personelZimmet, result);
+      const result = await service.getByQuery({ hedefPersonelId: data.personelId });
+      response.success(req, res, HizmetName, rota, `Personel zimmetleri başarıyla getirildi.`, result);
     } catch (error) {
-      response.error(req, res, HizmetName, rota, message.special.error.personelZimmet, error.message);
-    }
-  },
-
-  getHareketIstatistikleri: async (req, res) => {
-    const rota = 'getHareketIstatistikleri';
-    try {
-      const data = req.body;
-      data.islemYapanKullanici = req.user.id;
-
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.get.error, message.required.islemYapanKullanici);
-
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.special.success.istatistik, result);
-    } catch (error) {
-      response.error(req, res, HizmetName, rota, message.special.error.istatistik, error.message);
-    }
-  },
-
-  health: async (req, res) => {
-    const rota = 'health';
-    try {
-      const result = { status: `${HumanName} Servisi Aktif`, timestamp: new Date().toISOString() };
-      response.success(req, res, HizmetName, rota, message.health.ok, result);
-    } catch (error) {
-      return response.error(req, res, HizmetName, rota, message.health.error, error.message);
+      response.error(req, res, HizmetName, rota, message.get.error, error.message);
     }
   },
 };

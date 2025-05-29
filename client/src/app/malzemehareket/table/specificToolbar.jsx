@@ -1,124 +1,139 @@
-import React from 'react';
-import { BarChart3, FileText, Download, TrendingUp, Package, Calendar, Filter, InfoIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
-
-// MalzemeHareket sayfası sadece görüntüleme ve raporlama için
-import { useSheetStore } from '@/stores/sheetStore';
-import { MalzemeHareket_Store } from '../constants/store';
+// client/src/app/malzemeHareket/table/specificToolbar.jsx
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { MalzemeHareket_Store } from "../constants/store";
+import { 
+  Package, 
+  UserCheck, 
+  RotateCcw, 
+  ArrowUpDown, 
+  Warehouse,
+  Settings,
+  AlertTriangle,
+  FileX
+} from "lucide-react";
+import { HareketTuruEnum } from "../constants/schema";
 
 export const MalzemeHareket_SpecificToolbar = () => {
-  const { openSheet } = useSheetStore();
-  const datas = MalzemeHareket_Store(state => state.datas);
-  const getHareketIstatistikleri = MalzemeHareket_Store(state => state.GetHareketIstatistikleri);
+  const store = MalzemeHareket_Store();
 
-  // İstatistik raporu
-  const handleIstatistikRaporu = async () => {
-    try {
-      await getHareketIstatistikleri({ showToast: true });
-      openSheet('istatistik', null, 'malzemeHareket');
-    } catch (error) {
-      console.error('İstatistik raporu yüklenemedi:', error);
-    }
+  const handleFilterByHareketTuru = (hareketTuru) => {
+    store.GetByHareketTuru(hareketTuru, { showToast: true });
   };
 
-  // Excel'e aktarma
-  const handleExcelExport = () => {
-    console.log('Excel export:', datas);
+  const handleShowZimmetler = () => {
+    handleFilterByHareketTuru(HareketTuruEnum.Zimmet);
   };
 
-  // PDF rapor oluşturma
-  const handlePdfReport = () => {
-    console.log('PDF rapor oluştur:', datas);
+  const handleShowIadeler = () => {
+    handleFilterByHareketTuru(HareketTuruEnum.Iade);
   };
 
-  // Son 30 günlük hareketleri filtrele
-  const handleLast30Days = () => {
-    console.log('Son 30 gün filtresi');
+  const handleShowDevirler = () => {
+    handleFilterByHareketTuru(HareketTuruEnum.Devir);
   };
 
-  // Sadece zimmet işlemlerini filtrele
-  const handleZimmetFilter = () => {
-    console.log('Zimmet filtresi');
+  const handleShowDepoTransferleri = () => {
+    handleFilterByHareketTuru(HareketTuruEnum.DepoTransferi);
   };
 
-  // Sadece iade işlemlerini filtrele
-  const handleIadeFilter = () => {
-    console.log('İade filtresi');
+  const handleShowKondisyonGuncellemeleri = () => {
+    handleFilterByHareketTuru(HareketTuruEnum.KondisyonGuncelleme);
+  };
+
+  const handleShowKayiplar = () => {
+    handleFilterByHareketTuru(HareketTuruEnum.Kayip);
+  };
+
+  const handleShowDusumler = () => {
+    handleFilterByHareketTuru(HareketTuruEnum.Dusum);
+  };
+
+  const handleShowTumHareketler = () => {
+    store.GetByQuery({}, { showToast: true });
   };
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      {/* Raporlar ve Analiz */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
-            <BarChart3 className="mr-2 h-4 w-4" />
-            Analiz ve Raporlar
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56">
-          <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">Hareket Analizi</DropdownMenuLabel>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={handleShowTumHareketler}
+        className="text-gray-700"
+      >
+        <Package className="mr-2 h-4 w-4" />
+        Tüm Hareketler
+      </Button>
 
-          <DropdownMenuItem onClick={handleIstatistikRaporu}>
-            <TrendingUp className="mr-2 h-4 w-4 text-blue-500" />
-            Detaylı İstatistik Raporu
-          </DropdownMenuItem>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={handleShowZimmetler}
+        className="text-red-700 border-red-300 hover:bg-red-50"
+      >
+        <UserCheck className="mr-2 h-4 w-4" />
+        Zimmetler
+      </Button>
 
-          <DropdownMenuSeparator />
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={handleShowIadeler}
+        className="text-green-700 border-green-300 hover:bg-green-50"
+      >
+        <RotateCcw className="mr-2 h-4 w-4" />
+        İadeler
+      </Button>
 
-          <DropdownMenuItem onClick={handleExcelExport}>
-            <Download className="mr-2 h-4 w-4 text-green-500" />
-            Excel'e Aktar
-          </DropdownMenuItem>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={handleShowDevirler}
+        className="text-yellow-700 border-yellow-300 hover:bg-yellow-50"
+      >
+        <ArrowUpDown className="mr-2 h-4 w-4" />
+        Devirler
+      </Button>
 
-          <DropdownMenuItem onClick={handlePdfReport}>
-            <FileText className="mr-2 h-4 w-4 text-red-500" />
-            PDF Rapor Oluştur
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={handleShowDepoTransferleri}
+        className="text-blue-700 border-blue-300 hover:bg-blue-50"
+      >
+        <Warehouse className="mr-2 h-4 w-4" />
+        Depo Transferleri
+      </Button>
 
-      {/* Hızlı Filtreleme Seçenekleri */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Filter className="mr-2 h-4 w-4" />
-            Hızlı Filtreler
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
-          <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">Hızlı Filtreleme</DropdownMenuLabel>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={handleShowKondisyonGuncellemeleri}
+        className="text-purple-700 border-purple-300 hover:bg-purple-50"
+      >
+        <Settings className="mr-2 h-4 w-4" />
+        Kondisyon Güncellemeleri
+      </Button>
 
-          <DropdownMenuItem onClick={handleLast30Days}>
-            <Calendar className="mr-2 h-4 w-4 text-purple-500" />
-            Son 30 Gün
-          </DropdownMenuItem>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={handleShowKayiplar}
+        className="text-red-700 border-red-300 hover:bg-red-50"
+      >
+        <AlertTriangle className="mr-2 h-4 w-4" />
+        Kayıplar
+      </Button>
 
-          <DropdownMenuItem onClick={handleZimmetFilter}>
-            <Package className="mr-2 h-4 w-4 text-blue-500" />
-            Sadece Zimmet İşlemleri
-          </DropdownMenuItem>
-
-          <DropdownMenuItem onClick={handleIadeFilter}>
-            <Package className="mr-2 h-4 w-4 text-green-500" />
-            Sadece İade İşlemleri
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {/* Özet İstatistikler */}
-      {datas && datas.length > 0 && (
-        <div className="flex items-center gap-3 text-xs text-muted-foreground border-l pl-3 ml-2">
-          <span className="flex items-center gap-1">
-            <Package className="h-3 w-3" />
-            Toplam: {datas.length}
-          </span>
-          <span className="flex items-center gap-1 text-blue-600">Zimmet: {datas.filter(h => h.hareketTuru === 'Zimmet').length}</span>
-          <span className="flex items-center gap-1 text-green-600">İade: {datas.filter(h => h.hareketTuru === 'Iade').length}</span>
-          <span className="flex items-center gap-1 text-red-600">Kayıp: {datas.filter(h => h.hareketTuru === 'Kayip').length}</span>
-        </div>
-      )}
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={handleShowDusumler}
+        className="text-gray-700 border-gray-300 hover:bg-gray-50"
+      >
+        <FileX className="mr-2 h-4 w-4" />
+        Düşümler
+      </Button>
     </div>
   );
 };

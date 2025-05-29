@@ -1,7 +1,7 @@
 // server/app/malzemeHareket/service.js
 import { prisma } from '../../config/db.js';
 import helper from '../../utils/helper.js';
-import { HizmetName, PrismaName, HumanName } from './base.js';
+import { HizmetName, HumanName, PrismaName } from './base.js';
 import { AuditStatusEnum, HareketTuruEnum, MalzemeKondisyonuEnum } from '@prisma/client';
 import MalzemeService from '../malzeme/service.js';
 import PersonelService from '../personel/service.js';
@@ -14,6 +14,92 @@ const service = {
       throw new Error(`${id} ID'sine sahip aktif ${HumanName} bulunamadı.`);
     }
     return result;
+  },
+
+  // Malzemenin mevcut durumunu kontrol et
+  getMalzemeDurumu: async malzemeId => {
+    const sonHareket = await prisma[PrismaName].findFirst({
+      where: {
+        malzemeId,
+        status: AuditStatusEnum.Aktif,
+      },
+      orderBy: { islemTarihi: 'desc' },
+    });
+
+    if (!sonHareket) {
+      return {
+        malzemePersonelde: false,
+        malzemeDepoda: false,
+        malzemeKonumsuz: false,
+        malzemeYok: false,
+        sonPersonelId: null,
+        sonKonumId: null,
+      };
+    }
+
+    const malzemePersonelde = [HareketTuruEnum.Zimmet, HareketTuruEnum.Devir].includes(sonHareket.hareketTuru);
+    const malzemeDepoda = [HareketTuruEnum.Kayit, HareketTuruEnum.Iade, HareketTuruEnum.DepoTransferi].includes(sonHareket.hareketTuru);
+    const malzemeKonumsuz = sonHareket.hareketTuru === HareketTuruEnum.KondisyonGuncelleme;
+    const malzemeYok = [HareketTuruEnum.Kayip, HareketTuruEnum.Dusum].includes(sonHareket.hareketTuru);
+
+    return {
+      malzemePersonelde,
+      malzemeDepoda,
+      malzemeKonumsuz,
+      malzemeYok,
+      sonPersonelId: sonHareket.hedefPersonelId || sonHareket.kaynakPersonelId,
+      sonKonumId: sonHareket.konumId,
+    };
+  },
+
+  validateHareketKurallari: async data => {
+    const malzemeDurumu = await service.getMalzemeDurumu(data.malzemeId);
+
+    switch (data.hareketTuru) {
+      case HareketTuruEnum.Kayit:
+        // İlk hareket olmalı
+        if (malzemeDurumu.malzemePersonelde || malzemeDurumu.malzemeDepoda || malzemeDurumu.malzemeKonumsuz || malzemeDurumu.malzemeYok) {
+          throw new Error('Kayıt hareketi sadece malzemenin ilk hareketi olabilir.');
+        }
+        if (!data.konumId) throw new Error('Kayıt işlemi için konum belirtilmelidir.');
+        break;
+
+      case HareketTuruEnum.Zimmet:
+        if (malzemeDurumu.malzemePersonelde) throw new Error('Bu malzeme zaten bir personelde bulunmakta, zimmet verilemez.');
+        if (!malzemeDurumu.malzemeDepoda && !malzemeDurumu.malzemeKonumsuz) throw new Error('Malzeme depoda değil, zimmet verilemez.');
+        if (malzemeDurumu.malzemeYok) throw new Error('Kayıp/düşüm yapılmış malzemeye zimmet verilemez.');
+        if (!data.hedefPersonelId) throw new Error('Zimmet işlemi için hedef personel belirtilmelidir.');
+        break;
+
+      case HareketTuruEnum.Iade:
+        if (!malzemeDurumu.malzemePersonelde && !malzemeDurumu.malzemeKonumsuz) throw new Error('Bu malzeme personelde değil, iade alınamaz.');
+        if (malzemeDurumu.malzemeYok) throw new Error('Kayıp/düşüm yapılmış malzemeden iade alınamaz.');
+        if (!data.kaynakPersonelId) throw new Error('İade işlemi için kaynak personel belirtilmelidir.');
+        if (!data.konumId) throw new Error('İade işlemi için konum belirtilmelidir.');
+        break;
+
+      case HareketTuruEnum.Devir:
+        if (!malzemeDurumu.malzemePersonelde && !malzemeDurumu.malzemeKonumsuz) throw new Error('Bu malzeme personelde değil, devir yapılamaz.');
+        if (malzemeDurumu.malzemeYok) throw new Error('Kayıp/düşüm yapılmış malzemede devir yapılamaz.');
+        if (!data.kaynakPersonelId || !data.hedefPersonelId) throw new Error('Devir işlemi için kaynak ve hedef personel belirtilmelidir.');
+        if (data.kaynakPersonelId === data.hedefPersonelId) throw new Error('Kaynak ve hedef personel aynı olamaz.');
+        break;
+
+      case HareketTuruEnum.DepoTransferi:
+        if (!malzemeDurumu.malzemeDepoda && !malzemeDurumu.malzemeKonumsuz) throw new Error('Bu malzeme depoda değil, depo transferi yapılamaz.');
+        if (malzemeDurumu.malzemeYok) throw new Error('Kayıp/düşüm yapılmış malzemede depo transferi yapılamaz.');
+        if (!data.konumId) throw new Error('Depo transferi için hedef konum belirtilmelidir.');
+        break;
+
+      case HareketTuruEnum.KondisyonGuncelleme:
+        if (malzemeDurumu.malzemeYok) throw new Error('Kayıp/düşüm yapılmış malzemede kondisyon güncellemesi yapılamaz.');
+        break;
+
+      case HareketTuruEnum.Kayip:
+      case HareketTuruEnum.Dusum:
+        if (malzemeDurumu.malzemeYok) throw new Error('Bu malzeme zaten kayıp/düşüm yapılmış.');
+        break;
+    }
   },
 
   getAll: async () => {
@@ -40,7 +126,7 @@ const service = {
               depo: { select: { ad: true } },
             },
           },
-          createdBy: { select: { id: true, ad: true, sicil: true } },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -50,21 +136,14 @@ const service = {
 
   getByQuery: async (data = {}) => {
     try {
-      const whereClause = {};
-      if (data.status) whereClause.status = data.status;
+      const whereClause = { status: AuditStatusEnum.Aktif };
+
       if (data.malzemeId) whereClause.malzemeId = data.malzemeId;
       if (data.hareketTuru) whereClause.hareketTuru = data.hareketTuru;
-      if (data.malzemeKondisyonu) whereClause.malzemeKondisyonu = data.malzemeKondisyonu;
       if (data.kaynakPersonelId) whereClause.kaynakPersonelId = data.kaynakPersonelId;
       if (data.hedefPersonelId) whereClause.hedefPersonelId = data.hedefPersonelId;
       if (data.konumId) whereClause.konumId = data.konumId;
-
-      // Tarih aralığı filtresi
-      if (data.startDate || data.endDate) {
-        whereClause.islemTarihi = {};
-        if (data.startDate) whereClause.islemTarihi.gte = new Date(data.startDate);
-        if (data.endDate) whereClause.islemTarihi.lte = new Date(data.endDate);
-      }
+      if (data.malzemeKondisyonu) whereClause.malzemeKondisyonu = data.malzemeKondisyonu;
 
       return await prisma[PrismaName].findMany({
         where: whereClause,
@@ -88,7 +167,7 @@ const service = {
               depo: { select: { ad: true } },
             },
           },
-          createdBy: { select: { id: true, ad: true, sicil: true } },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -104,228 +183,24 @@ const service = {
         where: { id: data.id, status: AuditStatusEnum.Aktif },
         include: {
           malzeme: {
-            include: {
-              sabitKodu: true,
-              marka: true,
-              model: true,
-              birim: { select: { ad: true } },
-              sube: { select: { ad: true } },
-            },
-          },
-          kaynakPersonel: {
             select: {
               id: true,
-              ad: true,
-              sicil: true,
-              buro: {
-                select: {
-                  ad: true,
-                  sube: { select: { ad: true } },
-                },
-              },
+              vidaNo: true,
+              sabitKodu: { select: { ad: true } },
+              marka: { select: { ad: true } },
+              model: { select: { ad: true } },
             },
           },
-          hedefPersonel: {
+          kaynakPersonel: { select: { id: true, ad: true, sicil: true } },
+          hedefPersonel: { select: { id: true, ad: true, sicil: true } },
+          konum: {
             select: {
               id: true,
-              ad: true,
-              sicil: true,
-              buro: {
-                select: {
-                  ad: true,
-                  sube: { select: { ad: true } },
-                },
-              },
-            },
-          },
-          konum: {
-            include: {
-              depo: { select: { ad: true } },
-            },
-          },
-          createdBy: { select: { id: true, ad: true, sicil: true } },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // İş süreçlerine özel fonksiyonlar
-
-  // Malzeme Zimmet İşlemi
-  zimmetVer: async data => {
-    try {
-      // Validasyonlar
-      await MalzemeService.checkExistsById(data.malzemeId);
-      await PersonelService.checkExistsById(data.hedefPersonelId);
-      if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
-
-      const yeniId = helper.generateId(HizmetName);
-
-      const createPayload = {
-        id: yeniId,
-        hareketTuru: HareketTuruEnum.Zimmet,
-        malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
-        malzemeId: data.malzemeId,
-        hedefPersonelId: data.hedefPersonelId,
-        status: AuditStatusEnum.Aktif,
-        createdById: data.islemYapanKullanici,
-      };
-
-      if (data.kaynakPersonelId) createPayload.kaynakPersonelId = data.kaynakPersonelId;
-      if (data.konumId) {
-        await KonumService.checkExistsById(data.konumId);
-        createPayload.konumId = data.konumId;
-      }
-      if (data.aciklama) createPayload.aciklama = data.aciklama;
-      if (data.islemTarihi) createPayload.islemTarihi = new Date(data.islemTarihi);
-
-      return await prisma[PrismaName].create({
-        data: createPayload,
-        include: {
-          malzeme: {
-            select: {
-              vidaNo: true,
-              sabitKodu: { select: { ad: true } },
-            },
-          },
-          hedefPersonel: { select: { ad: true, sicil: true } },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Malzeme İade İşlemi
-  iadeAl: async data => {
-    try {
-      await MalzemeService.checkExistsById(data.malzemeId);
-      if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
-      if (data.hedefPersonelId) await PersonelService.checkExistsById(data.hedefPersonelId);
-
-      const yeniId = helper.generateId(HizmetName);
-
-      const createPayload = {
-        id: yeniId,
-        hareketTuru: HareketTuruEnum.Iade,
-        malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
-        malzemeId: data.malzemeId,
-        status: AuditStatusEnum.Aktif,
-        createdById: data.islemYapanKullanici,
-      };
-
-      if (data.kaynakPersonelId) createPayload.kaynakPersonelId = data.kaynakPersonelId;
-      if (data.hedefPersonelId) createPayload.hedefPersonelId = data.hedefPersonelId;
-      if (data.konumId) {
-        await KonumService.checkExistsById(data.konumId);
-        createPayload.konumId = data.konumId;
-      }
-      if (data.aciklama) createPayload.aciklama = data.aciklama;
-      if (data.islemTarihi) createPayload.islemTarihi = new Date(data.islemTarihi);
-
-      return await prisma[PrismaName].create({
-        data: createPayload,
-        include: {
-          malzeme: {
-            select: {
-              vidaNo: true,
-              sabitKodu: { select: { ad: true } },
-            },
-          },
-          kaynakPersonel: { select: { ad: true, sicil: true } },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Malzeme Devir İşlemi
-  devirYap: async data => {
-    try {
-      await MalzemeService.checkExistsById(data.malzemeId);
-      await PersonelService.checkExistsById(data.kaynakPersonelId);
-      await PersonelService.checkExistsById(data.hedefPersonelId);
-
-      const yeniId = helper.generateId(HizmetName);
-
-      const createPayload = {
-        id: yeniId,
-        hareketTuru: HareketTuruEnum.Devir,
-        malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
-        malzemeId: data.malzemeId,
-        kaynakPersonelId: data.kaynakPersonelId,
-        hedefPersonelId: data.hedefPersonelId,
-        status: AuditStatusEnum.Aktif,
-        createdById: data.islemYapanKullanici,
-      };
-
-      if (data.konumId) {
-        await KonumService.checkExistsById(data.konumId);
-        createPayload.konumId = data.konumId;
-      }
-      if (data.aciklama) createPayload.aciklama = data.aciklama;
-      if (data.islemTarihi) createPayload.islemTarihi = new Date(data.islemTarihi);
-
-      return await prisma[PrismaName].create({
-        data: createPayload,
-        include: {
-          malzeme: {
-            select: {
-              vidaNo: true,
-              sabitKodu: { select: { ad: true } },
-            },
-          },
-          kaynakPersonel: { select: { ad: true, sicil: true } },
-          hedefPersonel: { select: { ad: true, sicil: true } },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Depo Transfer İşlemi
-  depoTransferi: async data => {
-    try {
-      await MalzemeService.checkExistsById(data.malzemeId);
-      await KonumService.checkExistsById(data.konumId);
-      if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
-
-      const yeniId = helper.generateId(HizmetName);
-
-      const createPayload = {
-        id: yeniId,
-        hareketTuru: HareketTuruEnum.DepoTransferi,
-        malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
-        malzemeId: data.malzemeId,
-        konumId: data.konumId,
-        status: AuditStatusEnum.Aktif,
-        createdById: data.islemYapanKullanici,
-      };
-
-      if (data.kaynakPersonelId) createPayload.kaynakPersonelId = data.kaynakPersonelId;
-      if (data.hedefPersonelId) createPayload.hedefPersonelId = data.hedefPersonelId;
-      if (data.aciklama) createPayload.aciklama = data.aciklama;
-      if (data.islemTarihi) createPayload.islemTarihi = new Date(data.islemTarihi);
-
-      return await prisma[PrismaName].create({
-        data: createPayload,
-        include: {
-          malzeme: {
-            select: {
-              vidaNo: true,
-              sabitKodu: { select: { ad: true } },
-            },
-          },
-          konum: {
-            select: {
               ad: true,
               depo: { select: { ad: true } },
             },
           },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -333,107 +208,52 @@ const service = {
     }
   },
 
-  // Kayıp Bildirimi
-  kayipBildir: async data => {
-    try {
-      await MalzemeService.checkExistsById(data.malzemeId);
-      if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
-
-      const yeniId = helper.generateId(HizmetName);
-
-      const createPayload = {
-        id: yeniId,
-        hareketTuru: HareketTuruEnum.Kayip,
-        malzemeKondisyonu: MalzemeKondisyonuEnum.Hurda, // Kayıp malzemeler Hurda olarak işaretlenir
-        malzemeId: data.malzemeId,
-        status: AuditStatusEnum.Aktif,
-        createdById: data.islemYapanKullanici,
-      };
-
-      if (data.kaynakPersonelId) createPayload.kaynakPersonelId = data.kaynakPersonelId;
-      if (data.aciklama) createPayload.aciklama = data.aciklama;
-      if (data.islemTarihi) createPayload.islemTarihi = new Date(data.islemTarihi);
-
-      return await prisma[PrismaName].create({
-        data: createPayload,
-        include: {
-          malzeme: {
-            select: {
-              vidaNo: true,
-              sabitKodu: { select: { ad: true } },
-            },
-          },
-          kaynakPersonel: { select: { ad: true, sicil: true } },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Kondisyon Güncelleme
-  kondisyonGuncelle: async data => {
-    try {
-      await MalzemeService.checkExistsById(data.malzemeId);
-      if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
-
-      const yeniId = helper.generateId(HizmetName);
-
-      const createPayload = {
-        id: yeniId,
-        hareketTuru: HareketTuruEnum.KondisyonGuncelleme,
-        malzemeKondisyonu: data.malzemeKondisyonu,
-        malzemeId: data.malzemeId,
-        status: AuditStatusEnum.Aktif,
-        createdById: data.islemYapanKullanici,
-      };
-
-      if (data.kaynakPersonelId) createPayload.kaynakPersonelId = data.kaynakPersonelId;
-      if (data.aciklama) createPayload.aciklama = data.aciklama;
-      if (data.islemTarihi) createPayload.islemTarihi = new Date(data.islemTarihi);
-
-      return await prisma[PrismaName].create({
-        data: createPayload,
-        include: {
-          malzeme: {
-            select: {
-              vidaNo: true,
-              sabitKodu: { select: { ad: true } },
-            },
-          },
-          kaynakPersonel: { select: { ad: true, sicil: true } },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Genel Create (Tüm hareket türleri için)
   create: async data => {
     try {
-      // Validasyonlar
+      // Doğrulamalar
       await MalzemeService.checkExistsById(data.malzemeId);
+
       if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
       if (data.hedefPersonelId) await PersonelService.checkExistsById(data.hedefPersonelId);
       if (data.konumId) await KonumService.checkExistsById(data.konumId);
 
+      // İş kurallarını kontrol et
+      await service.validateHareketKurallari(data);
+
       const yeniId = helper.generateId(HizmetName);
 
       const createPayload = {
         id: yeniId,
+        malzemeId: data.malzemeId,
         hareketTuru: data.hareketTuru,
         malzemeKondisyonu: data.malzemeKondisyonu,
-        malzemeId: data.malzemeId,
         status: AuditStatusEnum.Aktif,
         createdById: data.islemYapanKullanici,
       };
 
-      if (data.kaynakPersonelId) createPayload.kaynakPersonelId = data.kaynakPersonelId;
-      if (data.hedefPersonelId) createPayload.hedefPersonelId = data.hedefPersonelId;
-      if (data.konumId) createPayload.konumId = data.konumId;
-      if (data.aciklama) createPayload.aciklama = data.aciklama;
-      if (data.islemTarihi) createPayload.islemTarihi = new Date(data.islemTarihi);
+      // Hareket türüne göre alanları set et
+      switch (data.hareketTuru) {
+        case HareketTuruEnum.Kayit:
+          createPayload.konumId = data.konumId;
+          break;
+        case HareketTuruEnum.Zimmet:
+          createPayload.hedefPersonelId = data.hedefPersonelId;
+          break;
+        case HareketTuruEnum.Iade:
+          createPayload.kaynakPersonelId = data.kaynakPersonelId;
+          createPayload.konumId = data.konumId;
+          break;
+        case HareketTuruEnum.Devir:
+          createPayload.kaynakPersonelId = data.kaynakPersonelId;
+          createPayload.hedefPersonelId = data.hedefPersonelId;
+          break;
+        case HareketTuruEnum.DepoTransferi:
+          createPayload.konumId = data.konumId;
+          break;
+      }
+
+      if (data.aciklama !== undefined) createPayload.aciklama = data.aciklama;
+      if (data.islemTarihi !== undefined) createPayload.islemTarihi = data.islemTarihi;
 
       return await prisma[PrismaName].create({
         data: createPayload,
@@ -456,7 +276,7 @@ const service = {
               depo: { select: { ad: true } },
             },
           },
-          createdBy: { select: { id: true, ad: true, sicil: true } },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -464,32 +284,13 @@ const service = {
     }
   },
 
+  // Sadece açıklama güncellenebilir
   update: async data => {
     try {
       await service.checkExistsById(data.id);
 
-      const updatePayload = {};
-
-      if (data.hareketTuru !== undefined) updatePayload.hareketTuru = data.hareketTuru;
-      if (data.malzemeKondisyonu !== undefined) updatePayload.malzemeKondisyonu = data.malzemeKondisyonu;
-
-      if (data.kaynakPersonelId !== undefined) {
-        if (data.kaynakPersonelId) await PersonelService.checkExistsById(data.kaynakPersonelId);
-        updatePayload.kaynakPersonelId = data.kaynakPersonelId;
-      }
-
-      if (data.hedefPersonelId !== undefined) {
-        if (data.hedefPersonelId) await PersonelService.checkExistsById(data.hedefPersonelId);
-        updatePayload.hedefPersonelId = data.hedefPersonelId;
-      }
-
-      if (data.konumId !== undefined) {
-        if (data.konumId) await KonumService.checkExistsById(data.konumId);
-        updatePayload.konumId = data.konumId;
-      }
-
+      const updatePayload = { updatedById: data.islemYapanKullanici };
       if (data.aciklama !== undefined) updatePayload.aciklama = data.aciklama;
-      if (data.islemTarihi !== undefined) updatePayload.islemTarihi = new Date(data.islemTarihi);
 
       return await prisma[PrismaName].update({
         where: { id: data.id },
@@ -513,32 +314,7 @@ const service = {
               depo: { select: { ad: true } },
             },
           },
-          createdBy: { select: { id: true, ad: true, sicil: true } },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  updateStatus: async data => {
-    try {
-      await service.checkExistsById(data.id);
-
-      if (!Object.values(AuditStatusEnum).includes(data.status)) {
-        throw new Error(`Girilen '${data.status}' durumu geçerli bir durum değildir.`);
-      }
-
-      return await prisma[PrismaName].update({
-        where: { id: data.id },
-        data: { status: data.status },
-        include: {
-          malzeme: {
-            select: {
-              vidaNo: true,
-              sabitKodu: { select: { ad: true } },
-            },
-          },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -554,6 +330,7 @@ const service = {
         where: { id: data.id },
         data: {
           status: AuditStatusEnum.Silindi,
+          updatedById: data.islemYapanKullanici,
         },
       });
     } catch (error) {
@@ -565,17 +342,8 @@ const service = {
     try {
       const whereClause = { status: AuditStatusEnum.Aktif };
 
-      if (data.hareketTuru) whereClause.hareketTuru = data.hareketTuru;
-      if (data.malzemeKondisyonu) whereClause.malzemeKondisyonu = data.malzemeKondisyonu;
       if (data.malzemeId) whereClause.malzemeId = data.malzemeId;
-      if (data.kaynakPersonelId) whereClause.kaynakPersonelId = data.kaynakPersonelId;
-      if (data.hedefPersonelId) whereClause.hedefPersonelId = data.hedefPersonelId;
-      if (data.konumId) whereClause.konumId = data.konumId;
-
-      // Metin araması
-      if (data.aciklama) {
-        whereClause.aciklama = { contains: data.aciklama, mode: 'insensitive' };
-      }
+      if (data.hareketTuru) whereClause.hareketTuru = data.hareketTuru;
 
       return await prisma[PrismaName].findMany({
         where: whereClause,
@@ -599,97 +367,9 @@ const service = {
               depo: { select: { ad: true } },
             },
           },
-          createdBy: { select: { id: true, ad: true, sicil: true } },
+          createdBy: { select: { id: true, ad: true, avatar: true } },
         },
       });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Raporlama fonksiyonları
-  getMalzemeGecmisi: async data => {
-    try {
-      await MalzemeService.checkExistsById(data.malzemeId);
-
-      return await prisma[PrismaName].findMany({
-        where: {
-          malzemeId: data.malzemeId,
-          status: AuditStatusEnum.Aktif,
-        },
-        orderBy: { islemTarihi: 'desc' },
-        include: {
-          kaynakPersonel: { select: { ad: true, sicil: true } },
-          hedefPersonel: { select: { ad: true, sicil: true } },
-          konum: {
-            select: {
-              ad: true,
-              depo: { select: { ad: true } },
-            },
-          },
-          createdBy: { select: { ad: true, sicil: true } },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  getPersonelZimmetleri: async data => {
-    try {
-      await PersonelService.checkExistsById(data.personelId);
-
-      return await prisma[PrismaName].findMany({
-        where: {
-          hedefPersonelId: data.personelId,
-          hareketTuru: HareketTuruEnum.Zimmet,
-          status: AuditStatusEnum.Aktif,
-        },
-        orderBy: { islemTarihi: 'desc' },
-        include: {
-          malzeme: {
-            select: {
-              vidaNo: true,
-              sabitKodu: { select: { ad: true } },
-              marka: { select: { ad: true } },
-              model: { select: { ad: true } },
-            },
-          },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  getHareketIstatistikleri: async (data = {}) => {
-    try {
-      const whereClause = { status: AuditStatusEnum.Aktif };
-
-      if (data.startDate) whereClause.islemTarihi = { gte: new Date(data.startDate) };
-      if (data.endDate) {
-        whereClause.islemTarihi = {
-          ...whereClause.islemTarihi,
-          lte: new Date(data.endDate),
-        };
-      }
-
-      const hareketTurleriGrouped = await prisma[PrismaName].groupBy({
-        by: ['hareketTuru'],
-        where: whereClause,
-        _count: { id: true },
-      });
-
-      const kondisyonGrouped = await prisma[PrismaName].groupBy({
-        by: ['malzemeKondisyonu'],
-        where: whereClause,
-        _count: { id: true },
-      });
-
-      return {
-        hareketTurleri: hareketTurleriGrouped,
-        kondisyonlar: kondisyonGrouped,
-      };
     } catch (error) {
       throw error;
     }

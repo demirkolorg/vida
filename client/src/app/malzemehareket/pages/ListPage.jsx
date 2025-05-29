@@ -1,32 +1,23 @@
+// client/src/app/malzemeHareket/pages/ListPage.jsx
 import { PageHeader } from '@/components/pages/PageHeader';
 import { EntityHuman } from '../constants/api';
 
 import { MalzemeHareket_Store as EntityStore } from '../constants/store';
-import { MalzemeHareket_DetailSheet as EntityDetailSheet } from '../sheets/DetailSheet';
-import { MalzemeHareket_DataTable as EntityDataTable } from '../table/dataTable';
-import { MalzemeHareket_StatusDialog as EntityStatusDialog } from '../dialogs/StatusDialog';
-
-// Sadece raporlama için gerekli sheet'ler
-import { MalzemeHareket_IstatistikSheet } from '../sheets/IstatistikSheet';
+import { MalzemeHareket_CreateSheet as EntityCreateSheet} from '../sheets/CreateSheet';
+import { MalzemeHareket_EditSheet as EntityEditSheet } from '../sheets/EditSheet';
+import { MalzemeHareket_DeleteSheet as EntityDeleteSheet } from '../sheets/DeleteSheet';
+import { MalzemeHareket_DetailSheet as EntityDetailSheet} from '../sheets/DetailSheet';
+import { MalzemeHareket_DataTable as EntityDataTable  } from '../table/dataTable';
 
 export function MalzemeHareket_ListPage() {
   return (
-    <div className="mx-auto">
-      <PageHeader 
-        EntityHuman={EntityHuman} 
-        useEntityStore={EntityStore}
-        // Create/Edit/Delete butonlarını gizle çünkü işlemler malzeme tablosundan yapılacak
-        showCreateButton={false}
-      />
-      
-      <EntityDataTable />
-      
-      {/* Sadece görüntüleme ve durum güncelleme */}
+    <div className=" mx-auto">
+      <PageHeader EntityHuman={EntityHuman} useEntityStore={EntityStore} />
+      <EntityDataTable/>
+      <EntityCreateSheet />
+      <EntityEditSheet />
+      <EntityDeleteSheet />
       <EntityDetailSheet />
-      <EntityStatusDialog />
-      
-      {/* Sadece raporlama */}
-      <MalzemeHareket_IstatistikSheet />
     </div>
   );
 }

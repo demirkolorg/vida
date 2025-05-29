@@ -17,20 +17,22 @@ enum MalzemeTipiEnum {
 }
 
 enum HareketTuruEnum {
-  Zimmet
-  Iade
-  Kayit
-  Devir
-  Kayip
-  KondisyonGuncelleme
-  DepoTransferi
-  Dusum
+  Kayit //malzeme depoda
+  Zimmet //malzeme personel
+  Iade //malzeme depoda
+  Devir //malzeme personel
+  DepoTransferi //malzeme depoda
+  KondisyonGuncelleme //belli değil
+  Kayip //belli değil
+  Dusum //belli değil
 }
 
 enum MalzemeKondisyonuEnum {
   Saglam
   Arizali
   Hurda
+  Kayip
+  Dusum
 }
 
 enum AuditStatusEnum {
@@ -48,7 +50,6 @@ enum RoleEnum {
 
 // ----- Models -----
 
-//eklendi
 model Birim {
   id         String    @id // String ID, uygulama tarafından atanacak
   ad         String    @unique
@@ -64,12 +65,12 @@ model Birim {
   updatedById String? // Personel ID'si (String)
   updatedBy   Personel?       @relation("BirimUpdatedBy", fields: [updatedById], references: [id])
 }
-//eklendi
+
 model Sube {
   id         String    @id
   ad         String
   aciklama   String?
-  birimId    String // String FK
+  birimId    String
   birim      Birim     @relation(fields: [birimId], references: [id])
   burolar    Buro[]
   malzemeler Malzeme[] @relation("IsKarsiligiSubeMalzemeleri")
@@ -82,14 +83,14 @@ model Sube {
   updatedById String?
   updatedBy   Personel?       @relation("SubeUpdatedBy", fields: [updatedById], references: [id])
 }
-//eklendi
+
 model Buro {
   id          String     @id
   ad          String
   aciklama    String?
-  subeId      String // String FK
+  subeId      String
   sube        Sube       @relation(fields: [subeId], references: [id])
-  amirId      String? // String FK
+  amirId      String?
   amir        Personel?  @relation("BuroAmiri", fields: [amirId], references: [id])
   personeller Personel[] @relation("BuroPersonelleri")
 
@@ -101,7 +102,7 @@ model Buro {
   updatedById String?
   updatedBy   Personel?       @relation("BuroUpdatedBy", fields: [updatedById], references: [id])
 }
-//eklendi
+
 model SabitKodu {
   id         String    @id
   ad         String    @unique
@@ -116,7 +117,7 @@ model SabitKodu {
   updatedById String?
   updatedBy   Personel?       @relation("SabitKoduUpdatedBy", fields: [updatedById], references: [id])
 }
-//eklendi
+
 model Marka {
   id         String    @id
   ad         String    @unique
@@ -132,12 +133,12 @@ model Marka {
   updatedById String?
   updatedBy   Personel?       @relation("MarkaUpdatedBy", fields: [updatedById], references: [id])
 }
-//eklendi
+
 model Model {
   id         String    @id
   ad         String
   aciklama   String?
-  markaId    String // String FK
+  markaId    String
   marka      Marka     @relation(fields: [markaId], references: [id])
   malzemeler Malzeme[]
 
@@ -151,7 +152,7 @@ model Model {
 
   @@unique([ad, markaId])
 }
-//eklendi
+
 model Depo {
   id       String  @id
   ad       String  @unique
@@ -166,12 +167,12 @@ model Depo {
   updatedById String?
   updatedBy   Personel?       @relation("DepoUpdatedBy", fields: [updatedById], references: [id])
 }
-//eklendi
+
 model Konum {
   id                 String           @id
   ad                 String
   aciklama           String?
-  depoId             String // String FK
+  depoId             String
   depo               Depo             @relation(fields: [depoId], references: [id])
   malzemeHareketleri MalzemeHareket[]
 
@@ -183,21 +184,21 @@ model Konum {
   updatedById String?
   updatedBy   Personel?       @relation("KonumUpdatedBy", fields: [updatedById], references: [id])
 }
-//eklendi
+
 model Malzeme {
   id                 String           @id
   vidaNo             String?          @unique
   kayitTarihi        DateTime?        @db.Date
   malzemeTipi        MalzemeTipiEnum
-  birimId            String // String FK
+  birimId            String
   birim              Birim            @relation("KuvveBirimMalzemeleri", fields: [birimId], references: [id])
-  subeId             String // String FK
+  subeId             String
   sube               Sube             @relation("IsKarsiligiSubeMalzemeleri", fields: [subeId], references: [id])
-  sabitKoduId        String // String FK
+  sabitKoduId        String
   sabitKodu          SabitKodu        @relation(fields: [sabitKoduId], references: [id])
-  markaId            String // String FK
+  markaId            String
   marka              Marka            @relation(fields: [markaId], references: [id])
-  modelId            String // String FK
+  modelId            String
   model              Model            @relation(fields: [modelId], references: [id])
   kod                String?
   bademSeriNo        String?
@@ -208,10 +209,10 @@ model Malzeme {
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String // String FK
+  createdById String
   createdBy   Personel        @relation("MalzemeCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String? // String FK
+  updatedById String?
   updatedBy   Personel?       @relation("MalzemeUpdatedBy", fields: [updatedById], references: [id])
 }
 
@@ -220,22 +221,22 @@ model MalzemeHareket {
   islemTarihi       DateTime              @default(now())
   hareketTuru       HareketTuruEnum
   malzemeKondisyonu MalzemeKondisyonuEnum
-  malzemeId         String // String FK
+  malzemeId         String
   malzeme           Malzeme               @relation(fields: [malzemeId], references: [id])
-  kaynakPersonelId  String? // String FK
+  kaynakPersonelId  String?
   kaynakPersonel    Personel?             @relation("HareketKaynakPersonel", fields: [kaynakPersonelId], references: [id])
-  hedefPersonelId   String? // String FK
+  hedefPersonelId   String?
   hedefPersonel     Personel?             @relation("HareketHedefPersonel", fields: [hedefPersonelId], references: [id])
-  konumId           String? // String FK
+  konumId           String?
   konum             Konum?                @relation(fields: [konumId], references: [id])
   aciklama          String?
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String // String FK
+  createdById String
   createdBy   Personel        @relation("MalzemeHareketCreatedBy", fields: [createdById], references: [id])
 }
-//eklendi
+
 model Personel {
   id         String    @id
   ad         String
@@ -243,7 +244,7 @@ model Personel {
   parola     String
   role       RoleEnum  @default(Personel)
   avatar     String?
-  buroId     String? // String FK
+  buroId     String?
   buro       Buro?     @relation("BuroPersonelleri", fields: [buroId], references: [id])
   isUser     Boolean   @default(false)
   isAmir     Boolean   @default(false)
@@ -282,13 +283,13 @@ model Personel {
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String? // String FK
+  createdById String?
   createdBy   Personel?       @relation("PersonelCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String? // String FK
+  updatedById String?
   updatedBy   Personel?       @relation("PersonelUpdatedBy", fields: [updatedById], references: [id])
 }
-//eklendi
+
 model UserSettings {
   id         String   @id
   themeName  String?  @default("violet")
@@ -302,7 +303,7 @@ model UserSettings {
   // notificationsEnabled Boolean? @default(true)
   // itemsPerPage        Int?     @default(10)
 }
-//eklendi
+
 model SavedFilter {
   id          String  @id
   filterName  String // "Aktif Birimler", "İstanbul Şubeleri Malzemeleri"
@@ -326,6 +327,6 @@ model AuditLog {
   hizmet      String
   log         Json
   createdAt   DateTime  @default(now())
-  createdById String? // String FK
+  createdById String?
   createdBy   Personel? @relation("AuditLogCreatedBy", fields: [createdById], references: [id])
 }

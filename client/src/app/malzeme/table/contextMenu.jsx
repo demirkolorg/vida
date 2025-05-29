@@ -1,88 +1,66 @@
+// client/src/app/malzeme/table/contextMenu.jsx
 import { useCallback } from 'react';
-import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu';
+import { ContextMenuItem } from '@/components/ui/context-menu';
 import { BaseContextMenu } from '@/components/contextMenu/BaseContextMenu';
 import { EntityHuman, EntityType } from '../constants/api';
-import { 
-  PackageIcon, 
-  BuildingIcon, 
-  ArrowRightLeft,
-  ArrowLeftRight,
-  Users,
-  MapPin,
-  AlertTriangle,
-  Settings,
-  HistoryIcon,
-  ClipboardListIcon
-} from 'lucide-react';
+import { History, Plus, Package, UserCheck, RotateCcw, ArrowUpDown } from 'lucide-react';
 import { useSheetStore } from '@/stores/sheetStore';
+import { MalzemeHareket_Store } from '@/app/malzemeHareket/constants/store';
 
 export function Malzeme_ContextMenu({ item }) {
   const { openSheet } = useSheetStore();
+  const malzemeHareketStore = MalzemeHareket_Store();
+  
   const menuTitle = item?.vidaNo 
-    ? `${item.vidaNo} - ${item.sabitKodu?.ad || 'Malzeme'} İşlemleri` 
+    ? `${item.vidaNo} ${EntityHuman} Kaydı` 
     : `${EntityHuman} İşlemleri`;
 
-  // Birim detayını görüntüle
-  const handleViewBirim = useCallback(() => {
-    if (!item?.birim) return;
-    console.log('Birim detayı:', item.birim);
-  }, [item]);
+  // Malzeme hareket geçmişini göster
+  const handleShowMalzemeGecmisi = useCallback(() => {
+    if (!item?.id) return;
+    malzemeHareketStore.GetMalzemeGecmisi(item.id, { showToast: true });
+    // Hareket geçmişi için ayrı bir dialog veya sheet açılabilir
+  }, [item, malzemeHareketStore]);
 
-  // Şube detayını görüntüle
-  const handleViewSube = useCallback(() => {
-    if (!item?.sube) return;
-    console.log('Şube detayı:', item.sube);
-  }, [item]);
-
-  // Malzeme hareket geçmişini görüntüle
-  const handleViewHareketGecmisi = useCallback(() => {
-    if (!item) return;
-    // Malzeme hareket geçmişi sayfasına yönlendir
-    console.log('Malzeme hareket geçmişi:', item.id);
-  }, [item]);
-
-  // === MALZEME HAREKET İŞLEMLERİ ===
-
-  // Zimmet Ver
-  const handleZimmetVer = useCallback(() => {
-    if (!item) return;
-    console.log('Zimmet Ver - Malzeme:', item); // Debug log
-    openSheet('zimmet', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
+  // Yeni zimmet işlemi başlat
+  const handleYeniZimmet = useCallback(() => {
+    if (!item?.id) return;
+    // MalzemeHareket create sheet'ini malzeme ile birlikte aç
+    openSheet('create', { 
+      malzemeId: item.id, 
+      hareketTuru: 'Zimmet',
+      malzemeKondisyonu: 'Saglam' // varsayılan
+    }, 'malzemeHareket');
   }, [item, openSheet]);
 
-  // İade Al
-  const handleIadeAl = useCallback(() => {
-    if (!item) return;
-    console.log('İade Al - Malzeme:', item); // Debug log
-    openSheet('iade', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
+  // Yeni iade işlemi başlat
+  const handleYeniIade = useCallback(() => {
+    if (!item?.id) return;
+    openSheet('create', { 
+      malzemeId: item.id, 
+      hareketTuru: 'Iade',
+      malzemeKondisyonu: 'Saglam'
+    }, 'malzemeHareket');
   }, [item, openSheet]);
 
-  // Devir Yap
-  const handleDevirYap = useCallback(() => {
-    if (!item) return;
-    console.log('Devir Yap - Malzeme:', item); // Debug log
-    openSheet('devir', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
+  // Yeni devir işlemi başlat
+  const handleYeniDevir = useCallback(() => {
+    if (!item?.id) return;
+    openSheet('create', { 
+      malzemeId: item.id, 
+      hareketTuru: 'Devir',
+      malzemeKondisyonu: 'Saglam'
+    }, 'malzemeHareket');
   }, [item, openSheet]);
 
-  // Depo Transferi
-  const handleDepoTransferi = useCallback(() => {
-    if (!item) return;
-    console.log('Depo Transferi - Malzeme:', item); // Debug log
-    openSheet('depoTransfer', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
-  }, [item, openSheet]);
-
-  // Kayıp Bildir
-  const handleKayipBildir = useCallback(() => {
-    if (!item) return;
-    console.log('Kayıp Bildir - Malzeme:', item); // Debug log
-    openSheet('kayip', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
-  }, [item, openSheet]);
-
-  // Kondisyon Güncelle
+  // Kondisyon güncelleme
   const handleKondisyonGuncelle = useCallback(() => {
-    if (!item) return;
-    console.log('Kondisyon Güncelle - Malzeme:', item); // Debug log
-    openSheet('kondisyon', { malzemeId: item.id, malzeme: item }, 'malzemeHareket');
+    if (!item?.id) return;
+    openSheet('create', { 
+      malzemeId: item.id, 
+      hareketTuru: 'KondisyonGuncelleme',
+      malzemeKondisyonu: item.malzemeKondisyonu || 'Saglam'
+    }, 'malzemeHareket');
   }, [item, openSheet]);
 
   return (
@@ -92,60 +70,41 @@ export function Malzeme_ContextMenu({ item }) {
       entityHuman={EntityHuman} 
       menuTitle={menuTitle}
     >
-      {/* Malzeme Bilgileri */}
-      {item?.birim && (
-        <ContextMenuItem onSelect={handleViewBirim}>
-          <BuildingIcon className="mr-2 h-4 w-4 text-blue-500" />
-          <span>Bağlı Birim Detayı ({item.birim.ad})</span>
-        </ContextMenuItem>
-      )}
-
-      {item?.sube && (
-        <ContextMenuItem onSelect={handleViewSube}>
-          <BuildingIcon className="mr-2 h-4 w-4 text-green-500" />
-          <span>Bağlı Şube Detayı ({item.sube.ad})</span>
-        </ContextMenuItem>
-      )}
-
-      <ContextMenuItem onSelect={handleViewHareketGecmisi}>
-        <HistoryIcon className="mr-2 h-4 w-4 text-purple-500" />
-        <span>Hareket Geçmişini Görüntüle</span>
+      {/* Malzeme hareket geçmişi */}
+      <ContextMenuItem onSelect={handleShowMalzemeGecmisi}>
+        <History className="mr-2 h-4 w-4 text-blue-500" />
+        <span>Hareket Geçmişini Göster</span>
       </ContextMenuItem>
 
-      <ContextMenuSeparator />
+      {/* Hızlı hareket işlemleri */}
+      <div className="px-2 py-1.5">
+        <div className="text-xs font-medium text-muted-foreground mb-1">Hızlı İşlemler</div>
+      </div>
 
-      {/* Malzeme Hareket İşlemleri */}
-      <ContextMenuItem onSelect={handleZimmetVer}>
-        <ArrowRightLeft className="mr-2 h-4 w-4 text-blue-600" />
+      <ContextMenuItem onSelect={handleYeniZimmet}>
+        <UserCheck className="mr-2 h-4 w-4 text-red-500" />
         <span>Zimmet Ver</span>
       </ContextMenuItem>
 
-      <ContextMenuItem onSelect={handleIadeAl}>
-        <ArrowLeftRight className="mr-2 h-4 w-4 text-green-600" />
+      <ContextMenuItem onSelect={handleYeniIade}>
+        <RotateCcw className="mr-2 h-4 w-4 text-green-500" />
         <span>İade Al</span>
       </ContextMenuItem>
 
-      <ContextMenuItem onSelect={handleDevirYap}>
-        <Users className="mr-2 h-4 w-4 text-purple-600" />
+      <ContextMenuItem onSelect={handleYeniDevir}>
+        <ArrowUpDown className="mr-2 h-4 w-4 text-yellow-500" />
         <span>Devir Yap</span>
       </ContextMenuItem>
 
-      <ContextMenuItem onSelect={handleDepoTransferi}>
-        <MapPin className="mr-2 h-4 w-4 text-orange-600" />
-        <span>Depo Transferi</span>
-      </ContextMenuItem>
-
       <ContextMenuItem onSelect={handleKondisyonGuncelle}>
-        <Settings className="mr-2 h-4 w-4 text-indigo-600" />
+        <Package className="mr-2 h-4 w-4 text-purple-500" />
         <span>Kondisyon Güncelle</span>
       </ContextMenuItem>
 
-      <ContextMenuSeparator />
-
-      {/* Özel Durumlar */}
-      <ContextMenuItem onSelect={handleKayipBildir} className="text-red-600">
-        <AlertTriangle className="mr-2 h-4 w-4 text-red-600" />
-        <span>Kayıp Bildir</span>
+      {/* Genel hareket ekleme */}
+      <ContextMenuItem onSelect={() => openSheet('create', { malzemeId: item.id }, 'malzemeHareket')}>
+        <Plus className="mr-2 h-4 w-4 text-primary" />
+        <span>Yeni Hareket Ekle</span>
       </ContextMenuItem>
     </BaseContextMenu>
   );
