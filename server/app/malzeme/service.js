@@ -38,7 +38,16 @@ const service = {
       throw new Error(`${stokDemirbasNo} Stok/Demirbaş No'ya sahip bir ${HumanName} zaten mevcut.`);
     }
   },
-
+  checkBademSeriNoExists: async (bademSeriNo, excludeId = null) => {
+    if (!bademSeriNo) return;
+    const whereClause = { bademSeriNo, status: { not: AuditStatusEnum.Silindi } };
+    if (excludeId) whereClause.id = { not: excludeId };
+    
+    const result = await prisma[PrismaName].findFirst({ where: whereClause });
+    if (result) {
+      throw new Error(`${bademSeriNo} BademSeriNo No'ya sahip bir ${HumanName} zaten mevcut.`);
+    }
+  },
   getAll: async () => {
     try {
       return await prisma[PrismaName].findMany({
@@ -188,16 +197,14 @@ const service = {
 
   create: async data => {
     try {
-      // İlişkili kayıtları kontrol et
       await BirimService.checkExistsById(data.birimId);
       await SubeService.checkExistsById(data.subeId);
       await SabitKoduService.checkExistsById(data.sabitKoduId);
       await MarkaService.checkExistsById(data.markaId);
       await ModelService.checkExistsById(data.modelId);
-
-      // Benzersizlik kontrolü
       if (data.vidaNo) await service.checkVidaNoExists(data.vidaNo);
       if (data.stokDemirbasNo) await service.checkStokDemirbasNoExists(data.stokDemirbasNo);
+      if (data.bademSeriNo) await service.checkBademSeriNoExists(data.bademSeriNo);
 
       const yeniId = helper.generateId(HizmetName);
       const createPayload = {
