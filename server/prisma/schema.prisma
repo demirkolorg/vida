@@ -183,7 +183,7 @@ model Konum {
   updatedById String?
   updatedBy   Personel?       @relation("KonumUpdatedBy", fields: [updatedById], references: [id])
 }
-
+//eklendi
 model Malzeme {
   id                 String           @id
   vidaNo             String?          @unique
