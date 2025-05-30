@@ -1,4 +1,4 @@
-// client/src/app/malzemeHareket/constants/store.js
+// client/src/app/malzemeHareket/constants/store.js - Güncellenmiş
 import { toast } from 'sonner';
 import { createCrudStore } from '@/stores/crudStoreFactory';
 import { EntityHuman } from './api';
@@ -14,6 +14,218 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
       // Personel zimmetleri için özel state
       personelZimmetleri: [],
       loadingPersonelZimmetleri: false,
+
+      // İş Süreçleri API Metodları
+      
+      // Zimmet İşlemi
+      zimmet: async (data, options) => {
+        const showSuccessToast = options?.showToast ?? true;
+        if (get().loadingAction) return null;
+        set({ loadingAction: true, error: null });
+        
+        try {
+          const result = await EntityApiService.zimmet(data);
+          if (!result) {
+            throw new Error("API'den geçerli bir yanıt alınamadı (zimmet).");
+          }
+          
+          set(state => ({
+            datas: [result, ...state.datas],
+            loadingAction: false,
+            currentData: result,
+          }));
+          
+          if (showSuccessToast) {
+            toast.success(`Malzeme başarıyla zimmetlendi.`);
+          }
+          return result;
+        } catch (error) {
+          const message = error?.response?.data?.message || error.message || 'Zimmet işlemi başarısız.';
+          toast.error(`Zimmet hatası: ${message}`);
+          set({ error: message, loadingAction: false });
+          throw error;
+        }
+      },
+
+      // İade İşlemi
+      iade: async (data, options) => {
+        const showSuccessToast = options?.showToast ?? true;
+        if (get().loadingAction) return null;
+        set({ loadingAction: true, error: null });
+        
+        try {
+          const result = await EntityApiService.iade(data);
+          if (!result) {
+            throw new Error("API'den geçerli bir yanıt alınamadı (iade).");
+          }
+          
+          set(state => ({
+            datas: [result, ...state.datas],
+            loadingAction: false,
+            currentData: result,
+          }));
+          
+          if (showSuccessToast) {
+            toast.success(`Malzeme başarıyla iade alındı.`);
+          }
+          return result;
+        } catch (error) {
+          const message = error?.response?.data?.message || error.message || 'İade işlemi başarısız.';
+          toast.error(`İade hatası: ${message}`);
+          set({ error: message, loadingAction: false });
+          throw error;
+        }
+      },
+
+      // Devir İşlemi
+      devir: async (data, options) => {
+        const showSuccessToast = options?.showToast ?? true;
+        if (get().loadingAction) return null;
+        set({ loadingAction: true, error: null });
+        
+        try {
+          const result = await EntityApiService.devir(data);
+          if (!result) {
+            throw new Error("API'den geçerli bir yanıt alınamadı (devir).");
+          }
+          
+          set(state => ({
+            datas: [result, ...state.datas],
+            loadingAction: false,
+            currentData: result,
+          }));
+          
+          if (showSuccessToast) {
+            toast.success(`Malzeme başarıyla devredildi.`);
+          }
+          return result;
+        } catch (error) {
+          const message = error?.response?.data?.message || error.message || 'Devir işlemi başarısız.';
+          toast.error(`Devir hatası: ${message}`);
+          set({ error: message, loadingAction: false });
+          throw error;
+        }
+      },
+
+      // Depo Transfer İşlemi
+      depoTransfer: async (data, options) => {
+        const showSuccessToast = options?.showToast ?? true;
+        if (get().loadingAction) return null;
+        set({ loadingAction: true, error: null });
+        
+        try {
+          const result = await EntityApiService.depoTransfer(data);
+          if (!result) {
+            throw new Error("API'den geçerli bir yanıt alınamadı (depoTransfer).");
+          }
+          
+          set(state => ({
+            datas: [result, ...state.datas],
+            loadingAction: false,
+            currentData: result,
+          }));
+          
+          if (showSuccessToast) {
+            toast.success(`Malzeme başarıyla transfer edildi.`);
+          }
+          return result;
+        } catch (error) {
+          const message = error?.response?.data?.message || error.message || 'Depo transfer işlemi başarısız.';
+          toast.error(`Depo Transfer hatası: ${message}`);
+          set({ error: message, loadingAction: false });
+          throw error;
+        }
+      },
+
+      // Kondisyon Güncelleme İşlemi
+      kondisyon: async (data, options) => {
+        const showSuccessToast = options?.showToast ?? true;
+        if (get().loadingAction) return null;
+        set({ loadingAction: true, error: null });
+        
+        try {
+          const result = await EntityApiService.kondisyon(data);
+          if (!result) {
+            throw new Error("API'den geçerli bir yanıt alınamadı (kondisyon).");
+          }
+          
+          set(state => ({
+            datas: [result, ...state.datas],
+            loadingAction: false,
+            currentData: result,
+          }));
+          
+          if (showSuccessToast) {
+            toast.success(`Malzeme kondisyonu başarıyla güncellendi.`);
+          }
+          return result;
+        } catch (error) {
+          const message = error?.response?.data?.message || error.message || 'Kondisyon güncelleme işlemi başarısız.';
+          toast.error(`Kondisyon Güncelleme hatası: ${message}`);
+          set({ error: message, loadingAction: false });
+          throw error;
+        }
+      },
+
+      // Kayıp İşlemi
+      kayip: async (data, options) => {
+        const showSuccessToast = options?.showToast ?? true;
+        if (get().loadingAction) return null;
+        set({ loadingAction: true, error: null });
+        
+        try {
+          const result = await EntityApiService.kayip(data);
+          if (!result) {
+            throw new Error("API'den geçerli bir yanıt alınamadı (kayip).");
+          }
+          
+          set(state => ({
+            datas: [result, ...state.datas],
+            loadingAction: false,
+            currentData: result,
+          }));
+          
+          if (showSuccessToast) {
+            toast.success(`Malzeme kayıp olarak işaretlendi.`);
+          }
+          return result;
+        } catch (error) {
+          const message = error?.response?.data?.message || error.message || 'Kayıp bildirimi başarısız.';
+          toast.error(`Kayıp Bildirimi hatası: ${message}`);
+          set({ error: message, loadingAction: false });
+          throw error;
+        }
+      },
+
+      // Düşüm İşlemi
+      dusum: async (data, options) => {
+        const showSuccessToast = options?.showToast ?? true;
+        if (get().loadingAction) return null;
+        set({ loadingAction: true, error: null });
+        
+        try {
+          const result = await EntityApiService.dusum(data);
+          if (!result) {
+            throw new Error("API'den geçerli bir yanıt alınamadı (dusum).");
+          }
+          
+          set(state => ({
+            datas: [result, ...state.datas],
+            loadingAction: false,
+            currentData: result,
+          }));
+          
+          if (showSuccessToast) {
+            toast.success(`Malzeme başarıyla düşürüldü.`);
+          }
+          return result;
+        } catch (error) {
+          const message = error?.response?.data?.message || error.message || 'Düşüm işlemi başarısız.';
+          toast.error(`Düşüm hatası: ${message}`);
+          set({ error: message, loadingAction: false });
+          throw error;
+        }
+      },
 
       // Malzeme hareket geçmişini getir
       GetMalzemeGecmisi: async (malzemeId, options) => {

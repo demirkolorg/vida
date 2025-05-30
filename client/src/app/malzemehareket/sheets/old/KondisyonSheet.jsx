@@ -1,6 +1,5 @@
-// client/src/app/malzemeHareket/sheets/KondisyonSheet.jsx
-import React from 'react';
-import { BaseMalzemeHareketCreateSheet } from './BaseMalzemeHareketCreateSheet';
+
+import { BaseMalzemeHareketCreateSheet } from '@/components/sheet/BaseMalzemeHareketCreateSheet';
 import { FormFieldSelect } from '@/components/form/FormFieldSelect';
 import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 

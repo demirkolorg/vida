@@ -1,7 +1,8 @@
+// client/src/app/malzeme/helpers/hareketBusinessLogic.js - DÜZELTME
 export const HAREKET_TURLERI = {
   Kayit: {
     label: 'Kayıt',
-    description: 'Malzemenin sisteme kayıt edildiğinde ilk hareketi',
+    description: 'Malzemenin sisteme kayıt edildiğinde ilk hareketidir.',
     icon: 'PackageIcon',
     color: 'emerald',
     requiredFields: ['konumId'],
@@ -9,15 +10,15 @@ export const HAREKET_TURLERI = {
     fieldRules: {
       kaynakPersonelId: null,
       hedefPersonelId: null,
-      konumId: 'required' // Malzemenin koyulduğu konum
+      konumId: 'required', // Malzemenin koyulduğu konum
     },
     businessRules: {
       preConditions: [],
-      postConditions: ['malzemeDepoda']
+      postConditions: ['malzemeDepoda'],
     },
-    description_detailed: 'Malzeme sisteme kayıt edilir ve belirtilen konuma yerleştirilir.'
+    description_detailed: 'Malzeme sisteme kayıt edilir ve belirtilen konuma yerleştirilir.',
   },
-  
+
   Zimmet: {
     label: 'Zimmet Ver',
     description: 'Depodan personele verilen malzeme hareketi',
@@ -28,15 +29,15 @@ export const HAREKET_TURLERI = {
     fieldRules: {
       kaynakPersonelId: null,
       hedefPersonelId: 'required',
-      konumId: null // Kişiye verilen malzemenin konumu önemli değil
+      konumId: null, // Kişiye verilen malzemenin konumu önemli değil
     },
     businessRules: {
       preConditions: ['malzemeDepoda', 'kondisyonSaglam'],
-      postConditions: ['malzemePersonelde']
+      postConditions: ['malzemePersonelde'],
     },
-    description_detailed: 'Depoda bulunan sağlam malzeme personele zimmetlenir.'
+    description_detailed: 'Depoda bulunan sağlam malzeme personele zimmetlenir.',
   },
-  
+
   Iade: {
     label: 'İade Al',
     description: 'Personelden depoya çekilen malzeme hareketi',
@@ -47,15 +48,15 @@ export const HAREKET_TURLERI = {
     fieldRules: {
       kaynakPersonelId: 'required', // Malzemenin teslim alındığı personel
       hedefPersonelId: null, // Depoya çekiliyor
-      konumId: 'required' // İade alınan malzemenin koyulduğu konum
+      konumId: 'required', // İade alınan malzemenin koyulduğu konum
     },
     businessRules: {
       preConditions: ['malzemePersonelde'],
-      postConditions: ['malzemeDepoda']
+      postConditions: ['malzemeDepoda'],
     },
-    description_detailed: 'Personelde zimmetli malzeme iade alınır ve depoya yerleştirilir.'
+    description_detailed: 'Personelde zimmetli malzeme iade alınır ve depoya yerleştirilir.',
   },
-  
+
   Devir: {
     label: 'Devir Et',
     description: 'Personelden personele aktarılan malzeme hareketi',
@@ -66,16 +67,16 @@ export const HAREKET_TURLERI = {
     fieldRules: {
       kaynakPersonelId: 'required', // Malzeme kimden çıkıyor
       hedefPersonelId: 'required', // Malzeme kime gidiyor
-      konumId: null // Personelde olan malzemenin konumu önemli değil
+      konumId: null, // Personelde olan malzemenin konumu önemli değil
     },
     businessRules: {
       preConditions: ['malzemePersonelde'],
       postConditions: ['malzemePersonelde'],
-      additionalRules: ['farkliPersonel'] // Kaynak ve hedef farklı olmalı
+      additionalRules: ['farkliPersonel'], // Kaynak ve hedef farklı olmalı
     },
-    description_detailed: 'Bir personeldeki malzeme başka personele devredilir.'
+    description_detailed: 'Bir personeldeki malzeme başka personele devredilir.',
   },
-  
+
   DepoTransferi: {
     label: 'Depo Transfer',
     description: 'Depodan depoya aktarılan malzeme hareketi',
@@ -86,16 +87,16 @@ export const HAREKET_TURLERI = {
     fieldRules: {
       kaynakPersonelId: null,
       hedefPersonelId: null,
-      konumId: 'required' // Hedef konum
+      konumId: 'required', // Hedef konum
     },
     businessRules: {
       preConditions: ['malzemeDepoda'],
       postConditions: ['malzemeDepoda'],
-      additionalRules: ['farkliKonum'] // Mevcut ve hedef konum farklı olmalı
+      additionalRules: ['farkliKonum'], // Mevcut ve hedef konum farklı olmalı
     },
-    description_detailed: 'Depodaki malzeme farklı bir konuma transfer edilir.'
+    description_detailed: 'Depodaki malzeme farklı bir konuma transfer edilir.',
   },
-  
+
   KondisyonGuncelleme: {
     label: 'Kondisyon Güncelle',
     description: 'Malzemenin kondisyon durumunu gösteren hareket',
@@ -106,15 +107,15 @@ export const HAREKET_TURLERI = {
     fieldRules: {
       kaynakPersonelId: 'preserve', // Son personel kaydı değişmeyecek
       hedefPersonelId: 'preserve', // Son personel kaydı değişmeyecek
-      konumId: 'preserve' // Son konum kaydı değişmeyecek
+      konumId: 'preserve', // Son konum kaydı değişmeyecek
     },
     businessRules: {
       preConditions: [],
-      postConditions: ['konumKorunur'] // Mevcut konum durumu korunur
+      postConditions: ['konumKorunur'], // Mevcut konum durumu korunur
     },
-    description_detailed: 'Sadece malzemenin fiziksel kondisyonu güncellenir, konum değişmez.'
+    description_detailed: 'Sadece malzemenin fiziksel kondisyonu güncellenir, konum değişmez.',
   },
-  
+
   Kayip: {
     label: 'Kayıp Bildir',
     description: 'Malzemenin kayıp olduğunu gösteren hareket',
@@ -125,15 +126,15 @@ export const HAREKET_TURLERI = {
     fieldRules: {
       kaynakPersonelId: null,
       hedefPersonelId: null,
-      konumId: null
+      konumId: null,
     },
     businessRules: {
       preConditions: [],
-      postConditions: ['malzemeYok']
+      postConditions: ['malzemeYok'],
     },
-    description_detailed: 'Malzeme kayıp olarak işaretlenir, konum bilgisi silinir.'
+    description_detailed: 'Malzeme kayıp olarak işaretlenir, konum bilgisi silinir.',
   },
-  
+
   Dusum: {
     label: 'Düşüm Yap',
     description: 'Malzemenin sistemden düşümünü gösteren hareket',
@@ -144,20 +145,20 @@ export const HAREKET_TURLERI = {
     fieldRules: {
       kaynakPersonelId: null,
       hedefPersonelId: null,
-      konumId: null
+      konumId: null,
     },
     businessRules: {
       preConditions: ['malzemeDepoda', 'kondisyonArizaliVeyaHurda'],
-      postConditions: ['malzemeYok']
+      postConditions: ['malzemeYok'],
     },
-    description_detailed: 'Arızalı veya hurda malzeme sistemden düşürülür.'
-  }
+    description_detailed: 'Arızalı veya hurda malzeme sistemden düşürülür.',
+  },
 };
 
 /**
  * Malzemenin mevcut durumunu analiz eden fonksiyon
  */
-export const analyzeMalzemeDurumu = (malzeme) => {
+export const analyzeMalzemeDurumu = malzeme => {
   if (!malzeme || !malzeme.malzemeHareketleri || malzeme.malzemeHareketleri.length === 0) {
     return {
       malzemePersonelde: false,
@@ -168,13 +169,13 @@ export const analyzeMalzemeDurumu = (malzeme) => {
       mevcentKondisyon: 'Saglam',
       zimmetliPersonel: null,
       mevcentKonum: null,
-      isFirstMovement: true
+      isFirstMovement: true,
     };
   }
 
   const sonHareket = malzeme.malzemeHareketleri[0]; // En son hareket
   const hareketTuru = sonHareket.hareketTuru;
-  
+
   // Durum analizi
   const malzemePersonelde = ['Zimmet', 'Devir'].includes(hareketTuru);
   const malzemeDepoda = ['Kayit', 'Iade', 'DepoTransferi'].includes(hareketTuru);
@@ -190,14 +191,16 @@ export const analyzeMalzemeDurumu = (malzeme) => {
     mevcentKondisyon: sonHareket.malzemeKondisyonu || 'Saglam',
     zimmetliPersonel: malzemePersonelde ? sonHareket.hedefPersonel : null,
     mevcentKonum: malzemeDepoda ? sonHareket.konum : null,
-    isFirstMovement: false
+    isFirstMovement: false,
   };
 };
 
 /**
  * Malzemenin mevcut durumuna göre yapılabilecek hareket türlerini döndürür
  */
-export const getAvailableHareketTurleri = (malzeme) => {
+export const getAvailableHareketTurleri = malzeme => {
+  if (!malzeme) return [];
+
   const durum = analyzeMalzemeDurumu(malzeme);
   const availableHareketler = [];
 
@@ -251,7 +254,7 @@ export const getAvailableHareketTurleri = (malzeme) => {
       availableHareketler.push({
         key,
         ...hareketTuru,
-        currentInfo: durum
+        currentInfo: durum,
       });
     }
   });
@@ -262,13 +265,12 @@ export const getAvailableHareketTurleri = (malzeme) => {
 /**
  * Hareket türü için form field'larının görünürlük kuralları
  */
-export const getFieldVisibilityRules = (hareketTuru) => {
+export const getFieldVisibilityRules = hareketTuru => {
   const hareket = HAREKET_TURLERI[hareketTuru];
   if (!hareket) return { show: [], required: [], hidden: [] };
 
-  const allFields = ['malzemeId', 'hareketTuru', 'islemTarihi', 'malzemeKondisyonu', 
-                   'kaynakPersonelId', 'hedefPersonelId', 'konumId', 'aciklama'];
-  
+  const allFields = ['malzemeId', 'hareketTuru', 'islemTarihi', 'malzemeKondisyonu', 'kaynakPersonelId', 'hedefPersonelId', 'konumId', 'aciklama'];
+
   const show = ['malzemeId', 'hareketTuru', 'islemTarihi', 'malzemeKondisyonu'];
   const required = ['malzemeId', 'hareketTuru', 'islemTarihi'];
   const hidden = [];
@@ -302,16 +304,24 @@ export const getFieldVisibilityRules = (hareketTuru) => {
 
 /**
  * Hareket türü için ön doldurulacak form verilerini döndürür
+ * DÜZELTME: Güvenli null check'ler eklendi
  */
 export const getPrefilledFormData = (hareketTuru, malzeme, currentDurum) => {
   const hareket = HAREKET_TURLERI[hareketTuru];
   if (!hareket) return {};
 
+  // Güvenli varsayılan değerler
+  const safeCurrentDurum = currentDurum || {
+    mevcentKondisyon: 'Saglam',
+    zimmetliPersonel: null,
+    mevcentKonum: null,
+  };
+
   const formData = {
     hareketTuru,
-    malzemeId: malzeme.id,
+    malzemeId: malzeme?.id || '', // Güvenli null check
     islemTarihi: new Date().toISOString().split('T')[0],
-    malzemeKondisyonu: currentDurum.mevcentKondisyon || 'Saglam'
+    malzemeKondisyonu: safeCurrentDurum.mevcentKondisyon || 'Saglam',
   };
 
   // Field rules'a göre preserve edilen değerleri doldur
@@ -319,18 +329,18 @@ export const getPrefilledFormData = (hareketTuru, malzeme, currentDurum) => {
     if (rule === 'preserve') {
       switch (field) {
         case 'kaynakPersonelId':
-          if (currentDurum.zimmetliPersonel) {
-            formData.kaynakPersonelId = currentDurum.zimmetliPersonel.id;
+          if (safeCurrentDurum.zimmetliPersonel?.id) {
+            formData.kaynakPersonelId = safeCurrentDurum.zimmetliPersonel.id;
           }
           break;
         case 'hedefPersonelId':
-          if (currentDurum.zimmetliPersonel) {
-            formData.hedefPersonelId = currentDurum.zimmetliPersonel.id;
+          if (safeCurrentDurum.zimmetliPersonel?.id) {
+            formData.hedefPersonelId = safeCurrentDurum.zimmetliPersonel.id;
           }
           break;
         case 'konumId':
-          if (currentDurum.mevcentKonum) {
-            formData.konumId = currentDurum.mevcentKonum.id;
+          if (safeCurrentDurum.mevcentKonum?.id) {
+            formData.konumId = safeCurrentDurum.mevcentKonum.id;
           }
           break;
       }
@@ -338,12 +348,12 @@ export const getPrefilledFormData = (hareketTuru, malzeme, currentDurum) => {
   });
 
   // Özel durum doldurmaları
-  if (hareketTuru === 'Iade' && currentDurum.zimmetliPersonel) {
-    formData.kaynakPersonelId = currentDurum.zimmetliPersonel.id;
+  if (hareketTuru === 'Iade' && safeCurrentDurum.zimmetliPersonel?.id) {
+    formData.kaynakPersonelId = safeCurrentDurum.zimmetliPersonel.id;
   }
 
-  if (hareketTuru === 'Devir' && currentDurum.zimmetliPersonel) {
-    formData.kaynakPersonelId = currentDurum.zimmetliPersonel.id;
+  if (hareketTuru === 'Devir' && safeCurrentDurum.zimmetliPersonel?.id) {
+    formData.kaynakPersonelId = safeCurrentDurum.zimmetliPersonel.id;
   }
 
   return formData;
@@ -355,48 +365,51 @@ export const getPrefilledFormData = (hareketTuru, malzeme, currentDurum) => {
 export const validateHareketForm = (hareketTuru, formData, currentDurum) => {
   const errors = {};
   const hareket = HAREKET_TURLERI[hareketTuru];
-  
+
   if (!hareket) {
     errors.hareketTuru = 'Geçersiz hareket türü';
     return errors;
   }
-  
+
+  // Güvenli currentDurum kontrolü
+  const safeCurrentDurum = currentDurum || {};
+
   // Zorunlu alanları kontrol et
   hareket.requiredFields.forEach(field => {
-    if (!formData[field] || formData[field].trim() === '') {
+    if (!formData[field] || (typeof formData[field] === 'string' && formData[field].trim() === '')) {
       const fieldLabels = {
-        'hedefPersonelId': 'Hedef Personel',
-        'kaynakPersonelId': 'Kaynak Personel',
-        'konumId': 'Konum',
-        'malzemeKondisyonu': 'Malzeme Kondisyonu',
-        'aciklama': 'Açıklama'
+        hedefPersonelId: 'Hedef Personel',
+        kaynakPersonelId: 'Kaynak Personel',
+        konumId: 'Konum',
+        malzemeKondisyonu: 'Malzeme Kondisyonu',
+        aciklama: 'Açıklama',
       };
       errors[field] = `${fieldLabels[field] || field} zorunludur`;
     }
   });
-  
+
   // Özel validasyonlar
   if (hareketTuru === 'Devir' && formData.kaynakPersonelId === formData.hedefPersonelId) {
     errors.hedefPersonelId = 'Kaynak ve hedef personel aynı olamaz';
   }
 
-  if (hareketTuru === 'DepoTransferi' && formData.konumId === currentDurum.mevcentKonum?.id) {
+  if (hareketTuru === 'DepoTransferi' && formData.konumId === safeCurrentDurum.mevcentKonum?.id) {
     errors.konumId = 'Hedef konum mevcut konumdan farklı olmalıdır';
   }
-  
+
   return errors;
 };
 
 /**
  * Hareket türü label'ını döndürür
  */
-export const getHareketTuruLabel = (hareketTuru) => {
+export const getHareketTuruLabel = hareketTuru => {
   return HAREKET_TURLERI[hareketTuru]?.label || hareketTuru || 'Bilinmiyor';
 };
 
 /**
  * Hareket türü açıklamasını döndürür
  */
-export const getHareketTuruDescription = (hareketTuru) => {
+export const getHareketTuruDescription = hareketTuru => {
   return HAREKET_TURLERI[hareketTuru]?.description_detailed || 'Açıklama mevcut değil';
 };

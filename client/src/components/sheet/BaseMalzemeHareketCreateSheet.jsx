@@ -1,97 +1,57 @@
-// client/src/components/sheet/BaseMalzemeHareketCreateSheet.jsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+// client/src/app/malzemeHareket/sheets/BaseMalzemeHareketCreateSheet.jsx
+import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { useSheetStore, selectIsSheetOpen } from '@/stores/sheetStore';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Spinner } from '@/components/general/Spinner';
-import { useSheetStore } from '@/stores/sheetStore';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { toast } from 'sonner';
-import { InfoIcon, AlertTriangleIcon } from 'lucide-react';
-
-// Form field bileşenleri
 import { FormFieldSelect } from '@/components/form/FormFieldSelect';
-import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 import { FormFieldDatePicker } from '@/components/form/FormFieldDatePicker';
 
 // Store'lar
+import { MalzemeHareket_Store } from '@/app/malzemehareket/constants/store';
 import { Personel_Store } from '@/app/personel/constants/store';
 import { Konum_Store } from '@/app/konum/constants/store';
+import { Malzeme_Store } from '@/app/malzeme/constants/store';
 
-// İş kuralları
-import { 
-  getFieldVisibilityRules, 
-  getPrefilledFormData, 
-  validateHareketForm,
-  getHareketTuruDescription,
-  HAREKET_TURLERI
-} from '@/app/malzeme/helpers/hareketBusinessLogic';
+// Schema
+import { MalzemeHareket_CreateSchema } from '@/app/malzemehareket/constants/schema';
 
-const malzemeKondisyonuOptions = [
-  { value: 'Saglam', label: 'Sağlam' },
-  { value: 'Arizali', label: 'Arızalı' },
-  { value: 'Hurda', label: 'Hurda' },
-];
+export const BaseMalzemeHareketCreateSheet = ({ hareketTuru, title, description, renderSpecificFields, showKondisyonField = true, aciklamaRequired = false, ...props }) => {
+  // Sheet state
+  const { mode, data, entityType, isOpen, closeSheet } = useSheetStore();
+  const isSheetOpen = useSheetStore(selectIsSheetOpen(hareketTuru, 'malzemeHareket'));
 
-// Basit zod schema - her hareket türü kendi validasyonunu yapar
-const baseSchema = z.object({
-  islemTarihi: z.string().min(1, 'İşlem tarihi zorunludur.'),
-  hareketTuru: z.string().min(1, 'Hareket türü zorunludur.'),
-  malzemeKondisyonu: z.string().default('Saglam'),
-  malzemeId: z.string().min(1, 'Malzeme seçimi zorunludur.'),
-  kaynakPersonelId: z.string().optional().nullable(),
-  hedefPersonelId: z.string().optional().nullable(),
-  konumId: z.string().optional().nullable(),
-  aciklama: z.string().optional().nullable(),
-});
+  // Store actions
+  const createAction = MalzemeHareket_Store(state => state.Create);
+  const loadingAction = MalzemeHareket_Store(state => state.loadingAction);
 
-export const BaseMalzemeHareketCreateSheet = ({
-  hareketTuru,
-  malzeme,
-  currentDurum,
-  createAction,
-  onSuccess,
-  onCancel
-}) => {
-  const { mode, entityType, isOpen, closeSheet } = useSheetStore();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Store'lar
+  // İlişkili veriler
   const personelList = Personel_Store(state => state.datas);
   const loadPersonelList = Personel_Store(state => state.GetAll);
-  
+
   const konumList = Konum_Store(state => state.datas);
   const loadKonumList = Konum_Store(state => state.GetAll);
 
-  const isHareketSheetOpen = isOpen && mode === 'create' && entityType === 'malzemeHareket';
+  const malzeme = data; // Sheet'e gönderilen malzeme verisi
 
-  // Hareket türü bilgileri
-  const hareketInfo = HAREKET_TURLERI[hareketTuru];
-  const visibilityRules = getFieldVisibilityRules(hareketTuru);
-  const prefilledData = getPrefilledFormData(hareketTuru, malzeme, currentDurum);
-
-  // Form setup
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-    reset
-  } = useForm({
-    resolver: zodResolver(baseSchema),
-    defaultValues: prefilledData
+  // Form state
+  const [formData, setFormData] = useState({
+    malzemeId: malzeme?.id || '',
+    hareketTuru: hareketTuru,
+    islemTarihi: new Date().toISOString().split('T')[0],
+    malzemeKondisyonu: 'Saglam',
   });
 
-  const watchedValues = watch();
+  const [errors, setErrors] = useState({});
 
-  // Listeleri yükle
+  // İlişkili listeleri yükle
   useEffect(() => {
-    if (isHareketSheetOpen) {
+    if (isSheetOpen) {
       if (!personelList || personelList.length === 0) {
         loadPersonelList({ showToast: false });
       }
@@ -99,278 +59,234 @@ export const BaseMalzemeHareketCreateSheet = ({
         loadKonumList({ showToast: false });
       }
     }
-  }, [isHareketSheetOpen, personelList, konumList, loadPersonelList, loadKonumList]);
+  }, [isSheetOpen, personelList, konumList, loadPersonelList, loadKonumList]);
 
-  // Form reset when sheet opens
+  // Malzeme değiştiğinde form data'yı güncelle
   useEffect(() => {
-    if (isHareketSheetOpen) {
-      reset(prefilledData);
+    if (malzeme) {
+      setFormData(prev => ({
+        ...prev,
+        malzemeId: malzeme.id,
+      }));
     }
-  }, [isHareketSheetOpen, prefilledData, reset]);
+  }, [malzeme]);
 
-  // Seçenek listelerini hazırla
-  const personelOptions = useMemo(() => 
-    personelList?.filter(p => p.status === 'Aktif').map(personel => ({
+  // Seçenekleri hazırla
+  const personelOptions =
+    personelList?.map(personel => ({
       value: personel.id,
-      label: `${personel.ad} (${personel.sicil})`
-    })) || [], 
-    [personelList]
-  );
+      label: `${personel.ad} (${personel.sicil})`,
+    })) || [];
 
-  const konumOptions = useMemo(() => 
-    konumList?.filter(k => k.status === 'Aktif').map(konum => ({
+  const konumOptions =
+    konumList?.map(konum => ({
       value: konum.id,
-      label: `${konum.ad} - ${konum.depo?.ad || 'N/A'}`
-    })) || [], 
-    [konumList]
-  );
+      label: `${konum.ad} - ${konum.depo?.ad || 'Bilinmeyen Depo'}`,
+    })) || [];
+
+  const kondisyonOptions = [
+    { value: 'Saglam', label: 'Sağlam' },
+    { value: 'Arizali', label: 'Arızalı' },
+    { value: 'Hurda', label: 'Hurda' },
+  ];
+
+  // Form field değeri güncelleme
+  const setFieldValue = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+    // Hata varsa temizle
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: undefined,
+      }));
+    }
+  };
+
+  // Form validation
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.malzemeId) {
+      newErrors.malzemeId = 'Malzeme seçimi zorunludur';
+    }
+
+    if (!formData.islemTarihi) {
+      newErrors.islemTarihi = 'İşlem tarihi zorunludur';
+    }
+
+    // Hareket türüne göre özel validasyonlar
+    switch (hareketTuru) {
+      case 'Zimmet':
+        if (!formData.hedefPersonelId) {
+          newErrors.hedefPersonelId = 'Hedef personel seçimi zorunludur';
+        }
+        break;
+      case 'Iade':
+        if (!formData.kaynakPersonelId) {
+          newErrors.kaynakPersonelId = 'Kaynak personel seçimi zorunludur';
+        }
+        if (!formData.konumId) {
+          newErrors.konumId = 'Konum seçimi zorunludur';
+        }
+        break;
+      case 'Devir':
+        if (!formData.kaynakPersonelId) {
+          newErrors.kaynakPersonelId = 'Kaynak personel seçimi zorunludur';
+        }
+        if (!formData.hedefPersonelId) {
+          newErrors.hedefPersonelId = 'Hedef personel seçimi zorunludur';
+        }
+        if (formData.kaynakPersonelId === formData.hedefPersonelId) {
+          newErrors.hedefPersonelId = 'Kaynak ve hedef personel aynı olamaz';
+        }
+        break;
+      case 'DepoTransferi':
+        if (!formData.konumId) {
+          newErrors.konumId = 'Hedef konum seçimi zorunludur';
+        }
+        break;
+      case 'KondisyonGuncelleme':
+        if (!formData.malzemeKondisyonu) {
+          newErrors.malzemeKondisyonu = 'Yeni kondisyon seçimi zorunludur';
+        }
+        break;
+      case 'Kayip':
+      case 'Dusum':
+        if (aciklamaRequired && !formData.aciklama?.trim()) {
+          newErrors.aciklama = 'Açıklama zorunludur';
+        }
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Form submit
-  const onSubmit = async (formData) => {
-    // Özel validasyon
-    const validationErrors = validateHareketForm(hareketTuru, formData, currentDurum);
-    if (Object.keys(validationErrors).length > 0) {
-      Object.entries(validationErrors).forEach(([field, message]) => {
-        toast.error(message);
-      });
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      toast.error('Lütfen gerekli alanları doldurunuz');
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      const result = await createAction(formData);
-      if (result) {
-        toast.success(`${hareketInfo.label} işlemi başarıyla tamamlandı.`);
-        closeSheet();
-        if (onSuccess) onSuccess(result);
+      // API metodunu hareket türüne göre seç
+      const apiMethodMap = {
+        Zimmet: 'zimmet',
+        Iade: 'iade',
+        Devir: 'devir',
+        DepoTransferi: 'depoTransfer',
+        KondisyonGuncelleme: 'kondisyon',
+        Kayip: 'kayip',
+        Dusum: 'dusum',
+      };
+
+      const apiMethod = apiMethodMap[hareketTuru];
+
+      if (apiMethod && MalzemeHareket_Store.getState()[apiMethod]) {
+        await MalzemeHareket_Store.getState()[apiMethod](formData, { showToast: true });
+      } else {
+        // Fallback: genel create metodu
+        await createAction(formData, { showToast: true });
       }
+
+      closeSheet();
+
+      // Form'u sıfırla
+      setFormData({
+        malzemeId: malzeme?.id || '',
+        hareketTuru: hareketTuru,
+        islemTarihi: new Date().toISOString().split('T')[0],
+        malzemeKondisyonu: 'Saglam',
+      });
+      setErrors({});
     } catch (error) {
       console.error('Hareket oluşturma hatası:', error);
-      toast.error(error.message || 'İşlem sırasında hata oluştu.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const handleCancel = () => {
-    closeSheet();
-    if (onCancel) onCancel();
-  };
-
-  const shouldShowField = (fieldName) => {
-    return visibilityRules.show.includes(fieldName);
-  };
-
-  const isFieldRequired = (fieldName) => {
-    return visibilityRules.required.includes(fieldName);
-  };
-
-  if (!isHareketSheetOpen || !hareketInfo) {
-    return null;
-  }
+  if (!isSheetOpen) return null;
 
   return (
-    <Sheet open={isHareketSheetOpen} onOpenChange={handleCancel}>
-      <SheetContent className="sm:max-w-2xl w-full">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <Badge variant="outline" className={`text-${hareketInfo.color}-600 border-${hareketInfo.color}-300`}>
-              {hareketInfo.label}
-            </Badge>
-            {malzeme.vidaNo || malzeme.sabitKodu?.ad}
-          </SheetTitle>
-          <SheetDescription>
-            {getHareketTuruDescription(hareketTuru)}
-          </SheetDescription>
+    <Sheet open={isSheetOpen} onOpenChange={closeSheet}>
+      <SheetContent className="w-full sm:max-w-lg overflow-hidden flex flex-col">
+        <SheetHeader className="space-y-3">
+          <SheetTitle className="text-xl font-semibold">{title}</SheetTitle>
+          <SheetDescription className="text-sm text-muted-foreground">{description}</SheetDescription>
+
+          {/* Malzeme Bilgisi */}
+          {malzeme && (
+            <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Seçili Malzeme:</span>
+                <Badge variant="outline" className="font-mono">
+                  {malzeme.vidaNo || malzeme.id}
+                </Badge>
+              </div>
+              {malzeme.sabitKodu && (
+                <div className="text-xs text-muted-foreground">
+                  {malzeme.sabitKodu.ad} - {malzeme.marka?.ad} {malzeme.model?.ad}
+                </div>
+              )}
+            </div>
+          )}
         </SheetHeader>
 
-        <ScrollArea className="h-[calc(100vh-120px)] mt-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Malzeme Bilgi Kartı */}
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary" className="text-xs">Seçili Malzeme</Badge>
-                <InfoIcon className="h-3 w-3 text-blue-600" />
-              </div>
-              <div className="space-y-1">
-                <div className="text-sm">
-                  <span className="font-medium">Vida No:</span> {malzeme.vidaNo || 'N/A'}
-                </div>
-                <div className="text-sm">
-                  <span className="font-medium">Sabit Kodu:</span> {malzeme.sabitKodu?.ad || 'N/A'}
-                </div>
-                <div className="text-sm">
-                  <span className="font-medium">Mevcut Durum:</span> 
-                  <Badge variant="outline" className="ml-1 text-xs">
-                    {currentDurum.mevcentKondisyon}
-                  </Badge>
-                </div>
-                {currentDurum.zimmetliPersonel && (
-                  <div className="text-sm">
-                    <span className="font-medium">Zimmetli:</span> 
-                    <span className="text-orange-600 ml-1">{currentDurum.zimmetliPersonel.ad}</span>
-                  </div>
-                )}
-                {currentDurum.mevcentKonum && (
-                  <div className="text-sm">
-                    <span className="font-medium">Mevcut Konum:</span> 
-                    <span className="text-green-600 ml-1">{currentDurum.mevcentKonum.ad}</span>
-                  </div>
-                )}
-              </div>
-            </div>
+        <ScrollArea className="flex-1 pr-4">
+          <div className="space-y-4 pb-4">
+            {/* İşlem Tarihi */}
+            <FormFieldDatePicker
+              label="İşlem Tarihi"
+              name="islemTarihi"
+              id={`${hareketTuru}-islemTarihi`}
+              value={formData.islemTarihi ? new Date(formData.islemTarihi) : new Date()}
+              onChange={date => {
+                const dateString = date ? date.toISOString().split('T')[0] : '';
+                setFieldValue('islemTarihi', dateString);
+              }}
+              error={errors.islemTarihi}
+              showRequiredStar={true}
+            />
 
-            {/* Form Fields */}
-            <div className="space-y-4">
-              {/* İşlem Tarihi */}
-              {shouldShowField('islemTarihi') && (
-                <FormFieldDatePicker
-                  label="İşlem Tarihi"
-                  name="islemTarihi"
-                  value={watchedValues.islemTarihi ? new Date(watchedValues.islemTarihi) : null}
-                  onChange={value => {
-                    if (value) {
-                      setValue('islemTarihi', value.toISOString().split('T')[0]);
-                    }
-                  }}
-                  error={errors.islemTarihi?.message}
-                  showRequiredStar={isFieldRequired('islemTarihi')}
-                  placeholder="Tarih seçiniz"
-                />
-              )}
-
-              {/* Malzeme Kondisyonu */}
-              {shouldShowField('malzemeKondisyonu') && (
-                <FormFieldSelect
-                  label="Malzeme Kondisyonu"
-                  name="malzemeKondisyonu"
-                  value={watchedValues.malzemeKondisyonu || 'Saglam'}
-                  onChange={value => setValue('malzemeKondisyonu', value)}
-                  error={errors.malzemeKondisyonu?.message}
-                  showRequiredStar={isFieldRequired('malzemeKondisyonu')}
-                  placeholder="Kondisyon seçiniz"
-                  options={malzemeKondisyonuOptions}
-                  emptyMessage="Kondisyon bulunamadı"
-                />
-              )}
-
-              {/* Kaynak Personel */}
-              {shouldShowField('kaynakPersonelId') && (
-                <FormFieldSelect
-                  label="Kaynak Personel"
-                  name="kaynakPersonelId"
-                  value={watchedValues.kaynakPersonelId || ''}
-                  onChange={value => setValue('kaynakPersonelId', value)}
-                  error={errors.kaynakPersonelId?.message}
-                  showRequiredStar={isFieldRequired('kaynakPersonelId')}
-                  placeholder="Kaynak personeli seçiniz"
-                  options={personelOptions}
-                  emptyMessage="Personel bulunamadı"
-                  disabled={hareketInfo.fieldRules.kaynakPersonelId === 'preserve'}
-                />
-              )}
-
-              {/* Hedef Personel */}
-              {shouldShowField('hedefPersonelId') && (
-                <FormFieldSelect
-                  label="Hedef Personel"
-                  name="hedefPersonelId"
-                  value={watchedValues.hedefPersonelId || ''}
-                  onChange={value => setValue('hedefPersonelId', value)}
-                  error={errors.hedefPersonelId?.message}
-                  showRequiredStar={isFieldRequired('hedefPersonelId')}
-                  placeholder="Hedef personeli seçiniz"
-                  options={personelOptions.filter(p => p.value !== watchedValues.kaynakPersonelId)}
-                  emptyMessage="Personel bulunamadı"
-                  disabled={hareketInfo.fieldRules.hedefPersonelId === 'preserve'}
-                />
-              )}
-
-              {/* Konum */}
-              {shouldShowField('konumId') && (
-                <FormFieldSelect
-                  label="Konum"
-                  name="konumId"
-                  value={watchedValues.konumId || ''}
-                  onChange={value => setValue('konumId', value)}
-                  error={errors.konumId?.message}
-                  showRequiredStar={isFieldRequired('konumId')}
-                  placeholder="Konum seçiniz"
-                  options={konumOptions.filter(k => k.value !== currentDurum.mevcentKonum?.id)}
-                  emptyMessage="Konum bulunamadı"
-                  disabled={hareketInfo.fieldRules.konumId === 'preserve'}
-                />
-              )}
-
-              {/* Açıklama */}
-              {shouldShowField('aciklama') && (
-                <FormFieldTextarea
-                  label="Açıklama"
-                  name="aciklama"
-                  value={watchedValues.aciklama || ''}
-                  onChange={e => setValue('aciklama', e.target.value)}
-                  error={errors.aciklama?.message}
-                  showRequiredStar={isFieldRequired('aciklama')}
-                  placeholder={`${hareketInfo.label} işlemi ile ilgili açıklama`}
-                  rows={3}
-                />
-              )}
-            </div>
-
-            {/* İşlem Bilgilendirmesi */}
-            <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
-              <InfoIcon className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800 dark:text-blue-200">
-                <strong>{hareketInfo.label}:</strong> {hareketInfo.description_detailed}
-              </AlertDescription>
-            </Alert>
-
-            {/* Uyarılar */}
-            {hareketTuru === 'Dusum' && (
-              <Alert variant="destructive">
-                <AlertTriangleIcon className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Dikkat!</strong> Düşüm işlemi sonrasında malzeme sistemden tamamen kaldırılacaktır.
-                </AlertDescription>
-              </Alert>
+            {/* Malzeme Kondisyonu - Koşullu gösterim */}
+            {showKondisyonField && (
+              <FormFieldSelect
+                label="Malzeme Kondisyonu"
+                name="malzemeKondisyonu"
+                id={`${hareketTuru}-malzemeKondisyonu`}
+                value={formData.malzemeKondisyonu || ''}
+                onChange={value => setFieldValue('malzemeKondisyonu', value)}
+                error={errors.malzemeKondisyonu}
+                placeholder="Malzeme kondisyonunu seçiniz"
+                options={kondisyonOptions}
+              />
             )}
 
-            {hareketTuru === 'Kayip' && (
-              <Alert variant="destructive">
-                <AlertTriangleIcon className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Dikkat!</strong> Kayıp bildirimi sonrasında malzeme konumsuz olarak işaretlenecektir.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Form Actions */}
-            <div className="flex justify-end gap-3 pt-6 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-              >
-                İptal
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="min-w-[120px]"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Spinner size="small" className="mr-2" />
-                    İşleniyor...
-                  </>
-                ) : (
-                  hareketInfo.label
-                )}
-              </Button>
-            </div>
-          </form>
+            {/* Özel Alanlar */}
+            {renderSpecificFields &&
+              renderSpecificFields({
+                formData,
+                setFieldValue,
+                errors,
+                personelOptions,
+                konumOptions,
+                kondisyonOptions,
+              })}
+          </div>
         </ScrollArea>
+
+        {/* Footer Buttons */}
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <Button type="button" variant="outline" onClick={closeSheet} disabled={loadingAction}>
+            İptal
+          </Button>
+          <Button type="submit" onClick={handleSubmit} disabled={loadingAction}>
+            {loadingAction ? 'İşleniyor...' : 'Kaydet'}
+          </Button>
+        </div>
       </SheetContent>
     </Sheet>
   );

@@ -1,11 +1,10 @@
-// client/src/app/malzemeHareket/sheets/DusumSheet.jsx
-import React from 'react';
-import { BaseMalzemeHareketCreateSheet } from './BaseMalzemeHareketCreateSheet';
+
+import { BaseMalzemeHareketCreateSheet } from '@/components/sheet/BaseMalzemeHareketCreateSheet';
 import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangleIcon } from 'lucide-react';
 
-export const MalzemeHareket_DusumSheet = (props) => {
+export const MalzemeHareket_KayipSheet = (props) => {
   const renderSpecificFields = ({ formData, setFieldValue, errors }) => {
     return (
       <>
@@ -13,21 +12,21 @@ export const MalzemeHareket_DusumSheet = (props) => {
         <Alert variant="destructive" className="mb-4">
           <AlertTriangleIcon className="h-4 w-4" />
           <AlertDescription>
-            Bu işlem malzemeyi envanterden çıkaracaktır. 
-            İşlem sonrasında malzeme "Düşüm" olarak işaretlenecek ve artık kullanılamayacaktır.
+            Bu işlem malzemenin kayıp olduğunu kayıt altına alacaktır. 
+            İşlem geri alınamaz ve malzeme artık sistemde "Kayıp" olarak işaretlenecektir.
           </AlertDescription>
         </Alert>
 
         {/* Açıklama - Zorunlu */}
         <FormFieldTextarea
-          label="Düşüm Açıklaması"
+          label="Kayıp Açıklaması"
           name="aciklama"
-          id="dusum-aciklama"
+          id="kayip-aciklama"
           value={formData.aciklama || ''}
           onChange={e => setFieldValue('aciklama', e.target.value)}
           error={errors.aciklama}
           showRequiredStar={true}
-          placeholder="Malzemenin neden düşüm yapıldığı ile ilgili detaylı açıklama giriniz"
+          placeholder="Malzemenin nasıl kaybolduğu ile ilgili detaylı açıklama giriniz"
           rows={4}
         />
       </>
@@ -36,9 +35,9 @@ export const MalzemeHareket_DusumSheet = (props) => {
 
   return (
     <BaseMalzemeHareketCreateSheet
-      hareketTuru="Dusum"
-      title="Malzeme Düşüm Yap"
-      description="Malzemeyi envanterden çıkarınız"
+      hareketTuru="Kayip"
+      title="Malzeme Kayıp Bildir"
+      description="Kayıp olan malzemeyi sisteme bildiriniz"
       renderSpecificFields={renderSpecificFields}
       aciklamaRequired={true}
       {...props}
