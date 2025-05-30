@@ -1,29 +1,112 @@
-// client/src/app/malzemeHareket/constants/api.js
-import { createBaseApiService } from "@/api/BaseApiServices";
+// client/src/app/malzemeHareket/constants/apiServices.js
 import { axiosInstance } from '@/api/index';
 
-export const EntityType = 'malzemeHareket';
-export const EntityHuman = 'Malzeme Hareket';
+const EntityType = 'malzemeHareket';
+const EntityHuman = 'Malzeme Hareket';
 
-export const MalzemeHareket_ApiService = createBaseApiService(EntityType, EntityHuman);
+// Her hareket türü için ayrı API uçları
+export const MalzemeHareketApiServices = {
+  // Zimmet API
+  zimmet: {
+    create: async (data) => {
+      try {
+        const response = await axiosInstance('post', `${EntityType}/zimmet`, data);
+        return response?.data?.data || null;
+      } catch (error) {
+        console.error(`API hatası (${EntityHuman} zimmet):`, error?.response?.data || error.message || error);
+        throw error;
+      }
+    },
+  },
 
-// Özel API metodları
-MalzemeHareket_ApiService.getMalzemeGecmisi = async (malzemeId) => {
-  try {
-    const response = await axiosInstance('post', `${EntityType}/getMalzemeGecmisi`, { malzemeId });
-    return response?.data?.data || [];
-  } catch (error) {
-    console.error(`API hatası (${EntityHuman} getMalzemeGecmisi):`, error?.response?.data || error.message || error);
-    return [];
-  }
-};
+  // İade API
+  iade: {
+    create: async (data) => {
+      try {
+        const response = await axiosInstance('post', `${EntityType}/iade`, data);
+        return response?.data?.data || null;
+      } catch (error) {
+        console.error(`API hatası (${EntityHuman} iade):`, error?.response?.data || error.message || error);
+        throw error;
+      }
+    },
+  },
 
-MalzemeHareket_ApiService.getPersonelZimmetleri = async (personelId) => {
-  try {
-    const response = await axiosInstance('post', `${EntityType}/getPersonelZimmetleri`, { personelId });
-    return response?.data?.data || [];
-  } catch (error) {
-    console.error(`API hatası (${EntityHuman} getPersonelZimmetleri):`, error?.response?.data || error.message || error);
-    return [];
-  }
+  // Devir API
+  devir: {
+    create: async (data) => {
+      try {
+        const response = await axiosInstance('post', `${EntityType}/devir`, data);
+        return response?.data?.data || null;
+      } catch (error) {
+        console.error(`API hatası (${EntityHuman} devir):`, error?.response?.data || error.message || error);
+        throw error;
+      }
+    },
+  },
+
+  // Depo Transfer API
+  depoTransfer: {
+    create: async (data) => {
+      try {
+        const response = await axiosInstance('post', `${EntityType}/depoTransfer`, data);
+        return response?.data?.data || null;
+      } catch (error) {
+        console.error(`API hatası (${EntityHuman} depoTransfer):`, error?.response?.data || error.message || error);
+        throw error;
+      }
+    },
+  },
+
+  // Kondisyon Güncelleme API
+  kondisyon: {
+    create: async (data) => {
+      try {
+        const response = await axiosInstance('post', `${EntityType}/kondisyon`, data);
+        return response?.data?.data || null;
+      } catch (error) {
+        console.error(`API hatası (${EntityHuman} kondisyon):`, error?.response?.data || error.message || error);
+        throw error;
+      }
+    },
+  },
+
+  // Kayıp API
+  kayip: {
+    create: async (data) => {
+      try {
+        const response = await axiosInstance('post', `${EntityType}/kayip`, data);
+        return response?.data?.data || null;
+      } catch (error) {
+        console.error(`API hatası (${EntityHuman} kayip):`, error?.response?.data || error.message || error);
+        throw error;
+      }
+    },
+  },
+
+  // Düşüm API
+  dusum: {
+    create: async (data) => {
+      try {
+        const response = await axiosInstance('post', `${EntityType}/dusum`, data);
+        return response?.data?.data || null;
+      } catch (error) {
+        console.error(`API hatası (${EntityHuman} dusum):`, error?.response?.data || error.message || error);
+        throw error;
+      }
+    },
+  },
+
+  // Kayıt API (malzeme oluşturulurken otomatik)
+  kayit: {
+    create: async (data) => {
+      try {
+        const response = await axiosInstance('post', `${EntityType}/kayit`, data);
+        return response?.data?.data || null;
+      } catch (error) {
+        console.error(`API hatası (${EntityHuman} kayit):`, error?.response?.data || error.message || error);
+        throw error;
+      }
+    },
+  },
 };
