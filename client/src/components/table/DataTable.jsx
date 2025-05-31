@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useSheetStore } from '@/stores/sheetStore';
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { ToolbarIndex } from '@/components/toolbar/ToolbarIndex';
 import { AuditColumns } from '@/components/table/AuditColumns';
 import { DataTablePagination } from '@/components/table/Pagination';
@@ -11,9 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getSortedRowModel, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 import { FilterManagementSheet } from '@/app/filter/sheet/FilterManagementSheet';
 import { AdvancedFilterSheet } from '@/app/filter/sheet/AdvancedFilterSheet';
-import { toast } from 'sonner'; // Assuming you use sonner for toasts
+import { toast } from 'sonner';
 import { HeaderContextMenu } from '@/components/contextMenu/HeaderContextMenu';
-import { useEffect } from 'react';
 
 export function DataTable({
   entityType,
@@ -47,6 +46,49 @@ export function DataTable({
   const [sorting, setSorting] = useState(initialSortingState);
   const [isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen] = useState(false);
   const [columnOrder, setColumnOrder] = useState([]);
+  const scrollRef = useRef(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Dark mode algılama
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark') || window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(isDark);
+    };
+
+    checkDarkMode();
+
+    // MutationObserver ile tema değişikliklerini dinle
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    // Media query değişikliklerini dinle
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', checkDarkMode);
+
+    return () => {
+      observer.disconnect();
+      mediaQuery.removeEventListener('change', checkDarkMode);
+    };
+  }, []);
+
+  // Scrollbar stilini dinamik uygula
+  useEffect(() => {
+    if (scrollRef.current) {
+      const scrollElement = scrollRef.current;
+      const style = scrollElement.style;
+
+      if (isDarkMode) {
+        style.scrollbarColor = '#6b7280 #374151';
+      } else {
+        style.scrollbarColor = '#d1d5db #f9fafb';
+      }
+    }
+  }, [isDarkMode]);
+
 
   const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
@@ -68,7 +110,7 @@ export function DataTable({
     if (advancedFilterObject && advancedFilterObject.rules && advancedFilterObject.rules.length > 0) {
       return advancedFilterObject;
     }
-    return debouncedGlobalSearchTerm || ''; // Use debounced simple search or empty string
+    return debouncedGlobalSearchTerm || '';
   }, [advancedFilterObject, debouncedGlobalSearchTerm]);
 
   const allColumns = useMemo(() => {
@@ -93,9 +135,8 @@ export function DataTable({
     globalFilterFn: customGlobalFilterFn,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
-
-    enableColumnOrdering: enableColumnReordering, // Prop'a bağlandı
-    onColumnOrderChange: setColumnOrder, // Lokal state'i günceller
+    enableColumnOrdering: enableColumnReordering,
+    onColumnOrderChange: setColumnOrder,
     state: {
       sorting,
       columnFilters,
@@ -104,7 +145,7 @@ export function DataTable({
       rowSelection,
       columnOrder,
     },
-    initialState: { pagination: { pageSize: 10 } },
+    initialState: { pagination: { pageSize: 20 } }, // Daha fazla satır göster
   });
 
   const visibleColumnsCount = table.getVisibleLeafColumns().length;
@@ -114,7 +155,6 @@ export function DataTable({
   }, [openSheet, entityType]);
 
   const allSummaries = useMemo(() => {
-    // summarySetup verilmediyse veya veri yoksa null dön
     if (!summarySetup || summarySetup.length === 0 || !data || data.length === 0) {
       return null;
     }
@@ -126,22 +166,18 @@ export function DataTable({
       const counts = {};
       try {
         data.forEach(row => {
-          const value = row[columnId]; // Tip cast'i kaldırıldı
+          const value = row[columnId];
           const key = String(value ?? 'Bilinmeyen');
           counts[key] = (counts[key] || 0) + 1;
         });
 
-        // Hesaplanan sayımları objeye dönüştür ve sırala
         const items = Object.entries(counts)
           .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
           .map(([key, count]) => ({ key, count }));
 
-        // Sonucu ana objeye ekle
         summaries[String(columnId)] = { title, items };
       } catch (error) {
         console.error(`Summary calculation failed for column: ${String(columnId)}`, error);
-        // İsteğe bağlı: Hatalı sütun için boş bir özet ekleyebiliriz
-        // summaries[String(columnId)] = { title, items: [] };
       }
     });
 
@@ -153,50 +189,37 @@ export function DataTable({
       const newSearchTerm = value || '';
       setGlobalSearchInput(newSearchTerm);
 
-      // If user types in simple search, clear advanced filters
       if (newSearchTerm.trim() !== '' && advancedFilterObject) {
         setAdvancedFilterObject(null);
         toast.info('Gelişmiş filtre temizlendi, basit arama uygulanıyor.');
       }
     },
-    [advancedFilterObject], // Dependency
+    [advancedFilterObject],
   );
 
   const applyAdvancedFiltersToTable = useCallback(
     newAdvancedFilterLogic => {
-      // Check if newAdvancedFilterLogic is valid (not null and has rules)
       if (newAdvancedFilterLogic && newAdvancedFilterLogic.rules && newAdvancedFilterLogic.rules.length > 0) {
         setAdvancedFilterObject(newAdvancedFilterLogic);
-        // If advanced filters are applied, clear simple search input
         if (globalSearchInput) {
           setGlobalSearchInput('');
         }
         toast.success('Gelişmiş filtreler uygulandı.');
       } else {
-        // If null or empty rules, clear advanced filters
         setAdvancedFilterObject(null);
-        // Potentially show a toast if filters were cleared explicitly
-        // toast.info('Gelişmiş filtreler temizlendi.');
       }
     },
-    [globalSearchInput], // Dependency
+    [globalSearchInput],
   );
 
   const handleClearAllFilters = useCallback(() => {
-    table.resetColumnFilters(); // Sütun filtrelerini (faceted filters) temizle
-    // DataTable içindeki global arama input state'ini temizle
+    table.resetColumnFilters();
     if (typeof setGlobalSearchInput === 'function') {
-      // Eğer setGlobalSearchInput varsa
       setGlobalSearchInput('');
     }
-    // DataTable içindeki gelişmiş filtre state'ini temizle
     if (typeof setAdvancedFilterObject === 'function') {
-      // Eğer setAdvancedFilterObject varsa
       setAdvancedFilterObject(null);
     }
-    // Alternatif olarak, eğer globalFilter state'ini doğrudan set ediyorsanız:
-    // table.setGlobalFilter(''); // Bu, activeGlobalFilter'ın yeniden hesaplanmasıyla otomatik olmalı
-
     toast.info('Tüm filtreler temizlendi.');
   }, [table, setGlobalSearchInput, setAdvancedFilterObject]);
 
@@ -207,30 +230,21 @@ export function DataTable({
         return;
       }
 
-      const {
-        columnFilters: savedColumnFilters,
-        globalFilter: savedGlobalFilter, // Bu, string veya {condition, rules} objesi olabilir
-        sorting: savedSorting,
-      } = savedFilterState;
+      const { columnFilters: savedColumnFilters, globalFilter: savedGlobalFilter, sorting: savedSorting } = savedFilterState;
 
-      // 1. Sütun Filtrelerini Uygula
       table.setColumnFilters(savedColumnFilters || []);
 
-      // 2. Global Filtreyi Uygula
       if (typeof savedGlobalFilter === 'string') {
         setGlobalSearchInput(savedGlobalFilter);
         setAdvancedFilterObject(null);
       } else if (typeof savedGlobalFilter === 'object' && savedGlobalFilter !== null && savedGlobalFilter.rules) {
-        // ÖNEMLİ: savedGlobalFilter.rules kontrolü eklendi
         setAdvancedFilterObject(savedGlobalFilter);
         setGlobalSearchInput('');
       } else {
-        // Hiçbiri değilse (null, undefined, veya rules içermeyen obje)
         setGlobalSearchInput('');
         setAdvancedFilterObject(null);
       }
 
-      // 3. Sıralamayı Uygula
       table.setSorting(savedSorting || []);
     },
     [table, setGlobalSearchInput, setAdvancedFilterObject],
@@ -241,18 +255,17 @@ export function DataTable({
     const hasColumnFilters = columnFilters && columnFilters.length > 0;
     const hasGlobalFilter = globalFilter && (typeof globalFilter === 'string' ? globalFilter.trim().length > 0 : typeof globalFilter === 'object' && globalFilter.rules && globalFilter.rules.length > 0);
     return hasColumnFilters || hasGlobalFilter;
-  }, [table.getState().columnFilters, table.getState().globalFilter]); // Bağımlılıkları state'ten al
+  }, [table.getState().columnFilters, table.getState().globalFilter]);
 
   useEffect(() => {
     if (enableColumnReordering) {
       console.log('Yeni Sütun Sırası:', columnOrder);
-      // Burası, bir sonraki adımda bu `columnOrder`'ı
-      // `useUserSettingsStore`'a kaydetmek için kullanılacak yer olacak.
     }
   }, [columnOrder, enableColumnReordering]);
 
   return (
-    <div className="w-full space-y-2">
+    <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden ">
+      {' '}
       <FilterManagementSheet
         sheetTypeIdentifier="filterManagement"
         entityType={entityType}
@@ -263,132 +276,153 @@ export function DataTable({
         isTableFiltered={isTableFiltered}
       />
       <AdvancedFilterSheet sheetTypeIdentifier="advancedFilter" entityType={entityType} entityHuman={entityHuman} table={table} onApplyFilters={applyAdvancedFiltersToTable} />
-      <ToolbarIndex
-        table={table}
-        globalSearchTerm={globalSearchInput}
-        onGlobalSearchChange={handleGlobalSearchInputChange}
-        facetedFilterSetup={facetedFilterSetup}
-        data={data}
-        moreButtonRendered={moreButtonRendered}
-        toolbarActions={toolbarActions} // Prop eklendi
-        onRefresh={onRefresh}
-        isLoading={isLoading}
-        hideNewButton={hideNewButton}
-        handleCreate={handleCreate}
-        isCollapsibleToolbarOpen={isCollapsibleToolbarOpen}
-        setIsCollapsibleToolbarOpen={setIsCollapsibleToolbarOpen}
-        onClearAllFilters={handleClearAllFilters}
-        renderCollapsibleToolbarContent={renderCollapsibleToolbarContent}
-        entityType={entityType}
-        displayStatusFilter={displayStatusFilter}
-        onToggleStatus={onToggleStatus}
-        isTableFiltered={isTableFiltered}
-      />
-
-      <div className="rounded-md border">
-        <Table className="rounded-full">
-          <TableHeader className="">
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => {
-                  const headerContent = header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext());
-                  return (
-                    <TableHead
-                      className="group relative bg-primary/10"
-                      key={header.id}
-                      style={{
-                        width: header.getSize(),
-                      }}
-                    >
-                      <HeaderContextMenu column={header.column} table={table}>
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex-grow">{headerContent}</div>
-                          {header.column.getCanResize() && (
-                            <div
-                              onMouseDown={header.getResizeHandler()}
-                              onTouchStart={header.getResizeHandler()}
-                              className={cn(
-                                'absolute top-0 right-0 h-full w-1.5 cursor-col-resize select-none touch-none bg-transparent group-hover:bg-border transition-colors duration-200 ease-in-out z-10 opacity-0 group-hover:opacity-100',
-                                header.column.getIsResizing() && 'bg-primary opacity-100',
-                              )}
-                            />
-                          )}
-                        </div>
-                      </HeaderContextMenu>
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map(row => {
-                const rowData = row.original;
-                const contextMenuContent = rowContextMenu ? rowContextMenu(row) : null;
-                const renderRowContent = () =>
-                  row.getVisibleCells().map(cell => {
-                    const cellContent = flexRender(cell.column.columnDef.cell, cell.getContext());
+      {/* Toolbar - Sabit yükseklik */}
+      <div className="flex-shrink-0">
+        <ToolbarIndex
+          table={table}
+          globalSearchTerm={globalSearchInput}
+          onGlobalSearchChange={handleGlobalSearchInputChange}
+          facetedFilterSetup={facetedFilterSetup}
+          data={data}
+          moreButtonRendered={moreButtonRendered}
+          toolbarActions={toolbarActions}
+          onRefresh={onRefresh}
+          isLoading={isLoading}
+          hideNewButton={hideNewButton}
+          handleCreate={handleCreate}
+          isCollapsibleToolbarOpen={isCollapsibleToolbarOpen}
+          setIsCollapsibleToolbarOpen={setIsCollapsibleToolbarOpen}
+          onClearAllFilters={handleClearAllFilters}
+          renderCollapsibleToolbarContent={renderCollapsibleToolbarContent}
+          entityType={entityType}
+          displayStatusFilter={displayStatusFilter}
+          onToggleStatus={onToggleStatus}
+          isTableFiltered={isTableFiltered}
+        />
+      </div>
+      {/* Tablo Container - Kalan alanı kaplar */}
+      <div className="flex-1 min-h-0 rounded-md border overflow-hidden">
+        <div className="h-full overflow-y-auto relative scrollbar dark:dark-scrollbar">
+          {/* Tek Table ile Header ve Body */}
+          <Table className="w-full table-fixed">
+            {/* Header - Sabit */}
+            <TableHeader className="sticky top-0 z-20 bg-background border-b">
+              {table.getHeaderGroups().map(headerGroup => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map(header => {
+                    const headerContent = header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext());
                     return (
-                      <TableCell className={'break-words px-5'} key={cell.id}>
-                        {cellContent}
-                      </TableCell>
+                      <TableHead
+                        className="group relative bg-primary/10"
+                        key={header.id}
+                        style={{
+                          width: header.getSize(),
+                        }}
+                      >
+                        <HeaderContextMenu column={header.column} table={table}>
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex-grow">{headerContent}</div>
+                            {header.column.getCanResize() && (
+                              <div
+                                onMouseDown={header.getResizeHandler()}
+                                onTouchStart={header.getResizeHandler()}
+                                className={cn(
+                                  'absolute top-0 right-0 h-full w-1.5 cursor-col-resize select-none touch-none bg-transparent group-hover:bg-border transition-colors duration-200 ease-in-out z-10 opacity-0 group-hover:opacity-100',
+                                  header.column.getIsResizing() && 'bg-primary opacity-100',
+                                )}
+                              />
+                            )}
+                          </div>
+                        </HeaderContextMenu>
+                      </TableHead>
                     );
-                  });
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
 
-                if (contextMenuContent) {
-                  return (
-                    <ContextMenu key={`context-${row.id}`}>
-                      <ContextMenuTrigger asChild>
-                        <TableRow data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => onRowClick?.(rowData)} className={cn('cursor-default', onRowClick && 'hover:bg-muted/50 ')}>
-                          {renderRowContent()}
-                        </TableRow>
-                      </ContextMenuTrigger>
-                      {contextMenuContent}
-                    </ContextMenu>
-                  );
-                } else {
-                  return (
-                    <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => onRowClick?.(rowData)} className={cn(onRowClick && 'hover:bg-muted/50 ')}>
-                      {renderRowContent()}
-                    </TableRow>
-                  );
-                }
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={visibleColumnsCount} className="h-24 text-center">
-                  {isLoading ? 'Yükleniyor...' : 'Sonuç bulunamadı.'}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+            {/* Body - Scrollable */}
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map(row => {
+                  const rowData = row.original;
+                  const contextMenuContent = rowContextMenu ? rowContextMenu(row) : null;
+                  const renderRowContent = () =>
+                    row.getVisibleCells().map(cell => {
+                      const cellContent = flexRender(cell.column.columnDef.cell, cell.getContext());
+                      return (
+                        <TableCell
+                          className="break-words px-5"
+                          key={cell.id}
+                          style={{
+                            width: cell.column.getSize(),
+                          }}
+                        >
+                          {cellContent}
+                        </TableCell>
+                      );
+                    });
 
+                  if (contextMenuContent) {
+                    return (
+                      <ContextMenu key={`context-${row.id}`}>
+                        <ContextMenuTrigger asChild>
+                          <TableRow data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => onRowClick?.(rowData)} className={cn('cursor-default', onRowClick && 'hover:bg-muted/50')}>
+                            {renderRowContent()}
+                          </TableRow>
+                        </ContextMenuTrigger>
+                        {contextMenuContent}
+                      </ContextMenu>
+                    );
+                  } else {
+                    return (
+                      <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => onRowClick?.(rowData)} className={cn(onRowClick && 'hover:bg-muted/50')}>
+                        {renderRowContent()}
+                      </TableRow>
+                    );
+                  }
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={visibleColumnsCount} className="h-24 text-center">
+                    {isLoading ? 'Yükleniyor...' : 'Sonuç bulunamadı.'}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+
+          {/* Footer - Summary */}
           {summarySetup.length > 0 && allSummaries && Object.keys(allSummaries).length > 0 && (
-            <tfoot>
-              <TableRow className="border-t-1 border-b-0 h-11 bg-primary-foreground">
-                <TableCell colSpan={visibleColumnsCount} className="p-2 text-left space-y-1  ">
-                  <div className="flex gap-10 mx-5">
-                    {Object.values(allSummaries).map(summaryGroup => (
-                      <div key={summaryGroup.title} className="flex items-center flex-wrap gap-x-2 gap-y-1">
-                        <span className="text-sm font-semibold text-muted-foreground mr-1">{summaryGroup.title}</span>
-                        {summaryGroup.items.map(({ key, count }) => (
-                          <Badge key={key} variant="secondary" className="whitespace-nowrap">
-                            {key}:<span className="font-bold ml-1">{count}</span>
-                          </Badge>
+            <div className="sticky bottom-0 z-20 bg-background border-t">
+              <Table className="w-full table-fixed">
+                <tfoot>
+                  <TableRow className="border-t-1 border-b-0 h-11 bg-primary-foreground">
+                    <TableCell colSpan={visibleColumnsCount} className="p-2 text-left space-y-1">
+                      <div className="flex gap-10 mx-5">
+                        {Object.values(allSummaries).map(summaryGroup => (
+                          <div key={summaryGroup.title} className="flex items-center flex-wrap gap-x-2 gap-y-1">
+                            <span className="text-sm font-semibold text-muted-foreground mr-1">{summaryGroup.title}</span>
+                            {summaryGroup.items.map(({ key, count }) => (
+                              <Badge key={key} variant="secondary" className="whitespace-nowrap">
+                                {key}:<span className="font-bold ml-1">{count}</span>
+                              </Badge>
+                            ))}
+                          </div>
                         ))}
                       </div>
-                    ))}
-                  </div>
-                </TableCell>
-              </TableRow>
-            </tfoot>
+                    </TableCell>
+                  </TableRow>
+                </tfoot>
+              </Table>
+            </div>
           )}
-        </Table>
+        </div>
       </div>
-
-      <DataTablePagination table={table} />
+      {/* Pagination - Sabit yükseklik */}
+      <div className="flex-shrink-0 pt-2">
+        <DataTablePagination table={table} />
+      </div>
     </div>
   );
 }

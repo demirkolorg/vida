@@ -21,11 +21,11 @@ const renderTitle = itemData => {
 };
 
 // Hook'ları kullanan ayrı bir component oluşturuyoruz
-const MalzemeDetailContent = ({ itemData }) => {
+const MalzemeDetailContent = ({ itemData, seciliActiveTab = 'bilgiler' }) => {
   // Hook'lar artık component seviyesinde
-  const [activeTab, setActiveTab] = useState('bilgiler');
+  const [activeTab, setActiveTab] = useState(seciliActiveTab);
   const { openSheet } = useSheetStore();
-  
+
   // Malzeme hareket store - DÜZELTME: Store hook'ları doğru şekilde kullan
   const hareketler = MalzemeHareket_Store(state => state.malzemeGecmisi);
   const loadingHareketler = MalzemeHareket_Store(state => state.loadingMalzemeGecmisi);
@@ -36,21 +36,24 @@ const MalzemeDetailContent = ({ itemData }) => {
   const lastMalzemeIdRef = useRef(null);
 
   // DÜZELTME: useCallback kullanarak function'ı stable yap
-  const fetchMalzemeGecmisi = useCallback(async (malzemeId) => {
-    if (loadingRef.current || !malzemeId) return;
-    if (lastMalzemeIdRef.current === malzemeId) return; // Aynı malzeme için tekrar yükleme
-    
-    loadingRef.current = true;
-    lastMalzemeIdRef.current = malzemeId;
-    
-    try {
-      await getMalzemeGecmisi(malzemeId, { showToast: false });
-    } catch (error) {
-      console.error('Malzeme geçmişi yüklenirken hata:', error);
-    } finally {
-      loadingRef.current = false;
-    }
-  }, [getMalzemeGecmisi]);
+  const fetchMalzemeGecmisi = useCallback(
+    async malzemeId => {
+      if (loadingRef.current || !malzemeId) return;
+      if (lastMalzemeIdRef.current === malzemeId) return; // Aynı malzeme için tekrar yükleme
+
+      loadingRef.current = true;
+      lastMalzemeIdRef.current = malzemeId;
+
+      try {
+        await getMalzemeGecmisi(malzemeId, { showToast: false });
+      } catch (error) {
+        console.error('Malzeme geçmişi yüklenirken hata:', error);
+      } finally {
+        loadingRef.current = false;
+      }
+    },
+    [getMalzemeGecmisi],
+  );
 
   // DÜZELTME: Dependency array'i düzelt ve loading guard ekle
   useEffect(() => {
@@ -127,7 +130,7 @@ const MalzemeDetailContent = ({ itemData }) => {
     openSheet('create', { malzemeId: itemData.id }, 'malzemeHareket');
   }, [openSheet, itemData.id]);
 
-  const getHareketTuruVariant = useCallback((hareketTuru) => {
+  const getHareketTuruVariant = useCallback(hareketTuru => {
     switch (hareketTuru) {
       case 'Kayit':
         return 'default';
@@ -234,30 +237,7 @@ const MalzemeDetailContent = ({ itemData }) => {
           </TabsContent>
 
           <TabsContent value="hareketler" className="space-y-4">
-            {/* Hızlı İşlem Butonları */}
-            <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg">
-              <Button size="sm" variant="outline" onClick={handleYeniZimmet}>
-                <UserCheck className="mr-2 h-4 w-4" />
-                Zimmet Ver
-              </Button>
-              <Button size="sm" variant="outline" onClick={handleYeniIade}>
-                <RotateCcw className="mr-2 h-4 w-4" />
-                İade Al
-              </Button>
-              <Button size="sm" variant="outline" onClick={handleYeniDevir}>
-                <ArrowUpDown className="mr-2 h-4 w-4" />
-                Devir Yap
-              </Button>
-              <Button size="sm" variant="outline" onClick={handleKondisyonGuncelle}>
-                <Package className="mr-2 h-4 w-4" />
-                Kondisyon Güncelle
-              </Button>
-              <Button size="sm" onClick={handleYeniHareket}>
-                <Plus className="mr-2 h-4 w-4" />
-                Yeni Hareket
-              </Button>
-            </div>
-
+          
             {/* Hareket Geçmişi */}
             {loadingHareketler ? (
               <div className="text-center py-4">Hareket geçmişi yükleniyor...</div>

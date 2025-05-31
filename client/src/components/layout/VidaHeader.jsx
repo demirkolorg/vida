@@ -17,7 +17,7 @@ import { useAuthStore } from '@/stores/authStore';
 export const VidaHeader = () => {
   const user = useAuthStore(state => state.user);
   return (
-    <header className="sticky  top-0 z-50 flex  items-center h-16  gap-4 border-b bg-primary/5 px-4 md:px-6 backdrop-blur-md">
+    <header className="sticky  top-0 z-50 flex  items-center h-16  gap-4 border-b bg-primary/5 px-16 backdrop-blur-md">
       <div className=" flex-none">
         <VidaLogo />
       </div>

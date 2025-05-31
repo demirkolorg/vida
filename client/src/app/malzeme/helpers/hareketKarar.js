@@ -1,12 +1,17 @@
+import { HareketTuruEnum } from '@/app/malzemehareket/constants/hareketTuruEnum';
+
+
 const tanimlar = anlamliSonHareket => {
   const hareketTuru = anlamliSonHareket?.hareketTuru || '';
   const malzemePersonelde = ['Zimmet', 'Devir'].includes(hareketTuru);
   const malzemeDepoda = ['Kayit', 'Iade', 'DepoTransferi'].includes(hareketTuru);
   const malzemeYok = ['Kayip', 'Dusum'].includes(hareketTuru);
+  const malzemeKonumsuz = ['KondisyonGuncelleme'].includes(hareketTuru);
   return {
     malzemePersonelde,
     malzemeDepoda,
     malzemeYok,
+    malzemeKonumsuz,
   };
 };
 
@@ -21,7 +26,7 @@ const getAnlamliSonHareket = malzemeHareketleri => {
 };
 
 export const kayitUygun = item => {
-  return !item?.malzemeHareketleri || item.malzemeHareketleri.length === 0;
+  return !item?.malzemeHareketleri || item.malzemeHareketleri.length === 0 || item.malzemeHareketleri[0].hareketTuru === HareketTuruEnum.Kayip;
 };
 
 export const zimmetUygun = item => {
@@ -81,8 +86,14 @@ export const dusumUygun = item => {
 };
 
 export const sonHareketi = item => {
-  return item.malzemeHareketleri[0];
+  // item'ın, item.malzemeHareketleri'nin var olduğundan
+  // ve item.malzemeHareketleri'nin bir dizi olup boş olmadığından emin olun.
+  if (item && item.malzemeHareketleri && Array.isArray(item.malzemeHareketleri) && item.malzemeHareketleri.length > 0) {
+    return item.malzemeHareketleri[0];
+  }
+  return undefined; // Koşullar sağlanmıyorsa undefined dön, böylece çağıran kod bunu ele alabilir.
 };
+
 export const anlamliSonHareketi = item => {
   return getAnlamliSonHareket(item.malzemeHareketleri);
 };

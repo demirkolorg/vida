@@ -138,7 +138,7 @@ const service = {
     try {
       return await prisma[PrismaName].findMany({
         where: { status: AuditStatusEnum.Aktif },
-        orderBy: orderByEntity,
+        orderBy: { createdAt: 'desc' },
         include: includeEntity,
       });
     } catch (error) {
@@ -597,8 +597,9 @@ const service = {
 
       // Malzemenin daha önce hareketi olup olmadığını kontrol et
       const existingHareket = await service.getLastHareketByMalzemeId(data.malzemeId);
-      if (existingHareket) {
-        throw new Error('Bu malzemenin zaten hareket geçmişi var. "Kayıt" işlemi yapılamaz.');
+      const sonHareketi=existingHareket?.hareketTuru
+      if (existingHareket&&sonHareketi&& sonHareketi!=="Kayip") {
+        throw new Error('Bu malzemenin zaten hareket geçmişi var. Kayıp olmayan malzemeler haricinde "Kayıt" işlemi yapılamaz.');
       }
 
       const yeniId = helper.generateId(HizmetName);

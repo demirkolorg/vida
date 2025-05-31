@@ -11,7 +11,7 @@ import { MalzemeHareket_DataTable as EntityDataTable  } from '../table/dataTable
 
 export function MalzemeHareket_ListPage() {
   return (
-    <div className=" mx-auto">
+    <div className="mx-auto">
       <PageHeader EntityHuman={EntityHuman} useEntityStore={EntityStore} />
       <EntityDataTable/>
       {/* <EntityCreateSheet />

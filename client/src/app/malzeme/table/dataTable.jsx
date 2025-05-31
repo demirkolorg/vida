@@ -7,8 +7,8 @@ import { Malzeme_ContextMenu as EntityContextMenu } from './contextMenu';
 import { Malzeme_Store as useEntityStore } from '../constants/store';
 import { Malzeme_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
 
-const columnVisibilityData = {};
-const sorting = [{ id: 'vidaNo', desc: false }];
+const columnVisibilityData = { status: false };
+const sorting = [{ id: 'createdAt', desc: true }];
 
 export function Malzeme_DataTable() {
   const datas = useEntityStore(state => state.datas);
@@ -123,9 +123,7 @@ export function Malzeme_DataTable() {
   const contextMenu = row => <EntityContextMenu item={row.original} />;
 
   useEffect(() => {
-    if (datas.length === 0) {
-      fetchData({ showToast: true });
-    }
+    if (datas.length === 0) fetchData({ showToast: true });
   }, [fetchData, datas.length]);
 
   const handleRefreshData = useCallback(() => {

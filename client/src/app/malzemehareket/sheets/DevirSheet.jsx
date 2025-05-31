@@ -1,23 +1,25 @@
+// src/components/sheets/DevirSheet.jsx (veya projenizdeki uygun bir yol)
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { format, parseISO } from 'date-fns'; // parseISO eklendi
+import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import {
   CalendarIcon,
   Check,
   ChevronsUpDown,
-  Package, // Malzeme ikonu
-  Info, // Bilgi ikonu
-  Tag, // Etiket/Kod ikonu
-  Barcode, // Seri no ikonu
-  Building, // Şube ikonu
-  FileText, // Açıklama ikonu
+  Package,
+  Info,
+  Tag,
+  Barcode,
+  FileText,
+  User, // Kaynak ve Hedef Personel ikonu
+  Users, // Devir ikonu (veya uygun başka bir ikon)
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Badge } from '@/components/ui/badge'; // Badge eklendi
+import { Badge } from '@/components/ui/badge';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -27,62 +29,57 @@ import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardDescription, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Card componentleri eklendi
+import { Card, CardDescription, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Store ve Enum importları
-// import { Malzeme_Store } from '@/app/malzeme/constants/store';
-import { MalzemeHareket_Store } from '@/app/malzemehareket/constants/store';
+import { MalzemeHareket_Store } from '@/app/malzemehareket/constants/store'; // Bu store'da devir action'ı olacak
 import { Personel_Store } from '@/app/personel/constants/store';
 import { MalzemeKondisyonuEnum, malzemeKondisyonuOptions } from '@/app/malzemehareket/constants/malzemeKondisyonuEnum';
 import { useMalzemeHareketStore } from '@/stores/useMalzemeHareketStore';
 
-const zimmetFormSchema = z.object({
-  hedefPersonelId: z.string({
-    required_error: 'Lütfen bir personel seçin.',
-  }),
-  islemTarihi: z.date({
-    required_error: 'İşlem tarihi gereklidir.',
-  }),
-  malzemeKondisyonu: z.enum(Object.values(MalzemeKondisyonuEnum), {
-    required_error: 'Lütfen malzeme kondisyonunu seçin.',
-  }),
-  aciklama: z.string().max(500, 'Açıklama en fazla 500 karakter olabilir.').optional(),
-});
+// Devir formu için Zod şeması
+const devirFormSchema = z
+  .object({
+    hedefPersonelId: z.string({
+      required_error: 'Lütfen bir hedef personel seçin.',
+    }),
+    islemTarihi: z.date({
+      required_error: 'İşlem tarihi gereklidir.',
+    }),
+    malzemeKondisyonu: z.enum(Object.values(MalzemeKondisyonuEnum), {
+      required_error: 'Lütfen malzeme kondisyonunu seçin.',
+    }),
+    aciklama: z.string().max(500, 'Açıklama en fazla 500 karakter olabilir.').optional(),
+  })
+  .refine(data => data.hedefPersonelId !== useMalzemeHareketStore.getState().currentDevirMalzeme?.kaynakPersonelId, {
+    // Kendine devir engellemesi
+    message: 'Malzeme aynı personele devredilemez.',
+    path: ['hedefPersonelId'],
+  });
 
-export function ZimmetSheet() {
-  const createAction = MalzemeHareket_Store(state => state.zimmet);
-  const loadingAction = MalzemeHareket_Store(state => state.loadingAction); // API isteği sırasında genel yükleme durumu
+export function DevirSheet() {
+  // Store'dan devir işlemini yapacak action ve yükleme durumu
+  // Bu action'ın MalzemeHareket_Store içinde tanımlanmış olması gerekiyor.
+  const devirAction = MalzemeHareket_Store(state => state.devir); // Bu fonksiyonun store'da tanımlı olması lazım
+  const loadingAction = MalzemeHareket_Store(state => state.loadingAction);
 
-  const isSheetOpen = useMalzemeHareketStore(state => state.isZimmetSheetOpen);
-  const currentZimmetMalzeme = useMalzemeHareketStore(state => state.currentZimmetMalzeme);
-  const currentZimmetMalzemeId = useMalzemeHareketStore(state => state.currentZimmetMalzemeId);
-  const closeSheet = useMalzemeHareketStore(state => state.closeZimmetSheet);
+  // Zustand store'dan sheet durumu ve devredilecek malzeme bilgisi
+  const isSheetOpen = useMalzemeHareketStore(state => state.isDevirSheetOpen);
+  const currentDevirMalzeme = useMalzemeHareketStore(state => state.currentDevirMalzeme); // Bu prop malzeme detaylarını ve kaynakPersonelId'yi içermeli
+  const closeSheet = useMalzemeHareketStore(state => state.closeDevirSheet);
 
-  const personelList = Personel_Store(state => state.datas) || [];
+  // Personel listesi ve yükleme fonksiyonu
+  const tumPersonelList = Personel_Store(state => state.datas) || [];
   const loadPersonelList = Personel_Store(state => state.GetAll);
   const [personelFetched, setPersonelFetched] = useState(false);
 
-  // Popover'ların açık/kapalı durumları için state'ler
+  // Popover'ların açık/kapalı durumları
   const [personelPopoverOpen, setPersonelPopoverOpen] = useState(false);
   const [tarihPopoverOpen, setTarihPopoverOpen] = useState(false);
   const [kondisyonPopoverOpen, setKondisyonPopoverOpen] = useState(false);
 
-  useEffect(() => {
-    if (isSheetOpen && !personelFetched && loadPersonelList) {
-      loadPersonelList({ page: 1, pageSize: 1000, filter: {} }); // Tüm personelleri getirmek için
-      setPersonelFetched(true);
-    }
-    if (!isSheetOpen) {
-      setPersonelFetched(false);
-      // Sheet kapandığında açık kalmış olabilecek popover'ları da kapat
-      setPersonelPopoverOpen(false);
-      setTarihPopoverOpen(false);
-      setKondisyonPopoverOpen(false);
-    }
-  }, [isSheetOpen, loadPersonelList, personelFetched]);
-
   const form = useForm({
-    resolver: zodResolver(zimmetFormSchema),
+    resolver: zodResolver(devirFormSchema),
     defaultValues: {
       islemTarihi: new Date(),
       malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
@@ -91,6 +88,33 @@ export function ZimmetSheet() {
     },
   });
 
+  // Kaynak personelin adını göstermek için ve hedef personel listesini filtrelemek için
+  const kaynakPersonelDetay = currentDevirMalzeme?.kaynakPersonelId ? tumPersonelList.find(p => p.id === currentDevirMalzeme.kaynakPersonelId) : null;
+
+  // Hedef personel listesi (kaynak personel hariç)
+  const hedefPersonelListesi = tumPersonelList.filter(p => p.id !== currentDevirMalzeme?.kaynakPersonelId);
+
+  // Sheet açıldığında personelleri yükle
+  useEffect(() => {
+    if (isSheetOpen && !personelFetched && loadPersonelList) {
+      loadPersonelList({ page: 1, pageSize: 1000, filter: {} }); // Tüm personelleri getirmek için
+      setPersonelFetched(true);
+    }
+    if (!isSheetOpen) {
+      setPersonelFetched(false);
+      form.reset({
+        islemTarihi: new Date(),
+        malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
+        aciklama: '',
+        hedefPersonelId: undefined,
+      });
+      setPersonelPopoverOpen(false);
+      setTarihPopoverOpen(false);
+      setKondisyonPopoverOpen(false);
+    }
+  }, [isSheetOpen, loadPersonelList, personelFetched, form]);
+
+  // Formu resetleme (Sheet her açıldığında ve malzeme değiştiğinde)
   useEffect(() => {
     if (isSheetOpen) {
       form.reset({
@@ -100,40 +124,44 @@ export function ZimmetSheet() {
         hedefPersonelId: undefined,
       });
     }
-  }, [isSheetOpen, form]);
+  }, [isSheetOpen, currentDevirMalzeme, form]); // currentDevirMalzeme değiştiğinde de resetle
 
   async function onSubmit(data) {
-    if (!currentZimmetMalzemeId) {
-      console.error('Zimmetlenecek malzeme ID bulunamadı!');
-      // toast.error("Hata: Zimmetlenecek malzeme ID bulunamadı!"); // Örneğin
+    if (!currentDevirMalzeme || !currentDevirMalzeme.id ) {
+      console.error('Devredilecek malzeme bilgileri eksik!');
+      // toast.error("Hata: Devredilecek malzeme bilgileri eksik!");
       return;
     }
+    if (data.hedefPersonelId === currentDevirMalzeme.kaynakPersonelId) {
+      form.setError('hedefPersonelId', { type: 'manual', message: 'Malzeme aynı personele devredilemez.' });
+      return;
+    }
+
     try {
       const hareketVerisi = {
-        malzemeId: currentZimmetMalzemeId,
-        hedefPersonelId: data.hedefPersonelId,
         // islemTarihi: data.islemTarihi,
+        hareketTuru: 'Devir', // Sabit değer
         malzemeKondisyonu: data.malzemeKondisyonu,
+        malzemeId: currentDevirMalzeme.id,
+        kaynakPersonelId: currentDevirMalzeme.malzemeHareketleri[0].hedefPersonel.id, // Malzemeyi devreden personel (prop'tan)
+        hedefPersonelId: data.hedefPersonelId, // Formdan seçilen yeni personel
+        konumId: null, // Devir işleminde konumId null olacak
         aciklama: data.aciklama || null,
-        hareketTuru: 'Zimmet',
-        kaynakPersonelId: null,
-        konumId: null,
       };
-      await createAction(hareketVerisi, { showToast: true });
+      // console.log("Devir verisi:", hareketVerisi);
+      await devirAction(hareketVerisi, { showToast: true }); // MalzemeHareket_Store'daki devir fonksiyonu
       closeSheet();
-      // form.reset(); // Zaten useEffect içinde sheet açıldığında resetleniyor.
-      // Ancak başarılı submit sonrası hemen resetlemek de isteyebilirsiniz.
-      // Bu durumda useEffect'teki resetleme ile çakışmaması için dikkatli olunmalı
-      // veya sadece burada resetleme yapılmalı. Şimdilik burada bırakıyorum.
     } catch (error) {
-      console.error('Zimmetleme hatası:', error);
-      // Hata durumunda kullanıcıya bilgi verilebilir (örn: toast mesajı)
+      console.error('Devir işlemi hatası:', error);
+      // Hata mesajı gösterilebilir.
     }
   }
 
-  if (!isSheetOpen || !currentZimmetMalzemeId) {
+  if (!isSheetOpen || !currentDevirMalzeme) {
     return null;
   }
+
+  const kaynakPersonelAdi = currentDevirMalzeme.malzemeHareketleri[0].hedefPersonel.ad;
 
   const BilgiSatiri = ({ label, value, icon, isBadge }) => {
     if (value === null || typeof value === 'undefined' || value === '') return null;
@@ -164,57 +192,50 @@ export function ZimmetSheet() {
     >
       <SheetContent className="sm:max-w-lg overflow-y-auto p-6">
         <SheetHeader>
-          <SheetTitle className={'text-xl text-center  text-primary font-bold mb-4'}>Malzeme Zimmetleme İşlemi</SheetTitle>
+          <SheetTitle className={'text-xl text-center text-primary font-bold mb-4'}>Malzeme Devir İşlemi</SheetTitle>
 
-          {/* MALZEME BİLGİ KARTI BAŞLANGICI */}
-
-          {currentZimmetMalzeme ? (
-            <Card className=" border-dashed border-primary">
-              <CardHeader className="">
+          {currentDevirMalzeme ? (
+            <Card className="border-dashed border-primary">
+              <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-center ">Malzeme Detayları</CardTitle>
+                  <CardTitle className="text-lg">Devredilecek Malzeme</CardTitle>
                   <Package className="h-6 w-6 text-primary" />
                 </div>
                 <CardDescription>
-                  ID: <span className="font-mono text-xs">{currentZimmetMalzeme.id}</span>
+                  ID: <span className="font-mono text-xs">{currentDevirMalzeme.id}</span>
                 </CardDescription>
               </CardHeader>
-              <CardContent className="-space-y-2 text-sm -mt-4 ">
-                <BilgiSatiri label="Malzeme Tipi" value={currentZimmetMalzeme.malzemeTipi} icon={Info} />
-                <BilgiSatiri label="Marka" value={currentZimmetMalzeme.marka?.ad} icon={Tag} />
-                <BilgiSatiri label="Model" value={currentZimmetMalzeme.model?.ad} icon={Tag} />
-                <BilgiSatiri label="Sabit Kodu" value={currentZimmetMalzeme.sabitKodu?.ad} icon={Tag} isBadge />
+              <CardContent className="text-sm -mt-2">
+                <BilgiSatiri label="Malzeme Tipi" value={currentDevirMalzeme.malzemeTipi} icon={Info} />
+                <BilgiSatiri label="Marka" value={currentDevirMalzeme.marka?.ad} icon={Tag} />
+                <BilgiSatiri label="Model" value={currentDevirMalzeme.model?.ad} icon={Tag} />
+                <BilgiSatiri label="Sabit Kodu" value={currentDevirMalzeme.sabitKodu?.ad} icon={Tag} isBadge />
                 <hr className="my-2" />
-                <BilgiSatiri label="Badem Seri No" value={currentZimmetMalzeme.bademSeriNo} icon={Barcode} />
-                <BilgiSatiri label="ETMYS Seri No" value={currentZimmetMalzeme.etmysSeriNo} icon={Barcode} />
-                <BilgiSatiri label="Stok Demirbaş No" value={currentZimmetMalzeme.stokDemirbasNo} icon={Barcode} />
-                <BilgiSatiri label="Vida No" value={currentZimmetMalzeme.vidaNo} icon={Barcode} />
-                {currentZimmetMalzeme.aciklama && ( // Malzemenin kendi açıklaması
+                <BilgiSatiri label="Badem Seri No" value={currentDevirMalzeme.bademSeriNo} icon={Barcode} />
+                <hr className="my-2" />
+                <BilgiSatiri label="Mevcut Sahibi" value={kaynakPersonelAdi} icon={User} />
+                {currentDevirMalzeme.aciklama && ( // Malzemenin kendi açıklaması
                   <>
                     <hr className="my-2" />
                     <div className="flex items-start text-sm py-2">
                       <FileText className="h-4 w-4 mr-2 mt-0.5 text-muted-foreground flex-shrink-0" />
                       <span className="font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">Açıklama (Malzeme):</span>
                     </div>
-                    <p className=" text-xs bg-accent  mt-2 p-2 rounded-md">{currentZimmetMalzeme.aciklama}</p>
+                    <p className="text-xs bg-accent mt-1 p-2 rounded-md">{currentDevirMalzeme.aciklama}</p>
                   </>
                 )}
               </CardContent>
             </Card>
           ) : (
             <div className="py-2 text-sm text-muted-foreground">
-              <p>
-                Malzeme ID: <span className="font-semibold text-primary">{currentMalzemeId}</span>
-              </p>
-              <p className="mt-1">Malzeme detayları yükleniyor veya bulunamadı...</p>
+              <p>Malzeme detayları yükleniyor veya bulunamadı...</p>
             </div>
           )}
-          {/* MALZEME BİLGİ KARTI SONU */}
         </SheetHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 p-4">
-            {/* işlem tarihi */}
+            {/* İşlem Tarihi */}
             {/* <FormField
               control={form.control}
               name="islemTarihi"
@@ -236,10 +257,11 @@ export function ZimmetSheet() {
                         selected={field.value}
                         onSelect={date => {
                           field.onChange(date);
-                          setTarihPopoverOpen(false); // Seçim sonrası Popover'ı kapat
+                          setTarihPopoverOpen(false);
                         }}
                         initialFocus
                         locale={tr}
+                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                       />
                     </PopoverContent>
                   </Popover>
@@ -248,7 +270,7 @@ export function ZimmetSheet() {
               )}
             /> */}
 
-            {/* Malzeme Kondisyonu ComboBox */}
+            {/* Malzeme Kondisyonu */}
             <FormField
               control={form.control}
               name="malzemeKondisyonu"
@@ -259,7 +281,7 @@ export function ZimmetSheet() {
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button variant="outline" role="combobox" className={cn('w-full justify-between', !field.value && 'text-muted-foreground')}>
-                          {field.value ? malzemeKondisyonuOptions.find(kondisyon => kondisyon.value === field.value)?.label : 'Kondisyon seçin...'}
+                          {field.value ? malzemeKondisyonuOptions.find(k => k.value === field.value)?.label : 'Kondisyon seçin...'}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
@@ -276,7 +298,7 @@ export function ZimmetSheet() {
                                 key={kondisyon.value}
                                 onSelect={() => {
                                   form.setValue('malzemeKondisyonu', kondisyon.value);
-                                  setKondisyonPopoverOpen(false); // Seçim sonrası Popover'ı kapat
+                                  setKondisyonPopoverOpen(false);
                                 }}
                               >
                                 <Check className={cn('mr-2 h-4 w-4', kondisyon.value === field.value ? 'opacity-100' : 'opacity-0')} />
@@ -299,24 +321,20 @@ export function ZimmetSheet() {
               name="hedefPersonelId"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Hedef Personel*</FormLabel>
+                  <FormLabel>Devredilecek Personel (Hedef)*</FormLabel>
                   <Popover open={personelPopoverOpen} onOpenChange={setPersonelPopoverOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button variant="outline" role="combobox" className={cn('w-full justify-between', !field.value && 'text-muted-foreground')}>
-                          {field.value
-                            ? personelList.find(personel => personel.id === field.value)?.adSoyad || // personel.ad yerine adSoyad
-                              personelList.find(personel => personel.id === field.value)?.ad || // Eğer adSoyad yoksa ad
-                              'Personel Bulunamadı'
-                            : 'Personel seçin...'}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          {field.value ? hedefPersonelListesi.find(personel => personel.id === field.value)?.adSoyad || hedefPersonelListesi.find(personel => personel.id === field.value)?.ad || 'Personel Bulunamadı' : 'Personel seçin...'}
+                          <Users className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[400px] max-h-[--radix-popover-content-available-height] p-0">
+                    <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] p-0">
                       <Command
                         filter={(value, search) => {
-                          const personel = personelList.find(p => p.id === value);
+                          const personel = hedefPersonelListesi.find(p => p.id === value);
                           const personelAdi = personel?.adSoyad || personel?.ad || '';
                           if (personelAdi.toLowerCase().includes(search.toLowerCase())) return 1;
                           return 0;
@@ -324,19 +342,19 @@ export function ZimmetSheet() {
                       >
                         <CommandInput placeholder="Personel ara..." />
                         <CommandList>
-                          <CommandEmpty>Personel bulunamadı.</CommandEmpty>
+                          <CommandEmpty>Personel bulunamadı veya mevcut sahiple aynı.</CommandEmpty>
                           <CommandGroup>
-                            {personelList.map(personel => (
+                            {hedefPersonelListesi.map(personel => (
                               <CommandItem
                                 value={personel.id}
                                 key={personel.id}
                                 onSelect={() => {
                                   form.setValue('hedefPersonelId', personel.id);
-                                  setPersonelPopoverOpen(false); // Seçim sonrası Popover'ı kapat
+                                  setPersonelPopoverOpen(false);
                                 }}
                               >
                                 <Check className={cn('mr-2 h-4 w-4', personel.id === field.value ? 'opacity-100' : 'opacity-0')} />
-                                {personel.adSoyad || personel.ad} {/* personel.ad yerine adSoyad */}
+                                {personel.adSoyad || personel.ad}
                               </CommandItem>
                             ))}
                           </CommandGroup>
@@ -357,7 +375,7 @@ export function ZimmetSheet() {
                 <FormItem>
                   <FormLabel>Açıklama</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Zimmet ile ilgili ek bilgiler (isteğe bağlı)..." className="resize-none" rows={3} {...field} value={field.value || ''} />
+                    <Textarea placeholder="Devir ile ilgili ek bilgiler (isteğe bağlı)..." className="resize-none" rows={3} {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -370,8 +388,8 @@ export function ZimmetSheet() {
                   İptal
                 </Button>
               </SheetClose>
-              <Button type="submit" disabled={loadingAction || form.formState.isSubmitting}>
-                {loadingAction || form.formState.isSubmitting ? 'Kaydediliyor...' : 'Zimmetle'}
+              <Button type="submit" disabled={loadingAction || form.formState.isSubmitting || !form.formState.isValid}>
+                {loadingAction || form.formState.isSubmitting ? 'Kaydediliyor...' : 'Devret'}
               </Button>
             </SheetFooter>
           </form>

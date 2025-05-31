@@ -327,9 +327,7 @@ export const Malzeme_EditSheet = props => {
         0   // Milisaniye
       ));
       
-      console.log('DatePicker selected date object (original):', date);
-      console.log('Adjusted Date for payload (UTC noon):', adjustedDate);
-      console.log('Adjusted Date ISO for payload:', adjustedDate.toISOString());
+    
       setFieldValue('kayitTarihi', adjustedDate);
     } else {
       setFieldValue('kayitTarihi', null);

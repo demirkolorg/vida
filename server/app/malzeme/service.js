@@ -21,7 +21,7 @@ const service = {
     if (!vidaNo) return;
     const whereClause = { vidaNo, status: { not: AuditStatusEnum.Silindi } };
     if (excludeId) whereClause.id = { not: excludeId };
-    
+
     const result = await prisma[PrismaName].findFirst({ where: whereClause });
     if (result) {
       throw new Error(`${vidaNo} Vida No'ya sahip bir ${HumanName} zaten mevcut.`);
@@ -32,7 +32,7 @@ const service = {
     if (!stokDemirbasNo) return;
     const whereClause = { stokDemirbasNo, status: { not: AuditStatusEnum.Silindi } };
     if (excludeId) whereClause.id = { not: excludeId };
-    
+
     const result = await prisma[PrismaName].findFirst({ where: whereClause });
     if (result) {
       throw new Error(`${stokDemirbasNo} Stok/Demirbaş No'ya sahip bir ${HumanName} zaten mevcut.`);
@@ -42,7 +42,7 @@ const service = {
     if (!bademSeriNo) return;
     const whereClause = { bademSeriNo, status: { not: AuditStatusEnum.Silindi } };
     if (excludeId) whereClause.id = { not: excludeId };
-    
+
     const result = await prisma[PrismaName].findFirst({ where: whereClause });
     if (result) {
       throw new Error(`${bademSeriNo} BademSeriNo No'ya sahip bir ${HumanName} zaten mevcut.`);
@@ -61,14 +61,17 @@ const service = {
           model: { select: { id: true, ad: true } },
           malzemeHareketleri: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { 
-              id: true, 
-              hareketTuru: true, 
+            select: {
+              id: true,
+              hareketTuru: true,
               islemTarihi: true,
-              malzemeKondisyonu: true 
+              malzemeKondisyonu: true,
+              hedefPersonelId: true,
+              kaynakPersonelId: true,
+              konumId: true,
             },
             orderBy: { createdAt: 'desc' },
-            take: 1
+            take: 1,
           },
           createdBy: { select: { id: true, ad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, avatar: true } },
@@ -102,14 +105,43 @@ const service = {
           model: { select: { id: true, ad: true } },
           malzemeHareketleri: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { 
-              id: true, 
-              hareketTuru: true, 
-              islemTarihi: true,
-              malzemeKondisyonu: true 
-            },
             orderBy: { createdAt: 'desc' },
-            take: 1
+            select: {
+              id: true,
+              hareketTuru: true,
+              islemTarihi: true,
+              malzemeKondisyonu: true,
+              hedefPersonel: {
+                where: { status: AuditStatusEnum.Aktif },
+                select: {
+                  id: true,
+                  ad: true,
+                  sicil: true,
+                },
+              },
+              kaynakPersonel: {
+                where: { status: AuditStatusEnum.Aktif },
+                select: {
+                  id: true,
+                  ad: true,
+                  sicil: true,
+                },
+              },
+              konumId: true,
+              konum: {
+                where: { status: AuditStatusEnum.Aktif },
+                select: {
+                  id: true,
+                  ad: true,
+                  depo: {
+                    select: {
+                      id: true,
+                      ad: true,
+                    },
+                  },
+                },
+              },
+            },
           },
           createdBy: { select: { id: true, ad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, avatar: true } },
@@ -134,17 +166,17 @@ const service = {
           model: { select: { id: true, ad: true } },
           malzemeHareketleri: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { 
-              id: true, 
-              hareketTuru: true, 
+            select: {
+              id: true,
+              hareketTuru: true,
               islemTarihi: true,
               malzemeKondisyonu: true,
               kaynakPersonel: { select: { ad: true, sicil: true } },
               hedefPersonel: { select: { ad: true, sicil: true } },
               konum: { select: { ad: true, depo: { select: { ad: true } } } },
-              aciklama: true
+              aciklama: true,
             },
-            orderBy: { islemTarihi: 'desc' }
+            orderBy: { islemTarihi: 'desc' },
           },
           createdBy: { select: { id: true, ad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, avatar: true } },
@@ -240,14 +272,14 @@ const service = {
           updatedBy: { select: { id: true, ad: true, avatar: true } },
           malzemeHareketleri: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { 
-              id: true, 
-              hareketTuru: true, 
+            select: {
+              id: true,
+              hareketTuru: true,
               islemTarihi: true,
-              malzemeKondisyonu: true 
+              malzemeKondisyonu: true,
             },
             orderBy: { createdAt: 'desc' },
-            take: 1
+            take: 1,
           },
         },
       });
@@ -324,8 +356,7 @@ const service = {
     try {
       await service.checkExistsById(data.id);
 
-      if (!Object.values(AuditStatusEnum).includes(data.status)) 
-        throw new Error(`Girilen '${data.status}' durumu geçerli bir durum değildir.`);
+      if (!Object.values(AuditStatusEnum).includes(data.status)) throw new Error(`Girilen '${data.status}' durumu geçerli bir durum değildir.`);
 
       const updatePayload = { updatedById: data.islemYapanKullanici };
       if (data.status !== undefined) updatePayload.status = data.status;
@@ -352,11 +383,10 @@ const service = {
     try {
       await service.checkExistsById(data.id);
 
-      const bagliHareketler = await prisma.malzemeHareket.count({ 
-        where: { malzemeId: data.id, status: AuditStatusEnum.Aktif } 
+      const bagliHareketler = await prisma.malzemeHareket.count({
+        where: { malzemeId: data.id, status: AuditStatusEnum.Aktif },
       });
-      if (bagliHareketler > 0) 
-        throw new Error(`Bu ${HumanName} silinemez çünkü bağlı ${bagliHareketler} aktif malzeme hareketi bulunmaktadır.`);
+      if (bagliHareketler > 0) throw new Error(`Bu ${HumanName} silinemez çünkü bağlı ${bagliHareketler} aktif malzeme hareketi bulunmaktadır.`);
 
       return await prisma[PrismaName].update({
         where: { id: data.id },

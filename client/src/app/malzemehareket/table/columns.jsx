@@ -44,7 +44,7 @@ export const MalzemeHareket_Columns = () => {
           </div>
         );
       },
-      size: 140,
+      // size: 140,
       meta: {
         exportHeader: 'İşlem Tarihi',
         filterVariant: 'date',
@@ -52,7 +52,7 @@ export const MalzemeHareket_Columns = () => {
     },
     {
       accessorKey: 'malzeme',
-      accessorFn: row => row.malzeme?.vidaNo || row.malzeme?.sabitKodu?.ad || 'Bilinmeyen',
+      accessorFn: row => row.malzeme?.vidaNo && row.malzeme?.sabitKodu?.ad && row?.malzeme.marka.ad && row.malzeme.model.ad && 'Bilinmeyen',
       header: ({ column }) => <HeaderButton column={column} title="Malzeme" />,
       cell: ({ row }) => {
         const malzeme = row.original.malzeme;
@@ -72,7 +72,7 @@ export const MalzemeHareket_Columns = () => {
           </div>
         );
       },
-      size: 200,
+      // size: 200,
       meta: {
         exportHeader: 'Malzeme',
         filterVariant: 'text',
@@ -90,7 +90,7 @@ export const MalzemeHareket_Columns = () => {
           </Badge>
         );
       },
-      size: 120,
+      // size: 120,
       meta: {
         exportHeader: 'Hareket Türü',
         filterVariant: 'select',
@@ -109,7 +109,7 @@ export const MalzemeHareket_Columns = () => {
           </Badge>
         );
       },
-      size: 100,
+      // size: 100,
       meta: {
         exportHeader: 'Kondisyon',
         filterVariant: 'select',
@@ -131,7 +131,7 @@ export const MalzemeHareket_Columns = () => {
           <div className="text-sm text-muted-foreground">-</div>
         );
       },
-      size: 150,
+      // size: 150,
       meta: {
         exportHeader: 'Kaynak Personel',
         filterVariant: 'text',
@@ -152,7 +152,7 @@ export const MalzemeHareket_Columns = () => {
           <div className="text-sm text-muted-foreground">-</div>
         );
       },
-      size: 150,
+      // size: 150,
       meta: {
         exportHeader: 'Hedef Personel',
         filterVariant: 'text',
@@ -175,7 +175,7 @@ export const MalzemeHareket_Columns = () => {
           <div className="text-sm text-muted-foreground">-</div>
         );
       },
-      size: 150,
+      // size: 150,
       meta: {
         exportHeader: 'Konum',
         filterVariant: 'text',
@@ -192,27 +192,9 @@ export const MalzemeHareket_Columns = () => {
           </div>
         );
       },
-      size: 200,
+      // size: 200,
       meta: {
         exportHeader: 'Açıklama',
-        filterVariant: 'text',
-      },
-    },
-    {
-      accessorKey: 'createdBy',
-      accessorFn: row => row.createdBy?.ad || '',
-      header: ({ column }) => <HeaderButton column={column} title="İşlem Yapan" />,
-      cell: ({ row }) => {
-        const createdBy = row.original.createdBy;
-        return createdBy ? (
-          <div className="text-sm">{createdBy.ad}</div>
-        ) : (
-          <div className="text-sm text-muted-foreground">-</div>
-        );
-      },
-      size: 120,
-      meta: {
-        exportHeader: 'İşlem Yapan',
         filterVariant: 'text',
       },
     },

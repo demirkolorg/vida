@@ -1,5 +1,7 @@
 import { HeaderButton } from '@/components/table/HeaderButton';
 import { Badge } from '@/components/ui/badge';
+import { anlamliSonHareketi } from '@/app/malzeme/helpers/hareketKarar';
+import { hareketTuruLabels } from '@/app/malzemehareket/constants/hareketTuruEnum';
 
 export const Malzeme_Columns = () => {
   const inArrayFilterFn = (row, columnId, filterValueArray) => {
@@ -12,7 +14,6 @@ export const Malzeme_Columns = () => {
     // Satırın değerinin, seçilen filtre değerleri dizisinde olup olmadığını kontrol et
     return filterValueArray.includes(rowValue);
   };
-
   return [
     {
       accessorKey: 'vidaNo',
@@ -79,13 +80,10 @@ export const Malzeme_Columns = () => {
       },
       header: ({ column }) => <HeaderButton column={column} title="Son Hareketi" />,
       cell: ({ row }) => {
-        const hareketler = row.original.malzemeHareketleri;
-        if (hareketler && hareketler.length > 0) {
-          const sonHareket = hareketler[0];
-          const hareketTuru = sonHareket.hareketTuru;
-          return hareketTuru ? <div className="font-medium text-sm">{hareketTuru}</div> : <span className="text-muted-foreground text-sm">-</span>;
-        }
-        return <span className="text-muted-foreground text-sm">-</span>;
+        const sonHareketiAnlamli = anlamliSonHareketi(row?.original);
+        const hareketTuru = sonHareketiAnlamli?.hareketTuru;
+        const label = hareketTuruLabels[hareketTuru] ?? hareketTuru;
+        return hareketTuru ? <div className="font-medium text-sm">{label}</div> : <span className="text-muted-foreground text-sm">-</span>;
       },
       filterFn: inArrayFilterFn,
       size: 120,
