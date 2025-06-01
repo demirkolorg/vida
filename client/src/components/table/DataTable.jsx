@@ -89,7 +89,6 @@ export function DataTable({
     }
   }, [isDarkMode]);
 
-
   const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
   const initialVisibility = useMemo(() => {
@@ -265,7 +264,6 @@ export function DataTable({
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden ">
-      {' '}
       <FilterManagementSheet
         sheetTypeIdentifier="filterManagement"
         entityType={entityType}

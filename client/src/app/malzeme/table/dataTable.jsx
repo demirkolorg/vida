@@ -1,3 +1,4 @@
+// client/src/app/malzeme/table/dataTable.jsx - onRowClick desteği eklendi
 import { useCallback, useEffect, useMemo } from 'react';
 import { DataTable } from '@/components/table/DataTable';
 import { EntityType, EntityHuman } from '../constants/api';
@@ -7,10 +8,10 @@ import { Malzeme_ContextMenu as EntityContextMenu } from './contextMenu';
 import { Malzeme_Store as useEntityStore } from '../constants/store';
 import { Malzeme_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
 
-const columnVisibilityData = { status: false };
+const columnVisibilityData = { status: false , kayitTarihi:false};
 const sorting = [{ id: 'createdAt', desc: true }];
 
-export function Malzeme_DataTable() {
+export function Malzeme_DataTable({ onRowClick }) {
   const datas = useEntityStore(state => state.datas);
   const fetchData = useEntityStore(state => state.GetByQuery);
   const isLoading = useEntityStore(state => state.loadingList);
@@ -134,6 +135,13 @@ export function Malzeme_DataTable() {
     return datas.filter(item => item.status === displayStatusFilter);
   }, [datas, displayStatusFilter]);
 
+  // Row click handler - sadece onRowClick prop'u varsa çalışır
+  const handleRowClick = useCallback((rowData) => {
+    if (onRowClick && typeof onRowClick === 'function') {
+      onRowClick(rowData);
+    }
+  }, [onRowClick]);
+
   return (
     <DataTable
       data={filteredDatas}
@@ -149,6 +157,7 @@ export function Malzeme_DataTable() {
       columnVisibilityData={columnVisibilityData}
       renderCollapsibleToolbarContent={() => <EntitySpecificToolbar />}
       displayStatusFilter={displayStatusFilter}
+      onRowClick={handleRowClick}
     />
   );
 }

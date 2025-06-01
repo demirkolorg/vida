@@ -27,7 +27,7 @@ const includeEntity = {
   createdBy: { select: { id: true, ad: true, avatar: true } },
 };
 
-const orderByEntity = { islemTarihi: 'desc' };
+const orderByEntity = { createdAt: 'desc' };
 
 const service = {
   checkExistsById: async id => {
@@ -68,6 +68,16 @@ const service = {
     return result;
   },
 
+  getAnlamliSonHareket: malzemeHareketleri => {
+  if (!malzemeHareketleri || malzemeHareketleri.length === 0) return undefined;
+  for (const hareket of malzemeHareketleri) {
+    if (hareket.hareketTuru !== 'KondisyonGuncelleme') {
+      return hareket;
+    }
+  }
+  return undefined;
+},
+
   getLastHareketByMalzemeId: async malzemeId => {
     return await prisma[PrismaName].findFirst({
       where: {
@@ -88,11 +98,29 @@ const service = {
       },
     });
   },
-
+  getHareketlerByMalzemeId: async malzemeId => {
+    return await prisma[PrismaName].findMany({
+      where: {
+        malzemeId,
+        status: AuditStatusEnum.Aktif,
+      },
+      orderBy: orderByEntity,
+      include: {
+        kaynakPersonel: { select: { id: true, ad: true, sicil: true } },
+        hedefPersonel: { select: { id: true, ad: true, sicil: true } },
+        konum: {
+          select: {
+            id: true,
+            ad: true,
+            depo: { select: { id: true, ad: true } },
+          },
+        },
+      },
+    });
+  },
   checkMalzemeZimmetDurumu: async malzemeId => {
-    const lastHareket = await service.getLastHareketByMalzemeId(malzemeId);
-
-    if (!lastHareket) {
+    const hareketler = await service.getHareketlerByMalzemeId(malzemeId);
+    if (!hareketler) {
       return {
         malzemePersonelde: false,
         malzemeDepoda: false,
@@ -105,8 +133,10 @@ const service = {
         lastHareket: null,
       };
     }
-
-    const hareketTuru = lastHareket.hareketTuru;
+    const lastHareket = await service.getLastHareketByMalzemeId(malzemeId);
+    const hareketTuru=await service.getAnlamliSonHareket(hareketler).hareketTuru
+    
+    // const hareketTuru = lastHareket.hareketTuru;
     const malzemePersonelde = ['Zimmet', 'Devir'].includes(hareketTuru);
     const malzemeDepoda = ['Kayit', 'Iade', 'DepoTransferi'].includes(hareketTuru);
     const malzemeKonumsuz = ['KondisyonGuncelleme'].includes(hareketTuru);

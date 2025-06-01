@@ -9,6 +9,7 @@ import { MalzemeHareket_ApiService } from '@/app/malzemeHareket/constants/api';
 // Konum API'sini import et
 import { createBaseApiService } from '@/api/BaseApiServices';
 const KonumApiService = createBaseApiService('konum', 'Konum');
+import {anlamliSonHareketi } from '@/app/malzeme/helpers/hareketKarar';
 
 export const Malzeme_Store = createCrudStore(EntityHuman, EntityApiService,
   (set, get, baseStore) => {
@@ -463,17 +464,17 @@ export const Malzeme_Store = createCrudStore(EntityHuman, EntityApiService,
         const sarfCount = datas.filter(m => m.malzemeTipi === 'Sarf').length;
         
         const zimmetliCount = datas.filter(m => {
-          const sonHareket = m.malzemeHareketleri?.[0];
+          const sonHareket = anlamliSonHareketi(m);
           return sonHareket && ['Zimmet', 'Devir'].includes(sonHareket.hareketTuru);
         }).length;
         
         const depodaCount = datas.filter(m => {
-          const sonHareket = m.malzemeHareketleri?.[0];
+          const sonHareket = anlamliSonHareketi(m);
           return sonHareket && ['Kayit', 'Iade', 'DepoTransferi'].includes(sonHareket.hareketTuru);
         }).length;
         
         const kayipCount = datas.filter(m => {
-          const sonHareket = m.malzemeHareketleri?.[0];
+          const sonHareket = anlamliSonHareketi(m);
           return sonHareket && ['Kayip', 'Dusum'].includes(sonHareket.hareketTuru);
         }).length;
 

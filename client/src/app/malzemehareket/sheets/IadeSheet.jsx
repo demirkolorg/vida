@@ -146,7 +146,7 @@ export function IadeSheet() {
         hareketTuru: 'Iade',
         malzemeKondisyonu: data.malzemeKondisyonu,
         malzemeId: currentIadeMalzeme.id,
-        kaynakPersonelId: currentIadeMalzeme.malzemeHareketleri[0].hedefPersonel.id,
+        kaynakPersonelId: currentIadeMalzeme.malzemeHareketleri[0].hedefPersonel?.id,
         hedefPersonelId: null,
         // depoId: data.depoId, // Modelinize göre bu gereksiz olabilir, konumId yeterli olabilir.
         konumId: data.konumId,
@@ -163,7 +163,7 @@ export function IadeSheet() {
     return null;
   }
 
-  const kaynakPersonelAdi = '(' + currentIadeMalzeme.malzemeHareketleri[0].hedefPersonel.sicil + ') ' + currentIadeMalzeme.malzemeHareketleri[0].hedefPersonel.ad;
+  const kaynakPersonelAdi = '(' + currentIadeMalzeme.malzemeHareketleri[0].hedefPersonel?.sicil + ') ' + currentIadeMalzeme.malzemeHareketleri[0].hedefPersonel?.ad;
 
   const BilgiSatiri = ({ label, value, icon, isBadge }) => {
     if (value === null || typeof value === 'undefined' || value === '') return null;
@@ -204,7 +204,7 @@ export function IadeSheet() {
                   <Package className="h-6 w-6 text-primary" />
                 </div>
                 <CardDescription>
-                  ID: <span className="font-mono text-xs">{currentIadeMalzeme.id}</span>
+                  ID: <span className="font-mono text-xs">{currentIadeMalzeme?.id}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-sm -mt-2">

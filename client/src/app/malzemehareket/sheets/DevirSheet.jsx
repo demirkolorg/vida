@@ -36,6 +36,7 @@ import { MalzemeHareket_Store } from '@/app/malzemehareket/constants/store'; // 
 import { Personel_Store } from '@/app/personel/constants/store';
 import { MalzemeKondisyonuEnum, malzemeKondisyonuOptions } from '@/app/malzemehareket/constants/malzemeKondisyonuEnum';
 import { useMalzemeHareketStore } from '@/stores/useMalzemeHareketStore';
+import {anlamliSonHareketi } from '@/app/malzeme/helpers/hareketKarar';
 
 // Devir formu için Zod şeması
 const devirFormSchema = z
@@ -88,8 +89,7 @@ export function DevirSheet() {
     },
   });
 
-  // Kaynak personelin adını göstermek için ve hedef personel listesini filtrelemek için
-  const kaynakPersonelDetay = currentDevirMalzeme?.kaynakPersonelId ? tumPersonelList.find(p => p.id === currentDevirMalzeme.kaynakPersonelId) : null;
+
 
   // Hedef personel listesi (kaynak personel hariç)
   const hedefPersonelListesi = tumPersonelList.filter(p => p.id !== currentDevirMalzeme?.kaynakPersonelId);
@@ -136,14 +136,13 @@ export function DevirSheet() {
       form.setError('hedefPersonelId', { type: 'manual', message: 'Malzeme aynı personele devredilemez.' });
       return;
     }
-
     try {
       const hareketVerisi = {
         // islemTarihi: data.islemTarihi,
         hareketTuru: 'Devir', // Sabit değer
         malzemeKondisyonu: data.malzemeKondisyonu,
         malzemeId: currentDevirMalzeme.id,
-        kaynakPersonelId: currentDevirMalzeme.malzemeHareketleri[0].hedefPersonel.id, // Malzemeyi devreden personel (prop'tan)
+        kaynakPersonelId: kaynakPersonel.id,
         hedefPersonelId: data.hedefPersonelId, // Formdan seçilen yeni personel
         konumId: null, // Devir işleminde konumId null olacak
         aciklama: data.aciklama || null,
@@ -161,7 +160,6 @@ export function DevirSheet() {
     return null;
   }
 
-  const kaynakPersonelAdi = currentDevirMalzeme.malzemeHareketleri[0].hedefPersonel.ad;
 
   const BilgiSatiri = ({ label, value, icon, isBadge }) => {
     if (value === null || typeof value === 'undefined' || value === '') return null;
@@ -180,6 +178,12 @@ export function DevirSheet() {
       </div>
     );
   };
+
+
+    const anlamliSonHareketKaydi=anlamliSonHareketi(currentDevirMalzeme);
+
+    const kaynakPersonel=anlamliSonHareketKaydi.hedefPersonel
+    const hedefPersonel=anlamliSonHareketKaydi.hedefPersonel
 
   return (
     <Sheet
@@ -213,7 +217,7 @@ export function DevirSheet() {
                 <hr className="my-2" />
                 <BilgiSatiri label="Badem Seri No" value={currentDevirMalzeme.bademSeriNo} icon={Barcode} />
                 <hr className="my-2" />
-                <BilgiSatiri label="Mevcut Sahibi" value={kaynakPersonelAdi} icon={User} />
+                <BilgiSatiri label="Mevcut Sahibi" value={kaynakPersonel.ad} icon={User} />
                 {currentDevirMalzeme.aciklama && ( // Malzemenin kendi açıklaması
                   <>
                     <hr className="my-2" />
