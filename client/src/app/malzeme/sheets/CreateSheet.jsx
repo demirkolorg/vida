@@ -193,7 +193,7 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
       />
 
       {/* Kayıt Tarihi */}
-      <FormFieldDatePicker
+      {/* <FormFieldDatePicker
         label="Kayıt Tarihi"
         name="kayitTarihi"
         id={`edit-${EntityType}-kayitTarihi`}
@@ -221,7 +221,7 @@ const renderFormInputs = ({ formData, setFieldValue, errors }) => {
         }}
         error={errors.kayitTarihi}
         placeholder="Kayıt tarihini seçiniz"
-      />
+      /> */}
 
       {/* Kod */}
       <FormFieldInput label="Kod" name="kod" id={`create-${EntityType}-kod`} value={formData.kod || ''} onChange={e => setFieldValue('kod', e.target.value)} error={errors.kod} placeholder="Malzeme kodunu giriniz" maxLength={50} />

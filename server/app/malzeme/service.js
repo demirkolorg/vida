@@ -258,7 +258,11 @@ const service = {
       if (data.etmysSeriNo !== undefined) createPayload.etmysSeriNo = data.etmysSeriNo;
       if (data.stokDemirbasNo !== undefined) createPayload.stokDemirbasNo = data.stokDemirbasNo;
       if (data.aciklama !== undefined) createPayload.aciklama = data.aciklama;
-      if (data.kayitTarihi !== undefined) createPayload.kayitTarihi = data.kayitTarihi;
+      if (data.kayitTarihi !== undefined) {
+        createPayload.kayitTarihi = new Date(data.kayitTarihi || new Date());
+      } else {
+        createPayload.kayitTarihi = new Date();
+      }
 
       return await prisma[PrismaName].create({
         data: createPayload,

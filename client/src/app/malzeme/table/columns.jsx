@@ -1,6 +1,6 @@
 import { HeaderButton } from '@/components/table/HeaderButton';
 import { Badge } from '@/components/ui/badge';
-import { anlamliSonHareketi } from '@/app/malzeme/helpers/hareketKarar';
+import { anlamliSonHareketi, malzemePersonelde, malzemeDepoda } from '@/app/malzeme/helpers/hareketKarar';
 import { hareketTuruLabels } from '@/app/malzemehareket/constants/hareketTuruEnum';
 
 export const Malzeme_Columns = () => {
@@ -14,6 +14,7 @@ export const Malzeme_Columns = () => {
     // Satırın değerinin, seçilen filtre değerleri dizisinde olup olmadığını kontrol et
     return filterValueArray.includes(rowValue);
   };
+
   return [
     {
       accessorKey: 'vidaNo',
@@ -84,6 +85,30 @@ export const Malzeme_Columns = () => {
         const hareketTuru = sonHareketiAnlamli?.hareketTuru;
         const label = hareketTuruLabels[hareketTuru] ?? hareketTuru;
         return hareketTuru ? <div className="font-medium text-sm">{label}</div> : <span className="text-muted-foreground text-sm">-</span>;
+      },
+      filterFn: inArrayFilterFn,
+      size: 120,
+      meta: {
+        exportHeader: 'Son Hareketi',
+        filterVariant: 'text',
+      },
+    },
+    {
+      accessorKey: 'zimmetOzet',
+      accessorFn: row => {
+        if (row.malzemeHareketleri && row.malzemeHareketleri.length > 0) {
+          return row.malzemeHareketleri[0].hareketTuru || '';
+        }
+        return '';
+      },
+      header: ({ column }) => <HeaderButton column={column} title="Son Hareketi" />,
+      cell: ({ row }) => {
+        const depoda = malzemeDepoda(row?.original);
+        const personelde = malzemePersonelde(row?.original);
+        let text = '';
+        if (depoda) text = 'Depoda';
+        if (personelde) text = 'Personelde';
+        return <div className="font-medium text-sm">{text}</div>;
       },
       filterFn: inArrayFilterFn,
       size: 120,
