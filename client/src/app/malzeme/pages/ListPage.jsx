@@ -27,7 +27,7 @@ import { BulkZimmetSheet } from '@/app/malzemehareket/sheets/BulkZimmetSheet';
 import { BulkIadeSheet } from '@/app/malzemehareket/sheets/BulkIadeSheet';
 import { BulkDevirSheet } from '@/app/malzemehareket/sheets/BulkDevirSheet';
 import { BulkDepoTransferiSheet } from '@/app/malzemehareket/sheets/BulkDepoTransferiSheet';
-// import { BulkKondisyonGuncellemeSheet } from '@/app/malzemehareket/sheets/BulkKondisyonGuncellemeSheet';
+import { BulkKondisyonGuncellemeSheet } from '@/app/malzemehareket/sheets/BulkKondisyonGuncellemeSheet';
 // import { BulkKayipSheet } from '@/app/malzemehareket/sheets/BulkKayipSheet';
 // import { BulkDusumSheet } from '@/app/malzemehareket/sheets/BulkDusumSheet';
 // import { BulkKayitSheet } from '@/app/malzemehareket/sheets/BulkKayitSheet';
@@ -110,7 +110,7 @@ export function Malzeme_ListPage() {
         <BulkIadeSheet />
         <BulkDevirSheet />
         <BulkDepoTransferiSheet />
-        {/* <BulkKondisyonGuncellemeSheet /> */}
+        <BulkKondisyonGuncellemeSheet />
         {/* <BulkKayipSheet /> */}
         {/* <BulkDusumSheet /> */}
         {/* <BulkKayitSheet /> */}

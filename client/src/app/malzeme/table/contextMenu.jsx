@@ -102,7 +102,7 @@ export function Malzeme_ContextMenu({
 
   const handleKondisyonGuncelleme = () => {
     if (hasSelectedItems) {
-      openBulkKondisyonGuncellemeSheet(targetItems);
+        openBulkKondisyonGuncellemeSheet(targetItems);
     } else {
       openKondisyonGuncellemeSheet(item);
     }
