@@ -17,6 +17,7 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
       isSearchResult: initialBaseState?.isSearchResult ?? false,
       error: initialBaseState?.error ?? null,
       displayStatusFilter: initialBaseState?.displayStatusFilter ?? EntityStatusOptions.Aktif,
+      selectedRowIds: initialBaseState?.selectedRowIds ?? {},
     };
 
     const baseActions = {
@@ -251,6 +252,10 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
 
       SetCurrent: data => set({ currentData: data, error: null }),
       ClearCurrent: () => set({ currentData: null }),
+
+      SetSelectedRowIds: async data => {
+        set({ selectedRowIds: data });
+      },
     };
 
     const baseStorePart = { ...baseState, ...baseActions };

@@ -43,10 +43,10 @@ export function MalzemeHareket_ContextMenu({ item }) {
       {/* Malzeme bazlı işlemler */}
       {item?.malzemeId && (
         <>
-          <ContextMenuItem onSelect={handleShowMalzemeGecmisi}>
+          {/* <ContextMenuItem onSelect={handleShowMalzemeGecmisi}>
             <History className="mr-2 h-4 w-4 text-blue-500" />
             <span>Malzeme Geçmişini Göster</span>
-          </ContextMenuItem>
+          </ContextMenuItem> */}
           
           <ContextMenuItem onSelect={handleShowMalzemeHareketleri}>
             <Package className="mr-2 h-4 w-4 text-green-500" />
@@ -58,10 +58,10 @@ export function MalzemeHareket_ContextMenu({ item }) {
       {/* Personel bazlı işlemler */}
       {item?.hedefPersonelId && (
         <>
-          <ContextMenuItem onSelect={handleShowPersonelZimmetleri}>
+          {/* <ContextMenuItem onSelect={handleShowPersonelZimmetleri}>
             <User className="mr-2 h-4 w-4 text-orange-500" />
             <span>Personel Zimmetlerini Göster</span>
-          </ContextMenuItem>
+          </ContextMenuItem> */}
           
           <ContextMenuItem onSelect={handleShowPersonelHareketleri}>
             <User className="mr-2 h-4 w-4 text-purple-500" />

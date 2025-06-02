@@ -1,4 +1,4 @@
-// client/src/app/malzemeHareket/constants/store.js - Güncellenmiş
+// client/src/app/malzemehareket/constants/store.js - Bulk metodları eklenmiş
 import { toast } from 'sonner';
 import { createCrudStore } from '@/stores/crudStoreFactory';
 import { EntityHuman } from './api';
@@ -15,39 +15,368 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
     personelZimmetleri: [],
     loadingPersonelZimmetleri: false,
 
-    // İş Süreçleri API Metodları
+    // Bulk işlemler için loading state'leri
+    loadingBulkZimmet: false,
+    loadingBulkIade: false,
+    loadingBulkDepoTransfer: false,
+    loadingBulkKondisyonGuncelleme: false,
+    loadingBulkKayip: false,
+    loadingBulkDusum: false,
 
-    // Kayit İşlemi
-    kayit: async (data, options) => {
+    // ================================
+    // BULK İŞLEMLERİ - YENİ METODLAR
+    // ================================
+
+    // Bulk zimmet işlemi
+    bulkZimmet: async (data, options) => {
       const showSuccessToast = options?.showToast ?? true;
-      if (get().loadingAction) return null;
-      set({ loadingAction: true, error: null });
+      if (get().loadingBulkZimmet) return null;
+      set({ loadingBulkZimmet: true, error: null });
+
       try {
-        const result = await EntityApiService.kayit(data);
+        // Veri formatını düzenle - server'ın beklediği format
+        const requestData = {
+          malzemeler: data.malzemeler, // Array of objects with id property
+          hedefPersonelId: data.hedefPersonelId,
+          malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
+          aciklama: data.aciklama,
+          islemTarihi: data.islemTarihi || new Date().toISOString(),
+        };
+
+        const result = await EntityApiService.bulkZimmet(requestData);
+
         if (!result) {
-          throw new Error("API'den geçerli bir yanıt alınamadı (kayıt).");
+          throw new Error("API'den geçerli bir yanıt alınamadı (bulkZimmet).");
         }
 
-        set(state => ({
-          datas: [result, ...state.datas],
-          loadingAction: false,
-          currentData: result,
-        }));
+        // Başarılı işlemleri store'a ekle
+        if (result.success && result.success.length > 0) {
+          set(state => ({
+            datas: [...result.success, ...state.datas],
+            loadingBulkZimmet: false,
+          }));
+        } else {
+          set({ loadingBulkZimmet: false });
+        }
 
         if (showSuccessToast) {
-          toast.success(`Malzeme başarıyla transfer edildi.`);
+          toast.success(`Bulk zimmet tamamlandı. Başarılı: ${result.successCount}, Hatalı: ${result.errorCount}`);
+          if (result.errors && result.errors.length > 0) {
+            result.errors.slice(0, 3).forEach(error => {
+              toast.error(`Malzeme ${error.malzemeId}: ${error.error}`);
+            });
+          }
         }
+
+        // Malzeme listesini yenile
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+
         return result;
       } catch (error) {
-        const message = error?.response?.data?.errors || error.message || 'Depo transfer işlemi başarısız.';
-        toast.error(`Depo Transfer hatası: ${message}`);
-        set({ error: message, loadingAction: false });
+        const message = error?.response?.data?.message || error.message || 'Bulk zimmet işlemi başarısız.';
+        toast.error(`Bulk zimmet hatası: ${message}`);
+        set({ error: message, loadingBulkZimmet: false });
         throw error;
       }
     },
 
-    // Zimmet İşlemi
+    // Bulk iade işlemi
+    bulkIade: async (data, options) => {
+      const showSuccessToast = options?.showToast ?? true;
+      if (get().loadingBulkIade) return null;
+      set({ loadingBulkIade: true, error: null });
+
+      try {
+        const requestData = {
+          malzemeler: data.malzemeler,
+          konumId: data.konumId,
+          malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
+          aciklama: data.aciklama,
+          islemTarihi: data.islemTarihi || new Date().toISOString(),
+        };
+
+        const result = await EntityApiService.bulkIade(requestData);
+
+        if (!result) {
+          throw new Error("API'den geçerli bir yanıt alınamadı (bulkIade).");
+        }
+
+        if (result.success && result.success.length > 0) {
+          set(state => ({
+            datas: [...result.success, ...state.datas],
+            loadingBulkIade: false,
+          }));
+        } else {
+          set({ loadingBulkIade: false });
+        }
+
+        if (showSuccessToast) {
+          toast.success(`Bulk iade tamamlandı. Başarılı: ${result.successCount}, Hatalı: ${result.errorCount}`);
+          if (result.errors && result.errors.length > 0) {
+            result.errors.slice(0, 3).forEach(error => {
+              toast.error(`Malzeme ${error.malzemeId}: ${error.error}`);
+            });
+          }
+        }
+
+        await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        return result;
+      } catch (error) {
+        const message = error?.response?.data?.message || error.message || 'Bulk iade işlemi başarısız.';
+        toast.error(`Bulk iade hatası: ${message}`);
+        set({ error: message, loadingBulkIade: false });
+        throw error;
+      }
+    },
+    // Bulk devir işlemi
+    bulkDevir: async (data, options) => {
+      const showSuccessToast = options?.showToast ?? true;
+      if (get().loadingBulkDevir) return null;
+      set({ loadingBulkDevir: true, error: null });
+
+      try {
+        // Veri formatını düzenle - server'ın beklediği format
+        const requestData = {
+          malzemeler: data.malzemeler, // Array of objects with id property
+          hedefPersonelId: data.hedefPersonelId,
+          kaynakPersonelId: data.kaynakPersonelId,
+          malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
+          aciklama: data.aciklama,
+          islemTarihi: data.islemTarihi || new Date().toISOString(),
+        };
+
+        const result = await EntityApiService.bulkDevir(requestData);
+
+        if (!result) {
+          throw new Error("API'den geçerli bir yanıt alınamadı (bulkDevir).");
+        }
+
+        // Başarılı işlemleri store'a ekle
+        if (result.success && result.success.length > 0) {
+          set(state => ({
+            datas: [...result.success, ...state.datas],
+            loadingBulkDevir: false,
+          }));
+        } else {
+          set({ loadingBulkDevir: false });
+        }
+
+        if (showSuccessToast) {
+          toast.success(`Bulk devir tamamlandı. Başarılı: ${result.successCount}, Hatalı: ${result.errorCount}`);
+          if (result.errors && result.errors.length > 0) {
+            result.errors.slice(0, 3).forEach(error => {
+              toast.error(`Malzeme ${error.malzemeId}: ${error.error}`);
+            });
+          }
+        }
+
+        // Malzeme listesini yenile
+        await Malzeme_Store.getState().GetByQuery({ showToast: false });
+
+        return result;
+      } catch (error) {
+        const message = error?.response?.data?.message || error.message || 'Bulk devir işlemi başarısız.';
+        toast.error(`Bulk devir hatası: ${message}`);
+        set({ error: message, loadingBulkDevir: false });
+        throw error;
+      }
+    },
+    // Bulk depo transfer işlemi
+    bulkDepoTransfer: async (data, options) => {
+      const showSuccessToast = options?.showToast ?? true;
+      if (get().loadingBulkDepoTransfer) return null;
+      set({ loadingBulkDepoTransfer: true, error: null });
+
+      try {
+        const requestData = {
+          malzemeler: data.malzemeler,
+          konumId: data.konumId,
+          malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
+          aciklama: data.aciklama,
+          islemTarihi: data.islemTarihi || new Date().toISOString(),
+        };
+
+        const result = await EntityApiService.bulkDepoTransfer(requestData);
+
+        if (!result) {
+          throw new Error("API'den geçerli bir yanıt alınamadı (bulkDepoTransfer).");
+        }
+
+        if (result.success && result.success.length > 0) {
+          set(state => ({
+            datas: [...result.success, ...state.datas],
+            loadingBulkDepoTransfer: false,
+          }));
+        } else {
+          set({ loadingBulkDepoTransfer: false });
+        }
+
+        if (showSuccessToast) {
+          toast.success(`Bulk depo transfer tamamlandı. Başarılı: ${result.successCount}, Hatalı: ${result.errorCount}`);
+          if (result.errors && result.errors.length > 0) {
+            result.errors.slice(0, 3).forEach(error => {
+              toast.error(`Malzeme ${error.malzemeId}: ${error.error}`);
+            });
+          }
+        }
+
+        await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        return result;
+      } catch (error) {
+        const message = error?.response?.data?.message || error.message || 'Bulk depo transfer işlemi başarısız.';
+        toast.error(`Bulk depo transfer hatası: ${message}`);
+        set({ error: message, loadingBulkDepoTransfer: false });
+        throw error;
+      }
+    },
+
+    // Bulk kondisyon güncelleme işlemi
+    bulkKondisyonGuncelleme: async (data, options) => {
+      const showSuccessToast = options?.showToast ?? true;
+      if (get().loadingBulkKondisyonGuncelleme) return null;
+      set({ loadingBulkKondisyonGuncelleme: true, error: null });
+
+      try {
+        const requestData = {
+          malzemeler: data.malzemeler,
+          malzemeKondisyonu: data.malzemeKondisyonu,
+          aciklama: data.aciklama,
+          islemTarihi: data.islemTarihi || new Date().toISOString(),
+        };
+
+        const result = await EntityApiService.bulkKondisyonGuncelleme(requestData);
+
+        if (!result) {
+          throw new Error("API'den geçerli bir yanıt alınamadı (bulkKondisyonGuncelleme).");
+        }
+
+        if (result.success && result.success.length > 0) {
+          set(state => ({
+            datas: [...result.success, ...state.datas],
+            loadingBulkKondisyonGuncelleme: false,
+          }));
+        } else {
+          set({ loadingBulkKondisyonGuncelleme: false });
+        }
+
+        if (showSuccessToast) {
+          toast.success(`Bulk kondisyon güncelleme tamamlandı. Başarılı: ${result.successCount}, Hatalı: ${result.errorCount}`);
+          if (result.errors && result.errors.length > 0) {
+            result.errors.slice(0, 3).forEach(error => {
+              toast.error(`Malzeme ${error.malzemeId}: ${error.error}`);
+            });
+          }
+        }
+
+        await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        return result;
+      } catch (error) {
+        const message = error?.response?.data?.message || error.message || 'Bulk kondisyon güncelleme işlemi başarısız.';
+        toast.error(`Bulk kondisyon güncelleme hatası: ${message}`);
+        set({ error: message, loadingBulkKondisyonGuncelleme: false });
+        throw error;
+      }
+    },
+
+    // Bulk kayıp işlemi
+    bulkKayip: async (data, options) => {
+      const showSuccessToast = options?.showToast ?? true;
+      if (get().loadingBulkKayip) return null;
+      set({ loadingBulkKayip: true, error: null });
+
+      try {
+        const requestData = {
+          malzemeler: data.malzemeler,
+          malzemeKondisyonu: data.malzemeKondisyonu || 'Kayip',
+          aciklama: data.aciklama,
+          islemTarihi: data.islemTarihi || new Date().toISOString(),
+        };
+
+        const result = await EntityApiService.bulkKayip(requestData);
+
+        if (!result) {
+          throw new Error("API'den geçerli bir yanıt alınamadı (bulkKayip).");
+        }
+
+        if (result.success && result.success.length > 0) {
+          set(state => ({
+            datas: [...result.success, ...state.datas],
+            loadingBulkKayip: false,
+          }));
+        } else {
+          set({ loadingBulkKayip: false });
+        }
+
+        if (showSuccessToast) {
+          toast.success(`Bulk kayıp bildirimi tamamlandı. Başarılı: ${result.successCount}, Hatalı: ${result.errorCount}`);
+          if (result.errors && result.errors.length > 0) {
+            result.errors.slice(0, 3).forEach(error => {
+              toast.error(`Malzeme ${error.malzemeId}: ${error.error}`);
+            });
+          }
+        }
+
+        await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        return result;
+      } catch (error) {
+        const message = error?.response?.data?.message || error.message || 'Bulk kayıp bildirimi başarısız.';
+        toast.error(`Bulk kayıp hatası: ${message}`);
+        set({ error: message, loadingBulkKayip: false });
+        throw error;
+      }
+    },
+
+    bulkDusum: async (data, options) => {
+      const showSuccessToast = options?.showToast ?? true;
+      if (get().loadingBulkDusum) return null;
+      set({ loadingBulkDusum: true, error: null });
+
+      try {
+        const requestData = {
+          malzemeler: data.malzemeler,
+          malzemeKondisyonu: data.malzemeKondisyonu || 'Hurda',
+          aciklama: data.aciklama,
+          islemTarihi: data.islemTarihi || new Date().toISOString(),
+        };
+
+        const result = await EntityApiService.bulkDusum(requestData);
+
+        if (!result) {
+          throw new Error("API'den geçerli bir yanıt alınamadı (bulkDusum).");
+        }
+
+        if (result.success && result.success.length > 0) {
+          set(state => ({
+            datas: [...result.success, ...state.datas],
+            loadingBulkDusum: false,
+          }));
+        } else {
+          set({ loadingBulkDusum: false });
+        }
+
+        if (showSuccessToast) {
+          toast.success(`Bulk düşüm tamamlandı. Başarılı: ${result.successCount}, Hatalı: ${result.errorCount}`);
+          if (result.errors && result.errors.length > 0) {
+            result.errors.slice(0, 3).forEach(error => {
+              toast.error(`Malzeme ${error.malzemeId}: ${error.error}`);
+            });
+          }
+        }
+
+        await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        return result;
+      } catch (error) {
+        const message = error?.response?.data?.message || error.message || 'Bulk düşüm işlemi başarısız.';
+        toast.error(`Bulk düşüm hatası: ${message}`);
+        set({ error: message, loadingBulkDusum: false });
+        throw error;
+      }
+    },
+
+    // ================================
+    // MEVCUT TEK İŞLEM METODLARI (değişiklik yok)
+    // ================================
+
     zimmet: async (data, options) => {
       const showSuccessToast = options?.showToast ?? true;
       if (get().loadingAction) return null;
@@ -120,6 +449,35 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
         const result = await EntityApiService.devir(data);
         if (!result) {
           throw new Error("API'den geçerli bir yanıt alınamadı (devir).");
+        }
+
+        set(state => ({
+          datas: [result, ...state.datas],
+          loadingAction: false,
+          currentData: result,
+        }));
+
+        if (showSuccessToast) {
+          toast.success(`Malzeme başarıyla transfer edildi.`);
+        }
+        await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        return result;
+      } catch (error) {
+        const message = error?.response?.data?.errors || error.message || 'Depo transfer işlemi başarısız.';
+        toast.error(`Depo Transfer hatası: ${message}`);
+        set({ error: message, loadingAction: false });
+        throw error;
+      }
+    },
+    // Kayit İşlemi
+    kayit: async (data, options) => {
+      const showSuccessToast = options?.showToast ?? true;
+      if (get().loadingAction) return null;
+      set({ loadingAction: true, error: null });
+      try {
+        const result = await EntityApiService.kayit(data);
+        if (!result) {
+          throw new Error("API'den geçerli bir yanıt alınamadı (kayıt).");
         }
 
         set(state => ({
@@ -202,7 +560,6 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
       }
     },
 
-    // Kayıp İşlemi
     kayip: async (data, options) => {
       const showSuccessToast = options?.showToast ?? true;
       if (get().loadingAction) return null;
@@ -233,7 +590,6 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
       }
     },
 
-    // Düşüm İşlemi
     dusum: async (data, options) => {
       const showSuccessToast = options?.showToast ?? true;
       if (get().loadingAction) return null;
@@ -284,7 +640,6 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
       }
     },
 
-    // Personel zimmetlerini getir
     GetPersonelZimmetleri: async (personelId, options) => {
       const showSuccessToast = options?.showToast ?? false;
       if (get().loadingPersonelZimmetleri) return;
@@ -323,7 +678,6 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
       }
     },
 
-    // Malzeme bazında filtreleme
     GetByMalzemeId: async (malzemeId, options) => {
       const showSuccessToast = options?.showToast ?? false;
       if (get().loadingList || get().loadingSearch) return;

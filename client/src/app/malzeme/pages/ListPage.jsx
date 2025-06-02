@@ -22,6 +22,16 @@ import { KayipSheet } from '@/app/malzemehareket/sheets/KayipSheet';
 import { DusumSheet } from '@/app/malzemehareket/sheets/DusumSheet';
 import { KayitSheet } from '@/app/malzemehareket/sheets/KayitSheet';
 
+// Bulk operation sheet'leri
+import { BulkZimmetSheet } from '@/app/malzemehareket/sheets/BulkZimmetSheet';
+import { BulkIadeSheet } from '@/app/malzemehareket/sheets/BulkIadeSheet';
+import { BulkDevirSheet } from '@/app/malzemehareket/sheets/BulkDevirSheet';
+import { BulkDepoTransferiSheet } from '@/app/malzemehareket/sheets/BulkDepoTransferiSheet';
+// import { BulkKondisyonGuncellemeSheet } from '@/app/malzemehareket/sheets/BulkKondisyonGuncellemeSheet';
+// import { BulkKayipSheet } from '@/app/malzemehareket/sheets/BulkKayipSheet';
+// import { BulkDusumSheet } from '@/app/malzemehareket/sheets/BulkDusumSheet';
+// import { BulkKayitSheet } from '@/app/malzemehareket/sheets/BulkKayitSheet';
+
 // Yeni detay paneli
 import MalzemeDetailPanel from '../components/MalzemeDetailPanel';
 
@@ -58,16 +68,14 @@ export function Malzeme_ListPage() {
 
   return (
     <div className="flex flex-col overflow-hidden">
-    
-
       {/* Ana İçerik - Split Layout */}
       <div className="flex-1 flex min-h-0 gap-4 ">
         {/* Sol Panel - Malzeme Tablosu (%70) */}
         <div className={`transition-all duration-300 ${selectedMalzeme ? 'w-[80%]' : 'w-full'} overflow-hidden`}>
-            {/* Page Header - Sabit yükseklik */}
-      <div className="flex-shrink-0">
-        <PageHeader EntityHuman={EntityHuman} useEntityStore={EntityStore} />
-      </div>
+          {/* Page Header - Sabit yükseklik */}
+          <div className="flex-shrink-0">
+            <PageHeader EntityHuman={EntityHuman} useEntityStore={EntityStore} />
+          </div>
           <EntityDataTable onRowClick={handleRowClick} />
         </div>
 
@@ -96,6 +104,16 @@ export function Malzeme_ListPage() {
         <KayipSheet />
         <DusumSheet />
         <KayitSheet />
+
+        {/* Bulk Operation Sheet'leri */}
+        <BulkZimmetSheet />
+        <BulkIadeSheet />
+        <BulkDevirSheet />
+        <BulkDepoTransferiSheet />
+        {/* <BulkKondisyonGuncellemeSheet /> */}
+        {/* <BulkKayipSheet /> */}
+        {/* <BulkDusumSheet /> */}
+        {/* <BulkKayitSheet /> */}
       </>
     </div>
   );

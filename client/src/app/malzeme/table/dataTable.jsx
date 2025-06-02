@@ -1,5 +1,5 @@
-// client/src/app/malzeme/table/dataTable.jsx - onRowClick desteği eklendi
-import { useCallback, useEffect, useMemo } from 'react';
+// client/src/app/malzeme/table/dataTable.jsx - Seçim mantığı düzeltildi
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DataTable } from '@/components/table/DataTable';
 import { EntityType, EntityHuman } from '../constants/api';
 
@@ -8,49 +8,62 @@ import { Malzeme_ContextMenu as EntityContextMenu } from './contextMenu';
 import { Malzeme_Store as useEntityStore } from '../constants/store';
 import { Malzeme_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
 
-const columnVisibilityData = { status: false , kayitTarihi:false};
+const columnVisibilityData = { status: false, kayitTarihi: false };
 const sorting = [{ id: 'createdAt', desc: true }];
 
-export function Malzeme_DataTable({ onRowClick }) {
+export function Malzeme_DataTable({ onRowClick, selectionMode = 'multiple' }) {
   const datas = useEntityStore(state => state.datas);
   const fetchData = useEntityStore(state => state.GetByQuery);
   const isLoading = useEntityStore(state => state.loadingList);
   const toggleDisplayStatusFilter = useEntityStore(state => state.ToggleDisplayStatusFilter);
   const displayStatusFilter = useEntityStore(state => state.displayStatusFilter);
 
+  const selectedRowIds = useEntityStore(state => state.selectedRowIds);
+  const SetSelectedRowIds = useEntityStore(state => state.SetSelectedRowIds);
+
+  // Seçili öğeleri hesaplayan memoized değer
+  const selectedItems = useMemo(() => {
+    const selectedIds = Object.keys(selectedRowIds).filter(id => selectedRowIds[id]);
+    return datas.filter(item => selectedIds.includes(item.id.toString()));
+  }, [selectedRowIds, datas]);
+
+  // Handle row selection changes
+  const handleRowSelectionChange = useCallback(
+    selection => {
+      SetSelectedRowIds(selection);
+    },
+    [SetSelectedRowIds],
+  );
+
   // Columns'ı dinamik olarak oluştur
   const columns = useMemo(() => {
     const baseColumns = EntityColumns();
 
-    // Sabit Kodu filter options'ını data'dan oluştur
+    // Filter options'ları data'dan oluştur
     const uniqueSabitKodlar = [...new Set(datas.map(item => item.sabitKodu?.ad).filter(Boolean))];
     const sabitKoduFilterOptions = uniqueSabitKodlar.map(sabitKoduAd => ({
       label: sabitKoduAd,
       value: sabitKoduAd,
     }));
 
-    // Marka filter options'ını data'dan oluştur
     const uniqueMarkalar = [...new Set(datas.map(item => item.marka?.ad).filter(Boolean))];
     const markaFilterOptions = uniqueMarkalar.map(markaAd => ({
       label: markaAd,
       value: markaAd,
     }));
 
-    // Model filter options'ını data'dan oluştur
     const uniqueModeller = [...new Set(datas.map(item => item.model?.ad).filter(Boolean))];
     const modelFilterOptions = uniqueModeller.map(modelAd => ({
       label: modelAd,
       value: modelAd,
     }));
 
-    // Birim filter options'ını data'dan oluştur
     const uniqueBirimler = [...new Set(datas.map(item => item.birim?.ad).filter(Boolean))];
     const birimFilterOptions = uniqueBirimler.map(birimAd => ({
       label: birimAd,
       value: birimAd,
     }));
 
-    // Şube filter options'ını data'dan oluştur
     const uniqueSubeler = [...new Set(datas.map(item => item.sube?.ad).filter(Boolean))];
     const subeFilterOptions = uniqueSubeler.map(subeAd => ({
       label: subeAd,
@@ -106,7 +119,7 @@ export function Malzeme_DataTable({ onRowClick }) {
     return updatedColumns;
   }, [datas]);
 
-  // Faceted filter data'ya options'ları ekle
+  // Faceted filter data
   const facesFilterData = useMemo(
     () => [
       { columnId: 'status', title: 'Durum' },
@@ -121,7 +134,16 @@ export function Malzeme_DataTable({ onRowClick }) {
     [],
   );
 
-  const contextMenu = row => <EntityContextMenu item={row.original} />;
+  // Context menu - Seçim mantığı düzeltildi
+  const contextMenu = useCallback(
+    row => {
+      const currentItem = row.original;
+      const isCurrentItemSelected = selectedRowIds[currentItem.id.toString()];
+
+      return <EntityContextMenu item={currentItem} selectedItems={selectedItems} isCurrentItemSelected={isCurrentItemSelected} selectionCount={selectedItems.length} />;
+    },
+    [selectedRowIds, selectedItems],
+  );
 
   useEffect(() => {
     if (datas.length === 0) fetchData({ showToast: true });
@@ -135,15 +157,29 @@ export function Malzeme_DataTable({ onRowClick }) {
     return datas.filter(item => item.status === displayStatusFilter);
   }, [datas, displayStatusFilter]);
 
-  // Row click handler - sadece onRowClick prop'u varsa çalışır
-  const handleRowClick = useCallback((rowData) => {
-    if (onRowClick && typeof onRowClick === 'function') {
-      onRowClick(rowData);
-    }
-  }, [onRowClick]);
+  // Row click handler
+  const handleRowClick = useCallback(
+    rowData => {
+      if (onRowClick && typeof onRowClick === 'function') {
+        onRowClick(rowData);
+      }
+    },
+    [onRowClick],
+  );
+
+  // Data değiştiğinde seçimleri temizle
+  useEffect(() => {
+    SetSelectedRowIds({});
+  }, [filteredDatas]);
+
+  // Force rerender için key oluştur
+  const tableKey = useMemo(() => {
+    return `table-${Object.keys(selectedRowIds).length}-${Date.now()}`;
+  }, [selectedRowIds]);
 
   return (
     <DataTable
+      key={tableKey}
       data={filteredDatas}
       columns={columns}
       isLoading={isLoading}
@@ -158,6 +194,11 @@ export function Malzeme_DataTable({ onRowClick }) {
       renderCollapsibleToolbarContent={() => <EntitySpecificToolbar />}
       displayStatusFilter={displayStatusFilter}
       onRowClick={handleRowClick}
+      enableRowSelection={true}
+      selectionMode={selectionMode}
+      selectedRowIds={Object.keys(selectedRowIds).filter(id => selectedRowIds[id])}
+      rowSelection={selectedRowIds}
+      onRowSelectionChange={handleRowSelectionChange}
     />
   );
 }

@@ -1,5 +1,7 @@
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useSheetStore } from '@/stores/sheetStore';
 import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { ToolbarIndex } from '@/components/toolbar/ToolbarIndex';
@@ -36,18 +38,48 @@ export function DataTable({
   renderCollapsibleToolbarContent,
   displayStatusFilter,
   enableColumnReordering = false,
+  onRowSelectionChange,
+  showRowSelectionColumn = true, // Yeni prop: seçim sütununu göster/gizle
+  selectionMode = 'multiple', // 'single' | 'multiple'
+  selectedRowIds = [], // Dışarıdan kontrol edilen seçili satırlar
+  enableSelectAll = true, // Tümünü seç checkbox'ını göster/gizle
 }) {
   const openSheet = useSheetStore(state => state.openSheet);
   const [columnFilters, setColumnFilters] = useState([]);
   const [globalSearchInput, setGlobalSearchInput] = useState('');
   const [advancedFilterObject, setAdvancedFilterObject] = useState(null);
-
-  const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState(initialSortingState);
   const [isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen] = useState(false);
   const [columnOrder, setColumnOrder] = useState([]);
   const scrollRef = useRef(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Row selection state - controlled veya uncontrolled
+  const [internalRowSelection, setInternalRowSelection] = useState({});
+  const rowSelection = selectedRowIds?.length > 0 ? selectedRowIds.reduce((acc, id) => ({ ...acc, [id]: true }), {}) : internalRowSelection;
+
+  const handleRowSelectionChange = useCallback(
+    updaterOrValue => {
+      const newSelection = typeof updaterOrValue === 'function' ? updaterOrValue(rowSelection) : updaterOrValue;
+
+      // Single selection mode kontrolü
+      if (selectionMode === 'single') {
+        const selectedKeys = Object.keys(newSelection).filter(key => newSelection[key]);
+        if (selectedKeys.length > 1) {
+          // Sadece son seçileni tut
+          const lastSelected = selectedKeys[selectedKeys.length - 1];
+          const singleSelection = { [lastSelected]: true };
+          setInternalRowSelection(singleSelection);
+          onRowSelectionChange?.(singleSelection);
+          return;
+        }
+      }
+
+      setInternalRowSelection(newSelection);
+      onRowSelectionChange?.(newSelection);
+    },
+    [rowSelection, selectionMode, onRowSelectionChange],
+  );
 
   // Dark mode algılama
   useEffect(() => {
@@ -58,14 +90,12 @@ export function DataTable({
 
     checkDarkMode();
 
-    // MutationObserver ile tema değişikliklerini dinle
     const observer = new MutationObserver(checkDarkMode);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class'],
     });
 
-    // Media query değişikliklerini dinle
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     mediaQuery.addEventListener('change', checkDarkMode);
 
@@ -75,19 +105,19 @@ export function DataTable({
     };
   }, []);
 
-  // Scrollbar stilini dinamik uygula
-  useEffect(() => {
-    if (scrollRef.current) {
-      const scrollElement = scrollRef.current;
-      const style = scrollElement.style;
+  // // Scrollbar stilini dinamik uygula
+  // useEffect(() => {
+  //   if (scrollRef.current) {
+  //     const scrollElement = scrollRef.current;
+  //     const style = scrollElement.style;
 
-      if (isDarkMode) {
-        style.scrollbarColor = '#6b7280 #374151';
-      } else {
-        style.scrollbarColor = '#d1d5db #f9fafb';
-      }
-    }
-  }, [isDarkMode]);
+  //     if (isDarkMode) {
+  //       style.scrollbarColor = '#6b7280 #374151';
+  //     } else {
+  //       style.scrollbarColor = '#d1d5db #f9fafb';
+  //     }
+  //   }
+  // }, [isDarkMode]);
 
   const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
@@ -112,10 +142,53 @@ export function DataTable({
     return debouncedGlobalSearchTerm || '';
   }, [advancedFilterObject, debouncedGlobalSearchTerm]);
 
+  // Selection column tanımı
+  const selectionColumn = useMemo(
+    () => ({
+      id: 'select',
+      header: ({ table }) => (
+        // <div className="flex justify-center">
+        //   {enableSelectAll && selectionMode === 'multiple' ? (
+        //     <Checkbox
+        //       checked={
+        //         table.getIsAllPageRowsSelected() ||
+        //         (table.getIsSomePageRowsSelected() && "indeterminate")
+        //       }
+        //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        //       aria-label="Tümünü seç"
+        //       className="translate-y-[2px]"
+        //     />
+        //   ) : (
+        //     <span className="sr-only">Seçim</span>
+        //   )}
+        // </div>
+
+        <span className="flex justify-center">Seç</span>
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={value => row.toggleSelected(!!value)}
+          aria-label={`Satır ${row.index + 1}'i seç`}
+          className="cursor-pointer translate-y-[2px]"
+          onClick={e => e.stopPropagation()} // Row click ile çakışmasın
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      size: 50,
+      maxSize: 50,
+      minSize: 50,
+    }),
+    [enableSelectAll, selectionMode],
+  );
+
+  // Tüm kolonları birleştir
   const allColumns = useMemo(() => {
     const auditCols = includeAuditColumns ? AuditColumns() : [];
-    return [...specificColumns, ...auditCols];
-  }, [specificColumns, includeAuditColumns]);
+    const selectionCol = enableRowSelection && showRowSelectionColumn ? [selectionColumn] : [];
+    return [...selectionCol, ...specificColumns, ...auditCols];
+  }, [specificColumns, includeAuditColumns, enableRowSelection, showRowSelectionColumn, selectionColumn]);
 
   const table = useReactTable({
     data,
@@ -130,7 +203,7 @@ export function DataTable({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: handleRowSelectionChange,
     globalFilterFn: customGlobalFilterFn,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
@@ -144,10 +217,42 @@ export function DataTable({
       rowSelection,
       columnOrder,
     },
-    initialState: { pagination: { pageSize: 20 } }, // Daha fazla satır göster
+    initialState: { pagination: { pageSize: 20 } },
   });
 
   const visibleColumnsCount = table.getVisibleLeafColumns().length;
+
+  // Seçili satır sayısı ve seçili veriler
+  const selectedRowCount = Object.keys(rowSelection).filter(key => rowSelection[key]).length;
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const selectedData = selectedRows.map(row => row.original);
+
+  // Seçim temizleme fonksiyonu
+  const clearSelection = useCallback(() => {
+    setInternalRowSelection({});
+    onRowSelectionChange?.({});
+    toast.info('Seçim temizlendi');
+  }, [onRowSelectionChange]);
+
+  // Seçili satırları işleme alma fonksiyonları
+  const bulkActions = useMemo(() => {
+    if (selectedRowCount === 0) return null;
+
+    return {
+      count: selectedRowCount,
+      data: selectedData,
+      clear: clearSelection,
+      // Burada bulk işlemler için özel actionlar eklenebilir
+      exportSelected: () => {
+        console.log('Seçili satırlar export edilecek:', selectedData);
+        toast.success(`${selectedRowCount} satır export edilecek`);
+      },
+      deleteSelected: () => {
+        console.log('Seçili satırlar silinecek:', selectedData);
+        toast.success(`${selectedRowCount} satır silinecek`);
+      },
+    };
+  }, [selectedRowCount, selectedData, clearSelection]);
 
   const handleCreate = useCallback(() => {
     openSheet('create', null, entityType);
@@ -213,14 +318,11 @@ export function DataTable({
 
   const handleClearAllFilters = useCallback(() => {
     table.resetColumnFilters();
-    if (typeof setGlobalSearchInput === 'function') {
-      setGlobalSearchInput('');
-    }
-    if (typeof setAdvancedFilterObject === 'function') {
-      setAdvancedFilterObject(null);
-    }
+    setGlobalSearchInput('');
+    setAdvancedFilterObject(null);
+    clearSelection()
     toast.info('Tüm filtreler temizlendi.');
-  }, [table, setGlobalSearchInput, setAdvancedFilterObject]);
+  }, [table]);
 
   const handleApplySavedFilter = useCallback(
     savedFilterState => {
@@ -246,7 +348,7 @@ export function DataTable({
 
       table.setSorting(savedSorting || []);
     },
-    [table, setGlobalSearchInput, setAdvancedFilterObject],
+    [table],
   );
 
   const isTableFiltered = useMemo(() => {
@@ -262,8 +364,23 @@ export function DataTable({
     }
   }, [columnOrder, enableColumnReordering]);
 
+  // Enhanced row click handler
+  const handleRowClick = useCallback(
+    (rowData, row) => {
+      // Eğer checkbox seçimi aktifse ve Ctrl/Cmd tuşu basılıysa sadece seçim yap
+      if (enableRowSelection && (window.event?.ctrlKey || window.event?.metaKey)) {
+        row.toggleSelected();
+        return;
+      }
+
+      // Normal row click
+      onRowClick?.(rowData);
+    },
+    [onRowClick, enableRowSelection],
+  );
+
   return (
-    <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden ">
+    <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden">
       <FilterManagementSheet
         sheetTypeIdentifier="filterManagement"
         entityType={entityType}
@@ -274,6 +391,7 @@ export function DataTable({
         isTableFiltered={isTableFiltered}
       />
       <AdvancedFilterSheet sheetTypeIdentifier="advancedFilter" entityType={entityType} entityHuman={entityHuman} table={table} onApplyFilters={applyAdvancedFiltersToTable} />
+
       {/* Toolbar - Sabit yükseklik */}
       <div className="flex-shrink-0">
         <ToolbarIndex
@@ -296,12 +414,42 @@ export function DataTable({
           displayStatusFilter={displayStatusFilter}
           onToggleStatus={onToggleStatus}
           isTableFiltered={isTableFiltered}
+          bulkActions={bulkActions} // Bulk actions'ı toolbar'a geç
         />
       </div>
+
+      {/* Seçim Bilgileri Banner */}
+      {selectedRowCount > 0 && (
+        <div className="flex-shrink-0 bg-primary/5 border border-primary/20 rounded-md p-3 mb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Badge className="bg-primary/70">{selectedRowCount} satır seçildi</Badge>
+              <Button onClick={clearSelection} variant="outline" className="h-6">
+                Seçimi Temizle
+              </Button>
+              {/* <span className="text-sm text-muted-foreground">{selectionMode === 'single' ? 'Tek seçim modu' : 'Çoklu seçim modu'}</span> */}
+            </div>
+            <div className="flex items-center space-x-2">
+              {/* <button
+                onClick={bulkActions?.exportSelected}
+                className="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+              >
+                Export Et
+              </button> */}
+              {/* <button
+                onClick={bulkActions?.deleteSelected}
+                className="text-sm px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+              >
+                Sil
+              </button> */}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tablo Container - Kalan alanı kaplar */}
       <div className="flex-1 min-h-0 rounded-md border overflow-hidden">
-        <div className="h-full overflow-y-auto relative scrollbar dark:dark-scrollbar">
-          {/* Tek Table ile Header ve Body */}
+        <div className="h-full overflow-y-auto relative scrollbar dark:dark-scrollbar" ref={scrollRef}>
           <Table className="w-full table-fixed">
             {/* Header - Sabit */}
             <TableHeader className="sticky top-0 z-20 bg-background border-b">
@@ -345,6 +493,7 @@ export function DataTable({
                 table.getRowModel().rows.map(row => {
                   const rowData = row.original;
                   const contextMenuContent = rowContextMenu ? rowContextMenu(row) : null;
+
                   const renderRowContent = () =>
                     row.getVisibleCells().map(cell => {
                       const cellContent = flexRender(cell.column.columnDef.cell, cell.getContext());
@@ -361,11 +510,13 @@ export function DataTable({
                       );
                     });
 
+                  const rowClassName = cn('cursor-default transition-colors', row.getIsSelected() && 'bg-muted/50', onRowClick && 'hover:bg-muted/30');
+
                   if (contextMenuContent) {
                     return (
                       <ContextMenu key={`context-${row.id}`}>
                         <ContextMenuTrigger asChild>
-                          <TableRow data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => onRowClick?.(rowData)} className={cn('cursor-default', onRowClick && 'hover:bg-muted/50')}>
+                          <TableRow data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => handleRowClick(rowData, row)} className={rowClassName}>
                             {renderRowContent()}
                           </TableRow>
                         </ContextMenuTrigger>
@@ -374,7 +525,7 @@ export function DataTable({
                     );
                   } else {
                     return (
-                      <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => onRowClick?.(rowData)} className={cn(onRowClick && 'hover:bg-muted/50')}>
+                      <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => handleRowClick(rowData, row)} className={rowClassName}>
                         {renderRowContent()}
                       </TableRow>
                     );
@@ -417,6 +568,7 @@ export function DataTable({
           )}
         </div>
       </div>
+
       {/* Pagination - Sabit yükseklik */}
       <div className="flex-shrink-0 pt-2">
         <DataTablePagination table={table} />
