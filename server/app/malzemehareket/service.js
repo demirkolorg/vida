@@ -24,7 +24,7 @@ const includeEntity = {
       depo: { select: { id: true, ad: true } },
     },
   },
-  createdBy: { select: { id: true, ad: true, avatar: true } },
+  createdBy: { select: { id: true, ad: true,sicil: true, avatar: true } },
 };
 
 const orderByEntity = { createdAt: 'desc' };
@@ -85,17 +85,7 @@ const service = {
         status: AuditStatusEnum.Aktif,
       },
       orderBy: orderByEntity,
-      include: {
-        kaynakPersonel: { select: { id: true, ad: true, sicil: true } },
-        hedefPersonel: { select: { id: true, ad: true, sicil: true } },
-        konum: {
-          select: {
-            id: true,
-            ad: true,
-            depo: { select: { id: true, ad: true } },
-          },
-        },
-      },
+      include: includeEntity
     });
   },
 
@@ -106,17 +96,7 @@ const service = {
         status: AuditStatusEnum.Aktif,
       },
       orderBy: orderByEntity,
-      include: {
-        kaynakPersonel: { select: { id: true, ad: true, sicil: true } },
-        hedefPersonel: { select: { id: true, ad: true, sicil: true } },
-        konum: {
-          select: {
-            id: true,
-            ad: true,
-            depo: { select: { id: true, ad: true } },
-          },
-        },
-      },
+      include: includeEntity
     });
   },
 

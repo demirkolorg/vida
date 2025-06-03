@@ -486,7 +486,7 @@ export function DataTable({
                       );
                     });
 
-                  const rowClassName = cn('cursor-default transition-colors', row.getIsSelected() && 'bg-muted/50', onRowClick && 'hover:bg-muted/30');
+                  const rowClassName = cn('even:bg-primary/3  cursor-default transition-colors', row.getIsSelected() && 'bg-muted/50', onRowClick && 'hover:bg-muted/30');
 
                   if (contextMenuContent) {
                     return (

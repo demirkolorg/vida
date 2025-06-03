@@ -5,30 +5,44 @@ import { EntityHuman } from '../constants/api';
 import { HareketTuruOptions, KondisyonOptions } from '../constants/schema';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { AvatarWithName } from "@/components/table/AvatarWithName";
 
 export const MalzemeHareket_Columns = () => {
   // Hareket türü renk kodları
-  const getHareketTuruVariant = (hareketTuru) => {
+  const getHareketTuruVariant = hareketTuru => {
     switch (hareketTuru) {
-      case 'Kayit': return 'default';
-      case 'Zimmet': return 'destructive';
-      case 'Iade': return 'success';
-      case 'Devir': return 'warning';
-      case 'DepoTransferi': return 'secondary';
-      case 'KondisyonGuncelleme': return 'outline';
-      case 'Kayip': return 'destructive';
-      case 'Dusum': return 'destructive';
-      default: return 'outline';
+      case 'Kayit':
+        return 'default';
+      case 'Zimmet':
+        return 'destructive';
+      case 'Iade':
+        return 'success';
+      case 'Devir':
+        return 'warning';
+      case 'DepoTransferi':
+        return 'secondary';
+      case 'KondisyonGuncelleme':
+        return 'outline';
+      case 'Kayip':
+        return 'destructive';
+      case 'Dusum':
+        return 'destructive';
+      default:
+        return 'outline';
     }
   };
 
   // Kondisyon renk kodları
-  const getKondisyonVariant = (kondisyon) => {
+  const getKondisyonVariant = kondisyon => {
     switch (kondisyon) {
-      case 'Saglam': return 'success';
-      case 'Arizali': return 'warning';
-      case 'Hurda': return 'destructive';
-      default: return 'outline';
+      case 'Saglam':
+        return 'success';
+      case 'Arizali':
+        return 'warning';
+      case 'Hurda':
+        return 'destructive';
+      default:
+        return 'outline';
     }
   };
 
@@ -38,11 +52,7 @@ export const MalzemeHareket_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="İşlem Tarihi" />,
       cell: ({ row }) => {
         const tarih = row.getValue('islemTarihi');
-        return (
-          <div className="text-sm">
-            {tarih ? format(new Date(tarih), 'dd.MM.yyyy HH:mm', { locale: tr }) : '-'}
-          </div>
-        );
+        return <div className="text-sm">{tarih ? format(new Date(tarih), 'dd.MM.yyyy HH:mm', { locale: tr }) : '-'}</div>;
       },
       // size: 140,
       meta: {
@@ -52,18 +62,14 @@ export const MalzemeHareket_Columns = () => {
     },
     {
       accessorKey: 'malzeme',
-      accessorFn: row => row.malzeme?.vidaNo && row.malzeme?.sabitKodu?.ad && row?.malzeme.marka.ad && row.malzeme.model.ad ,
+      accessorFn: row => row.malzeme?.vidaNo && row.malzeme?.sabitKodu?.ad && row?.malzeme.marka.ad && row.malzeme.model.ad,
       header: ({ column }) => <HeaderButton column={column} title="Malzeme" />,
       cell: ({ row }) => {
         const malzeme = row.original.malzeme;
         return (
           <div className="space-y-1">
-            <div className="font-medium text-sm">
-              {malzeme?.vidaNo || '-'}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {malzeme?.sabitKodu?.ad || '-'}
-            </div>
+            <div className="font-medium text-sm">{malzeme?.vidaNo || '-'}</div>
+            <div className="text-xs text-muted-foreground">{malzeme?.sabitKodu?.ad || '-'}</div>
             {malzeme?.marka?.ad && malzeme?.model?.ad && (
               <div className="text-xs text-muted-foreground">
                 {malzeme.marka.ad} - {malzeme.model.ad}
@@ -122,14 +128,7 @@ export const MalzemeHareket_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Kaynak Personel" />,
       cell: ({ row }) => {
         const kaynak = row.original.kaynakPersonel;
-        return kaynak ? (
-          <div className="space-y-1">
-            <div className="text-sm font-medium">{kaynak.ad}</div>
-            <div className="text-xs text-muted-foreground">{kaynak.sicil}</div>
-          </div>
-        ) : (
-          <div className="text-sm text-muted-foreground">-</div>
-        );
+        return kaynak ? <AvatarWithName name={kaynak.ad ||'Bilinmiyor'} sicil={kaynak.sicil || 'Bilinmiyor'} avatar={kaynak.avatar} subText={kaynak.sicil} /> : <div className="text-sm text-muted-foreground">-</div>;
       },
       // size: 150,
       meta: {
@@ -143,14 +142,7 @@ export const MalzemeHareket_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Hedef Personel" />,
       cell: ({ row }) => {
         const hedef = row.original.hedefPersonel;
-        return hedef ? (
-          <div className="space-y-1">
-            <div className="text-sm font-medium">{hedef.ad}</div>
-            <div className="text-xs text-muted-foreground">{hedef.sicil}</div>
-          </div>
-        ) : (
-          <div className="text-sm text-muted-foreground">-</div>
-        );
+        return hedef ? <AvatarWithName name={hedef.ad || hedef.sicil || 'Bilinmiyor'} sicil={hedef.sicil || 'Bilinmiyor'} avatar={hedef.avatar} subText={hedef.sicil} /> : <div className="text-sm text-muted-foreground">-</div>;
       },
       // size: 150,
       meta: {
@@ -167,9 +159,7 @@ export const MalzemeHareket_Columns = () => {
         return konum ? (
           <div className="space-y-1">
             <div className="text-sm font-medium">{konum.ad}</div>
-            {konum.depo?.ad && (
-              <div className="text-xs text-muted-foreground">{konum.depo.ad}</div>
-            )}
+            {konum.depo?.ad && <div className="text-xs text-muted-foreground">{konum.depo.ad}</div>}
           </div>
         ) : (
           <div className="text-sm text-muted-foreground">-</div>
