@@ -41,7 +41,7 @@ export const Malzeme_Columns = () => {
         filterVariant: 'text',
       },
     },
-    
+
     {
       accessorKey: 'kod',
       header: ({ column }) => <HeaderButton column={column} title="Kod" />,
@@ -138,7 +138,7 @@ export const Malzeme_Columns = () => {
         filterVariant: 'text',
       },
     },
-    
+
     {
       accessorKey: 'malzemeTipi',
       header: ({ column }) => <HeaderButton column={column} title="Malzeme Tipi" />,
@@ -191,7 +191,7 @@ export const Malzeme_Columns = () => {
         filterVariant: 'select',
       },
     },
-    
+
     {
       accessorKey: 'model',
       accessorFn: row => row.model?.ad || '',
@@ -254,7 +254,7 @@ export const Malzeme_Columns = () => {
         filterVariant: 'date',
       },
     },
-    
+
     {
       accessorKey: 'sonHareketTuru',
       accessorFn: row => {
@@ -293,6 +293,26 @@ export const Malzeme_Columns = () => {
         if (depoda) text = 'Depoda';
         if (personelde) text = 'Personelde';
         return <div className="font-medium text-sm">{text}</div>;
+      },
+      filterFn: inArrayFilterFn,
+      size: 120,
+      meta: {
+        exportHeader: 'Son Hareketi',
+        filterVariant: 'text',
+      },
+    },
+    {
+      accessorKey: 'kondisyon',
+      accessorFn: row => {
+        if (row.malzemeHareketleri && row.malzemeHareketleri.length > 0) {
+          return row.malzemeHareketleri[0].malzemeKondisyonu || '';
+        }
+        return '';
+      },
+      header: ({ column }) => <HeaderButton column={column} title="Özet" />,
+      cell: ({ row }) => {
+        const kondisyon = row?.original?.malzemeHareketleri?.[0]?.malzemeKondisyonu;
+        return <div className="font-medium text-sm">{kondisyon}</div>;
       },
       filterFn: inArrayFilterFn,
       size: 120,

@@ -8,10 +8,11 @@ import { MalzemeHareket_ContextMenu as EntityContextMenu } from './contextMenu';
 import { MalzemeHareket_Store as useEntityStore } from '../constants/store';
 import { MalzemeHareket_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
 
-const columnVisibilityData = {status:false,createdBy:true};
+const columnVisibilityData = { status: false, createdBy: true };
 const sorting = [{ id: 'islemTarihi', desc: true }]; // En son hareketler önce
 const facesFilterData = [
   { columnId: 'hareketTuru', title: 'Hareket Türü' },
+  { columnId: 'malzeme', title: 'Malzeme' },
   { columnId: 'malzemeKondisyonu', title: 'Kondisyon' },
   { columnId: 'kaynakPersonel', title: 'kaynakPersonel' },
   { columnId: 'hedefPersonel', title: 'hedefPersonel' },

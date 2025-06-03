@@ -228,7 +228,7 @@ export function Malzeme_ContextMenu({
           )}
 
           {/* Kayıp bildirimi */}
-          {checkEligibility(kayipUygun) && (
+          {/* {checkEligibility(kayipUygun) && (
             <ContextMenuItem onSelect={handleKayip}>
               <AlertTriangle className="mr-2 h-4 w-4 text-red-500" />
               <div className="flex flex-col">
@@ -238,10 +238,10 @@ export function Malzeme_ContextMenu({
                 </span>
               </div>
             </ContextMenuItem>
-          )}
+          )} */}
 
           {/* Düşüm işlemi */}
-          {checkEligibility(dusumUygun) && (
+          {/* {checkEligibility(dusumUygun) && (
             <ContextMenuItem onSelect={handleDusum}>
               <TrendingDown className="mr-2 h-4 w-4 text-gray-500" />
               <div className="flex flex-col">
@@ -251,7 +251,7 @@ export function Malzeme_ContextMenu({
                 </span>
               </div>
             </ContextMenuItem>
-          )}
+          )} */}
         </>
       )}
 
@@ -367,7 +367,7 @@ export function Malzeme_ContextMenu({
       )}
 
       {/* Seçili malzemeler listesi (sadece çoklu seçimde) */}
-      {hasSelectedItems && (
+      {/* {hasSelectedItems && (
         <>
           <ContextMenuSeparator />
           <div className="px-2 py-1.5 text-xs text-muted-foreground">
@@ -384,7 +384,7 @@ export function Malzeme_ContextMenu({
             )}
           </div>
         </>
-      )}
+      )} */}
 
       {/* Mevcut durum bilgisi (sadece tek seçimde) */}
       {/* {!hasSelectedItems && sonHareketi(item) && (

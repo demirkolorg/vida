@@ -1,5 +1,5 @@
 // client/src/app/malzeme/table/dataTable.jsx - Seçim mantığı düzeltildi
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { DataTable } from '@/components/table/DataTable';
 import { EntityType, EntityHuman } from '../constants/api';
 
@@ -11,7 +11,7 @@ import { Malzeme_SpecificToolbar as EntitySpecificToolbar } from './specificTool
 const columnVisibilityData = { status: false, kayitTarihi: false };
 const sorting = [{ id: 'createdAt', desc: true }];
 
-export function Malzeme_DataTable({ onRowClick, selectionMode = 'multiple' }) {
+export function Malzeme_DataTable({ onRowClick }) {
   const datas = useEntityStore(state => state.datas);
   const fetchData = useEntityStore(state => state.GetByQuery);
   const isLoading = useEntityStore(state => state.loadingList);
@@ -122,8 +122,8 @@ export function Malzeme_DataTable({ onRowClick, selectionMode = 'multiple' }) {
   // Faceted filter data
   const facesFilterData = useMemo(
     () => [
-      { columnId: 'status', title: 'Durum' },
       { columnId: 'malzemeTipi', title: 'Malzeme Tipi' },
+      { columnId: 'kondisyon', title: 'Kondisyon' },
       { columnId: 'sabitKodu', title: 'Sabit Kodu' },
       { columnId: 'marka', title: 'Marka' },
       { columnId: 'model', title: 'Model' },
@@ -195,10 +195,12 @@ export function Malzeme_DataTable({ onRowClick, selectionMode = 'multiple' }) {
       displayStatusFilter={displayStatusFilter}
       onRowClick={handleRowClick}
       enableRowSelection={true}
-      selectionMode={selectionMode}
       selectedRowIds={Object.keys(selectedRowIds).filter(id => selectedRowIds[id])}
       rowSelection={selectedRowIds}
       onRowSelectionChange={handleRowSelectionChange}
+      showRowSelectionColumn={true} // Yeni prop: seçim sütununu göster/gizle
+      selectionMode="multiple" // 'single' | 'multiple'
+      enableSelectAll={true}
     />
   );
 }

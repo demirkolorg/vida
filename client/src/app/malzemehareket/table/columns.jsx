@@ -52,7 +52,7 @@ export const MalzemeHareket_Columns = () => {
     },
     {
       accessorKey: 'malzeme',
-      accessorFn: row => row.malzeme?.vidaNo && row.malzeme?.sabitKodu?.ad && row?.malzeme.marka.ad && row.malzeme.model.ad && 'Bilinmeyen',
+      accessorFn: row => row.malzeme?.vidaNo && row.malzeme?.sabitKodu?.ad && row?.malzeme.marka.ad && row.malzeme.model.ad ,
       header: ({ column }) => <HeaderButton column={column} title="Malzeme" />,
       cell: ({ row }) => {
         const malzeme = row.original.malzeme;

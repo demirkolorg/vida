@@ -30,8 +30,9 @@ const helper = {
     // ÖNEMLİ: process.hrtime() monoton bir saat olduğu için sistem yeniden başladığında sıfırlanır.
     // Bu yüzden ID'nin ana benzersizliği hala Date() kısmından gelmeli. Nano kısmı aynı saniye içindeki
     // çakışmaları engellemek içindir.
+    20250603
 
-    return `${HizmetName}-${yil}-${ay}-${gun}-${saat}-${dakika}-${saniye}-${nanoPart}`;
+    return `${HizmetName}${yil}${ay}${gun}${nanoPart}`;
   },
   generateUsername: (email) => {
     if (typeof email !== "string" || !email.includes("@")) {

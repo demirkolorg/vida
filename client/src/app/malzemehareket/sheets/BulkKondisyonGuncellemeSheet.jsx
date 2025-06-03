@@ -95,9 +95,9 @@ export function BulkKondisyonGuncellemeSheet() {
     }
 
     const payload = {
-      malzemeler: guncellenecekMalzemeler.map(malzeme => ({ 
+      malzemeler: guncellenecekMalzemeler.map(malzeme => ({
         id: malzeme.id,
-        mevcutKondisyon: malzeme.malzemeHareketleri?.[0]?.malzemeKondisyonu 
+        mevcutKondisyon: malzeme.malzemeHareketleri?.[0]?.malzemeKondisyonu,
       })),
       malzemeKondisyonu: formData.yeniMalzemeKondisyonu,
       aciklama: formData.aciklama || `Toplu kondisyon güncelleme - ${guncellenecekMalzemeler.length} malzeme`,
@@ -161,16 +161,14 @@ export function BulkKondisyonGuncellemeSheet() {
         <div className="px-6 pt-2">
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Seçilen {bulkKondisyonMalzemeler.length} malzemenin kondisyonu aynı değere güncellenecektir. 
-              Zaten aynı kondisyonda olan malzemeler otomatik olarak işlemden çıkarılacak.
-            </AlertDescription>
+            <AlertDescription>Seçilen {bulkKondisyonMalzemeler.length} malzemenin kondisyonu aynı değere güncellenecektir. Zaten aynı kondisyonda olan malzemeler otomatik olarak işlemden çıkarılacak.</AlertDescription>
           </Alert>
         </div>
-
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0 overflow-y-auto">
+        
+        {/* ANA İÇERİK ALANI (KAYDIRILABİLİR ORTA BÖLÜM) */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 min-h-0 scrollbar dark:dark-scrollbar">
           {/* SOL SÜTUN: MALZEMELER */}
-          <div className="md:col-span-1 flex flex-col p-6 md:border-r">
+          <div className="lg:col-span-1 flex flex-col p-6 lg:border-r overflow-y-auto">
             <Card className="border-dashed border-primary flex-1 flex flex-col overflow-hidden">
               <CardHeader className="flex-shrink-0">
                 <div className="flex items-center justify-between">
@@ -183,7 +181,7 @@ export function BulkKondisyonGuncellemeSheet() {
                   </div>
                 </div>
                 <CardDescription>Mevcut kondisyon dağılımı</CardDescription>
-                
+
                 {/* Kondisyon İstatistikleri */}
                 <div className="flex flex-wrap gap-2 mt-2">
                   {Object.entries(kondisyonStats).map(([kondisyon, count]) => (
@@ -198,7 +196,7 @@ export function BulkKondisyonGuncellemeSheet() {
                   <div className="space-y-3 p-4">
                     {bulkKondisyonMalzemeler.map((malzeme, index) => {
                       const mevcutKondisyon = malzeme.malzemeHareketleri?.[0]?.malzemeKondisyonu || 'Bilinmiyor';
-                      
+
                       return (
                         <div key={malzeme.id}>
                           <div className="flex items-start justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
@@ -208,19 +206,14 @@ export function BulkKondisyonGuncellemeSheet() {
                                   #{index + 1}
                                 </Badge>
                                 <span className="font-medium text-sm">{malzeme.vidaNo || `ID: ${malzeme.id}`}</span>
-                                <Badge 
-                                  variant={mevcutKondisyon === 'Saglam' ? 'success' : mevcutKondisyon === 'Arizali' ? 'warning' : 'destructive'} 
-                                  className="text-xs"
-                                >
+                                <Badge variant={mevcutKondisyon === 'Saglam' ? 'success' : mevcutKondisyon === 'Arizali' ? 'warning' : 'destructive'} className="text-xs">
                                   {mevcutKondisyon}
                                 </Badge>
                               </div>
                               <BilgiSatiri label="Sabit Kodu" value={malzeme.sabitKodu?.ad} icon={Tag} isBadge />
                               <BilgiSatiri label="Marka/Model" value={`${malzeme.marka?.ad || ''} ${malzeme.model?.ad || ''}`.trim()} icon={Info} />
                               <BilgiSatiri label="Seri No" value={malzeme.bademSeriNo} icon={Barcode} />
-                              {malzeme.aciklama && (
-                                <BilgiSatiri label="Malz. Açıklama" value={malzeme.aciklama} icon={Info} />
-                              )}
+                              {malzeme.aciklama && <BilgiSatiri label="Malz. Açıklama" value={malzeme.aciklama} icon={Info} />}
                             </div>
                           </div>
                           {index < bulkKondisyonMalzemeler.length - 1 && <Separator className="my-2" />}
@@ -234,7 +227,7 @@ export function BulkKondisyonGuncellemeSheet() {
           </div>
 
           {/* SAĞ SÜTUN: İŞLEMLER (FORM) */}
-          <div className="md:col-span-1 flex flex-col p-6">
+          <div className="lg:col-span-1 flex flex-col p-6">
             <Card className="flex-1 flex flex-col overflow-hidden">
               <CardHeader className="flex-shrink-0">
                 <CardTitle className="text-lg">Kondisyon Güncelleme Bilgileri</CardTitle>
@@ -243,7 +236,6 @@ export function BulkKondisyonGuncellemeSheet() {
               <CardContent className="flex-grow overflow-y-auto p-4">
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} id="bulkKondisyonForm" className="space-y-6">
-                    
                     {/* Yeni Malzeme Kondisyonu */}
                     <FormField
                       control={form.control}
@@ -289,7 +281,7 @@ export function BulkKondisyonGuncellemeSheet() {
                         </FormItem>
                       )}
                     />
-                    
+
                     {/* Açıklama */}
                     <FormField
                       control={form.control}
@@ -298,13 +290,7 @@ export function BulkKondisyonGuncellemeSheet() {
                         <FormItem>
                           <FormLabel>Açıklama (Opsiyonel)</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder={`Toplu kondisyon güncelleme ile ilgili açıklama (${bulkKondisyonMalzemeler.length} malzeme)...`} 
-                              className="resize-none" 
-                              rows={3} 
-                              {...field} 
-                              value={field.value || ''} 
-                            />
+                            <Textarea placeholder={`Toplu kondisyon güncelleme ile ilgili açıklama (${bulkKondisyonMalzemeler.length} malzeme)...`} className="resize-none" rows={3} {...field} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -327,7 +313,7 @@ export function BulkKondisyonGuncellemeSheet() {
                           </div>
                         </div>
                         <Separator className="my-3" />
-                        
+
                         <div className="space-y-2">
                           <p className="text-xs font-medium text-muted-foreground">Mevcut Kondisyon Dağılımı:</p>
                           <div className="flex flex-wrap gap-1">
@@ -338,12 +324,9 @@ export function BulkKondisyonGuncellemeSheet() {
                             ))}
                           </div>
                         </div>
-                        
+
                         <Separator className="my-3" />
-                        <p className="text-xs text-muted-foreground">
-                          Seçilen {bulkKondisyonMalzemeler.length} malzemenin kondisyonu aynı anda güncellenecektir. 
-                          Zaten aynı kondisyonda olan malzemeler otomatik olarak işlemden çıkarılacak.
-                        </p>
+                        <p className="text-xs text-muted-foreground">Seçilen {bulkKondisyonMalzemeler.length} malzemenin kondisyonu aynı anda güncellenecektir. Zaten aynı kondisyonda olan malzemeler otomatik olarak işlemden çıkarılacak.</p>
                       </CardContent>
                     </Card>
                   </form>
@@ -359,12 +342,7 @@ export function BulkKondisyonGuncellemeSheet() {
               İptal Et
             </Button>
           </SheetClose>
-          <Button 
-            form="bulkKondisyonForm" 
-            type="submit" 
-            disabled={loadingAction || form.formState.isSubmitting || !form.formState.isValid} 
-            className="min-w-[160px]"
-          >
+          <Button form="bulkKondisyonForm" type="submit" disabled={loadingAction || form.formState.isSubmitting || !form.formState.isValid} className="min-w-[160px]">
             {loadingAction || form.formState.isSubmitting ? 'Güncelleniyor...' : `${bulkKondisyonMalzemeler.length} Malzeme Güncelle`}
           </Button>
         </SheetFooter>

@@ -39,10 +39,10 @@ export function DataTable({
   displayStatusFilter,
   enableColumnReordering = false,
   onRowSelectionChange,
-  showRowSelectionColumn = true, // Yeni prop: seçim sütununu göster/gizle
-  selectionMode = 'multiple', // 'single' | 'multiple'
+  showRowSelectionColumn, // Yeni prop: seçim sütununu göster/gizle
+  selectionMode, // 'single' | 'multiple'
   selectedRowIds = [], // Dışarıdan kontrol edilen seçili satırlar
-  enableSelectAll = true, // Tümünü seç checkbox'ını göster/gizle
+  enableSelectAll, // Tümünü seç checkbox'ını göster/gizle
 }) {
   const openSheet = useSheetStore(state => state.openSheet);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -105,20 +105,6 @@ export function DataTable({
     };
   }, []);
 
-  // // Scrollbar stilini dinamik uygula
-  // useEffect(() => {
-  //   if (scrollRef.current) {
-  //     const scrollElement = scrollRef.current;
-  //     const style = scrollElement.style;
-
-  //     if (isDarkMode) {
-  //       style.scrollbarColor = '#6b7280 #374151';
-  //     } else {
-  //       style.scrollbarColor = '#d1d5db #f9fafb';
-  //     }
-  //   }
-  // }, [isDarkMode]);
-
   const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
   const initialVisibility = useMemo(() => {
@@ -147,23 +133,13 @@ export function DataTable({
     () => ({
       id: 'select',
       header: ({ table }) => (
-        // <div className="flex justify-center">
-        //   {enableSelectAll && selectionMode === 'multiple' ? (
-        //     <Checkbox
-        //       checked={
-        //         table.getIsAllPageRowsSelected() ||
-        //         (table.getIsSomePageRowsSelected() && "indeterminate")
-        //       }
-        //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        //       aria-label="Tümünü seç"
-        //       className="translate-y-[2px]"
-        //     />
-        //   ) : (
-        //     <span className="sr-only">Seçim</span>
-        //   )}
-        // </div>
-
-        <span className="flex justify-center">Seç</span>
+        <div className="flex justify-center">
+          {enableSelectAll && selectionMode === 'multiple' ? (
+            <Checkbox checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')} onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)} aria-label="Tümünü seç" className="translate-y-[2px]" />
+          ) : (
+            <span className="sr-only">Seç</span>
+          )}
+        </div>
       ),
       cell: ({ row }) => (
         <Checkbox
@@ -320,7 +296,7 @@ export function DataTable({
     table.resetColumnFilters();
     setGlobalSearchInput('');
     setAdvancedFilterObject(null);
-    clearSelection()
+    clearSelection();
     toast.info('Tüm filtreler temizlendi.');
   }, [table]);
 
