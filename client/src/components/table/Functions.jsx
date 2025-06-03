@@ -176,7 +176,7 @@ const normalizeSearchableString = str => {
 };
 
 
-// @/components/table/helper/Functions.js (veya benzeri)
+// @/components/table/Functions.js (veya benzeri)
 
 // ... (getStartOfDay, normalizeSearchableString, evaluateRule yukarıda) ...
 

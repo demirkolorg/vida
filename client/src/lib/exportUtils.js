@@ -1,6 +1,6 @@
 // src/utils/exportUtils.js
 import * as XLSX from 'xlsx';
-import { normalizeTurkishString } from '@/components/table/helper/Functions';
+import { normalizeTurkishString } from '@/components/table/Functions';
 
 export const exportTableToExcel = (table, entityType) => {
   const rowsToExport = table.getFilteredRowModel().rows;

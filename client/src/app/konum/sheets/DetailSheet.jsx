@@ -1,11 +1,11 @@
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
-import { DetailItem, DetailSection } from '@/components/table/components/DetailItem';
+import { DetailItem, DetailSection } from '@/components/table/DetailItem';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BaseDetailSheet } from '@/components/sheet/BaseDetailSheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { statusStyles } from '@/components/table/helper/Functions';
+import { statusStyles } from '@/components/table/Functions';
 import { Button } from '@/components/ui/button';
 import { ExternalLinkIcon, PackageIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
 

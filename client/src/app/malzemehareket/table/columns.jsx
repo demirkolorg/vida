@@ -1,11 +1,11 @@
 // client/src/app/malzemeHareket/table/columns.jsx
-import { HeaderButton } from '@/components/table/columns/HeaderButton';
+import { HeaderButton } from '@/components/table/HeaderButton';
 import { Badge } from '@/components/ui/badge';
 import { EntityHuman } from '../constants/api';
 import { HareketTuruOptions, KondisyonOptions } from '../constants/schema';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { AvatarWithName } from "@/components/table/columns/AvatarWithName";
+import { AvatarWithName } from "@/components/table/AvatarWithName";
 
 export const MalzemeHareket_Columns = () => {
   // Hareket türü renk kodları

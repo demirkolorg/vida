@@ -1,11 +1,11 @@
 import React from 'react';
-import { HeaderButton } from '@/components/table/columns/HeaderButton';
-import { AvatarWithName } from '@/components/table/columns/AvatarWithName';
-import { turkishCaseInsensitiveFilterFn } from '@/components/table/helper/Functions';
+import { HeaderButton } from '@/components/table/HeaderButton';
+import { AvatarWithName } from '@/components/table/AvatarWithName';
+import { turkishCaseInsensitiveFilterFn } from '@/components/table/Functions';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
-import { statusStyles } from '@/components/table/helper/Functions';
+import { statusStyles } from '@/components/table/Functions';
 import { EntityStatusOptionsArray } from '@/constants/statusOptions';
 
 const StatusCell = ({ status }) => {

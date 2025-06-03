@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge'; // Badge bileşeninin yolu doğru varsayıldı
-import { HeaderButton } from '@/components/table/columns/HeaderButton';
+import { HeaderButton } from '@/components/table/HeaderButton';
 // import { EntityHuman } from '../constants/api'; // AuditLog sütun başlıkları genellikle EntityHuman'a ihtiyaç duymaz,
 // ancak projenizin tutarlılığı için tutulabilir.
 

@@ -1,7 +1,7 @@
 // ToolbarFacetedFilter.jsx
 
 import { Button } from '@/components/ui/button';
-import { createOptionsFromValues } from '@/components/table/helper/Functions';
+import { createOptionsFromValues } from '@/components/table/Functions';
 import { ToolbarFacetedFilterComp } from '@/components/toolbar/ToolbarFacetedFilterComp';
 import { useMemo } from 'react';
 import { FilterSummary } from '@/app/filter/sheet/FilterSummary';

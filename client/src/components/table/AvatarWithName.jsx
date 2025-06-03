@@ -1,7 +1,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
-import { getInitials } from '@/components/table/helper/Functions'; // getInitials fonksiyonunun yolu doğru olmalı
+import { getInitials } from '@/components/table/Functions'; // getInitials fonksiyonunun yolu doğru olmalı
 
 export const AvatarWithName = ({
   name,
