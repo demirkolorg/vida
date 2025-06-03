@@ -5,10 +5,6 @@ import { DetailItem, DetailSection } from '@/components/table/DetailItem';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BaseDetailSheet } from '@/components/sheet/BaseDetailSheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-// import { statusStyles } from '@/components/table/Functions'; // AuditLog'da 'status' alanı yok, bu yüzden kaldırıldı.
-
-// Bu sabitlerin, AuditLog görüntülenirken doğru değerleri (örn. EntityType='auditlog', EntityHuman='Denetim Kaydı')
-// alacağı varsayılır. Bu, bileşeni çağıran üst context tarafından yönetilir.
 import { EntityType, EntityHuman } from '../constants/api';
 
 // AuditLog için başlık oluşturma fonksiyonu
