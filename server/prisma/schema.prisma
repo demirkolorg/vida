@@ -295,13 +295,9 @@ model UserSettings {
   themeName         String?  @default("violet")
   isDarkMode        Boolean? @default(true)
   dataTableSettings Json?
+  language          String?  @default("tr")
   personelId        String   @unique
   personel          Personel @relation("PersonelSettings", fields: [personelId], references: [id], onDelete: Cascade)
-
-  // Gelecekte eklenebilecek diğer ayarlar:
-  // language            String?  @default("tr")
-  // notificationsEnabled Boolean? @default(true)
-  // itemsPerPage        Int?     @default(10)
 }
 
 model SavedFilter {
