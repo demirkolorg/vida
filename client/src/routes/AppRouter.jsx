@@ -11,6 +11,7 @@ import { DashboardPage } from '@/pages/dashboard';
 import { useAuthStore } from '@/stores/authStore';
 
 import LoginPage from '@/pages/auth/login';
+import { Audit_ListPage } from '@/app/audit/pages/ListPage';
 import { Birim_ListPage } from '@/app/birim/pages/ListPage';
 import { Sube_ListPage } from '@/app/sube/pages/ListPage';
 import { Buro_ListPage } from '@/app/buro/pages/ListPage';
@@ -103,6 +104,10 @@ const router = createBrowserRouter([
               {
                 path: '/malzeme-hareketleri',
                 element: <MalzemeHareket_ListPage />,
+              },
+              {
+                path: '/denetim-kaydi',
+                element: <Audit_ListPage />,
               },
             ],
           },

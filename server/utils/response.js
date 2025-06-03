@@ -1,7 +1,7 @@
 import AuditLogService from '../app/audit/service.js';
 
 const success = (req, res, HizmetName, rota, message, data = {}) => {
-  let createdById = req.user?.userId === undefined ? null : req.user?.userId;
+  let createdById = req.user?.id === undefined ? null : req.user?.id;
   if (rota?.rota === 'login'){
 
     createdById = rota.userId;
@@ -13,7 +13,7 @@ const success = (req, res, HizmetName, rota, message, data = {}) => {
 };
 
 const error = (req, res, HizmetName, rota, message, errors = {}, code = 500) => {
-  const createdById = req.user?.userId === undefined ? null : req.user?.userId;
+  let createdById = req.user?.id === undefined ? null : req.user?.id;
   AuditLogService.error(createdById, HizmetName, rota, errors);
   return res.status(code).json({ success: false, message, code, errors });
 };

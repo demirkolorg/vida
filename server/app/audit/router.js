@@ -1,16 +1,18 @@
 import express from 'express';
-const router = express.Router();
+const r = express.Router();
 import c from './controller.js';
 import { authToken, authRoles } from '../../middlewares/auth.js';
+import { RoleEnum } from '@prisma/client';
 
-router.get('/health', c.health);
-router.get('/getAll', c.getAllLogs);
-router.get('/getById', authToken, authRoles('SuperAdmin'), c.getById);
-router.get('/getByUserId', authToken, authRoles('SuperAdmin'), c.getByUserId);
-router.get('/info', authToken, authRoles('SuperAdmin'), c.getLogsInfo);
-router.get('/error', authToken, authRoles('SuperAdmin'), c.getLogsError);
-router.get('/warning', authToken, authRoles('SuperAdmin'), c.getLogsWarning);
-router.get('/success', authToken, authRoles('SuperAdmin'), c.getLogsSuccess);
-router.get('/getLastRecord', authToken, authRoles('SuperAdmin'), c.getLastRecord);
+r.get('/health', c.health);
+r.get('/getAll', c.getAllLogs);
+r.post('/getByQuery', authToken, authRoles(RoleEnum.Superadmin), c.getByQuery);
+r.get('/getById', authToken, authRoles(RoleEnum.Superadmin), c.getById);
+r.get('/getByUserId', authToken, authRoles(RoleEnum.Superadmin), c.getByUserId);
+r.get('/info', authToken, authRoles(RoleEnum.Superadmin), c.getLogsInfo);
+r.get('/error', authToken, authRoles(RoleEnum.Superadmin), c.getLogsError);
+r.get('/warning', authToken, authRoles(RoleEnum.Superadmin), c.getLogsWarning);
+r.get('/success', authToken, authRoles(RoleEnum.Superadmin), c.getLogsSuccess);
+r.get('/getLastRecord', authToken, authRoles(RoleEnum.Superadmin), c.getLastRecord);
 
-export default router;
+export default r;
