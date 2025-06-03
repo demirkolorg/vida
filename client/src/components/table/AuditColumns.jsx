@@ -37,7 +37,6 @@ export const AuditColumns = () => [
     accessorKey: 'createdBy',
     header: ({ column }) => <HeaderButton column={column} title="Oluşturan" />,
     cell: ({ row }) => {
-      console.log("row.original: ", row)
       const createdByPersonel = row.original.createdBy; // Tip ataması kaldırıldı
       if (!createdByPersonel) return '-';
       return <AvatarWithName name={createdByPersonel.ad || createdByPersonel.sicil || 'Bilinmiyor'} sicil={createdByPersonel.sicil || 'Bilinmiyor'} avatar={createdByPersonel.avatar} subText={createdByPersonel.sicil} />;
