@@ -1,4 +1,4 @@
-import { HeaderButton } from '@/components/table/HeaderButton';
+import { HeaderButton } from '@/components/table/columns/HeaderButton';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EntityHuman } from '../constants/api';

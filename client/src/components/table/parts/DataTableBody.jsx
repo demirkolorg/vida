@@ -2,15 +2,16 @@ import { cn } from '@/lib/utils';
 import { flexRender } from '@tanstack/react-table';
 import { TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
+import { memo } from 'react';
 
-export function DataTableBody({ 
+const DataTableBody = memo(({ 
   table, 
   isLoading, 
   onRowClick, 
   rowContextMenu, 
   enableRowSelection,
   visibleColumnsCount 
-}) {
+}) => {
   const handleRowClick = (rowData, row) => {
     if (enableRowSelection && (window.event?.ctrlKey || window.event?.metaKey)) {
       row.toggleSelected();
@@ -84,4 +85,7 @@ export function DataTableBody({
       )}
     </TableBody>
   );
-}
+
+});
+
+export { DataTableBody };

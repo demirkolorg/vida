@@ -1,4 +1,4 @@
-import { HeaderButton } from '@/components/table/HeaderButton';
+import { HeaderButton } from '@/components/table/columns/HeaderButton';
 import { EntityHuman } from '../constants/api';
 
 export const Marka_Columns = () => [

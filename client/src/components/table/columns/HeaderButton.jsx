@@ -1,5 +1,5 @@
 import { ArrowUpDown } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../../ui/button';
 
 export const HeaderButton = ({ column, title }) => {
   return (
