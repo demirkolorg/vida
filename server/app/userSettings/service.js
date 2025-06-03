@@ -18,7 +18,7 @@ const service = {
       return await prisma[PrismaName].findMany({
         include: {
           personel: {
-            select: { id: true, ad: true },
+            select: { id: true, ad: true ,sicil:true},
           },
         },
       });
@@ -37,7 +37,7 @@ const service = {
         where: whereClause,
         orderBy: { theme: 'asc' },
         personel: {
-          select: { id: true, ad: true },
+            select: { id: true, ad: true ,sicil:true},
         },
       });
     } catch (error) {
@@ -51,7 +51,7 @@ const service = {
 
       return await prisma[PrismaName].findFirst({
         where: { id: data.id, },
-        include: { personel: { select: { id: true, ad: true } } },
+        include: { personel: { select: { id: true, ad: true ,sicil:true} } },
       });
     } catch (error) {
       throw error;
@@ -64,7 +64,7 @@ const service = {
 
       return await prisma[PrismaName].findFirst({
         where: { personelId: data.personelId, },
-        include: { personel: { select: { id: true, ad: true } } },
+        include: { personel: { select: { id: true, ad: true,sicil:true } } },
       });
     } catch (error) {
       throw error;
@@ -76,7 +76,7 @@ const service = {
 
       return await prisma[PrismaName].findFirst({
         where: { personelId: data.personelId, },
-        include: { personel: { select: { id: true, ad: true } } },
+        include: { personel: { select: { id: true, ad: true,sicil:true } } },
       });
     } catch (error) {
       throw error;
@@ -92,6 +92,7 @@ const service = {
       const validUpdateData = {};
       if (data.themeName !== undefined) validUpdateData.themeName = data.themeName;
       if (data.isDarkMode !== undefined) validUpdateData.isDarkMode = data.isDarkMode;
+      if (data.dataTableSettings !== undefined) validUpdateData.dataTableSettings = data.dataTableSettings;
 
       if (Object.keys(validUpdateData).length === 0) {
         const existingSettings = await prisma[PrismaName].findUnique({
@@ -109,10 +110,11 @@ const service = {
           personelId: data.personelId,
           themeName: validUpdateData.themeName !== undefined ? validUpdateData.themeName : 'default',
           isDarkMode: validUpdateData.isDarkMode !== undefined ? validUpdateData.isDarkMode : false,
+          dataTableSettings: validUpdateData.dataTableSettings !== undefined ? validUpdateData.dataTableSettings : {},
         },
         include: {
           personel: {
-            select: { id: true, ad: true },
+            select: { id: true, ad: true,sicil:true },
           },
         },
       });
@@ -133,6 +135,7 @@ const service = {
         theme: data.theme || 'violet',
         isDarkMode: data.isDarkMode || true,
         personelId: data.personelId,
+        dataTableSettings:data.dataTableSettings
       };
       return await prisma[PrismaName].create({ data: createPayload });
     } catch (error) {
@@ -147,6 +150,7 @@ const service = {
       const updatePayload = {};
       if (data.theme !== undefined) updatePayload.theme = data.theme;
       if (data.isDarkMode !== undefined) updatePayload.isDarkMode = data.isDarkMode;
+      if (data.dataTableSettings !== undefined) updatePayload.dataTableSettings = data.dataTableSettings;
 
       return await prisma[PrismaName].update({ where: { personelId: data.personelId }, data: updatePayload });
     } catch (error) {

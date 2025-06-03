@@ -15,27 +15,7 @@ import { FilterManagementSheet } from '@/app/filter/sheet/FilterManagementSheet'
 import { AdvancedFilterSheet } from '@/app/filter/sheet/AdvancedFilterSheet';
 import { toast } from 'sonner';
 import { HeaderContextMenu } from '@/components/contextMenu/HeaderContextMenu';
-
-// LocalStorage için yardımcı fonksiyonlar
-const getColumnSettingsKey = (entityType) => `datatable-columns-${entityType}`;
-
-const saveColumnSettings = (entityType, settings) => {
-  try {
-    localStorage.setItem(getColumnSettingsKey(entityType), JSON.stringify(settings));
-  } catch (error) {
-    console.warn('Column settings could not be saved to localStorage:', error);
-  }
-};
-
-const loadColumnSettings = (entityType) => {
-  try {
-    const saved = localStorage.getItem(getColumnSettingsKey(entityType));
-    return saved ? JSON.parse(saved) : null;
-  } catch (error) {
-    console.warn('Column settings could not be loaded from localStorage:', error);
-    return null;
-  }
-};
+import { getMySettings, updateMySettings } from '@/api/userSettings';
 
 export function DataTable({
   entityType,
@@ -75,6 +55,8 @@ export function DataTable({
   const [columnOrder, setColumnOrder] = useState([]);
   const scrollRef = useRef(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [userSettings, setUserSettings] = useState(null);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
   const [internalRowSelection, setInternalRowSelection] = useState({});
   const rowSelection = selectedRowIds?.length > 0 ? selectedRowIds.reduce((acc, id) => ({ ...acc, [id]: true }), {}) : internalRowSelection;
@@ -98,28 +80,63 @@ export function DataTable({
     [rowSelection, selectionMode, onRowSelectionChange],
   );
 
-  useEffect(() => {
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark') || window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setIsDarkMode(isDark);
-    };
-    checkDarkMode();
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    mediaQuery.addEventListener('change', checkDarkMode);
-    return () => {
-      observer.disconnect();
-      mediaQuery.removeEventListener('change', checkDarkMode);
-    };
+  // Kullanıcı ayarlarını yükleme
+  const loadUserSettings = useCallback(async () => {
+    try {
+      setIsLoadingSettings(true);
+      const settings = await getMySettings();
+      setUserSettings(settings);
+    } catch (error) {
+      console.error('Kullanıcı ayarları yüklenemedi:', error);
+      toast.error('Ayarlar yüklenirken hata oluştu');
+    } finally {
+      setIsLoadingSettings(false);
+    }
   }, []);
 
-  const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
+  // Kullanıcı ayarlarını güncelleme
+  const updateUserColumnSettings = useCallback(async (entityType, columnSettings) => {
+    try {
+      const currentSettings = userSettings || {};
+      
+      // Mevcut dataTableSettings'i al veya boş obje oluştur
+      const dataTableSettings = currentSettings.dataTableSettings || {};
+      
+      // Bu entity için ayarları güncelle
+      const updatedDataTableSettings = {
+        ...dataTableSettings,
+        [entityType]: {
+          ...dataTableSettings[entityType],
+          ...columnSettings,
+          timestamp: Date.now()
+        }
+      };
 
-  // localStorage'dan kolon ayarlarını yükle
+      const updatedSettings = {
+        ...currentSettings,
+        dataTableSettings: updatedDataTableSettings
+      };
+
+      const result = await updateMySettings(updatedSettings);
+      if (result) {
+        setUserSettings(updatedSettings);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Kullanıcı ayarları güncellenemedi:', error);
+      toast.error('Ayarlar kaydedilemedi');
+      return false;
+    }
+  }, [userSettings]);
+
+  // Kaydedilmiş kolon ayarlarını al
   const savedColumnSettings = useMemo(() => {
-    return loadColumnSettings(entityType);
-  }, [entityType]);
+    if (!userSettings?.dataTableSettings?.[entityType]) {
+      return null;
+    }
+    return userSettings.dataTableSettings[entityType];
+  }, [userSettings, entityType]);
 
   const initialVisibility = useMemo(() => {
     const auditColumnDefaultVisibility = includeAuditColumns ? { createdBy: false, createdAt: false, updatedBy: false, updatedAt: false } : {};
@@ -137,6 +154,48 @@ export function DataTable({
   const [columnSizing, setColumnSizing] = useState(() => {
     return savedColumnSettings?.columnSizing || {};
   });
+
+  // Component mount olduğunda kullanıcı ayarlarını yükle
+  useEffect(() => {
+    loadUserSettings();
+  }, [loadUserSettings]);
+
+  // Kullanıcı ayarları yüklendikten sonra kolon ayarlarını güncelle
+  useEffect(() => {
+    if (!isLoadingSettings && savedColumnSettings) {
+      if (savedColumnSettings.columnVisibility) {
+        const auditColumnDefaultVisibility = includeAuditColumns ? { createdBy: false, createdAt: false, updatedBy: false, updatedAt: false } : {};
+        const defaultVisibility = { ...auditColumnDefaultVisibility, ...columnVisibilityData };
+        setColumnVisibility({ ...defaultVisibility, ...savedColumnSettings.columnVisibility });
+      }
+      
+      if (savedColumnSettings.columnSizing) {
+        setColumnSizing(savedColumnSettings.columnSizing);
+      }
+      
+      if (savedColumnSettings.columnOrder) {
+        setColumnOrder(savedColumnSettings.columnOrder);
+      }
+    }
+  }, [isLoadingSettings, savedColumnSettings, includeAuditColumns, columnVisibilityData]);
+
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark') || window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(isDark);
+    };
+    checkDarkMode();
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', checkDarkMode);
+    return () => {
+      observer.disconnect();
+      mediaQuery.removeEventListener('change', checkDarkMode);
+    };
+  }, []);
+
+  const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
   const activeGlobalFilter = useMemo(() => {
     if (advancedFilterObject && advancedFilterObject.rules && advancedFilterObject.rules.length > 0) return advancedFilterObject;
@@ -212,52 +271,57 @@ export function DataTable({
     rowNumberColumn,
   ]);
 
-  // Kolon ayarlarını localStorage'a kaydetme fonksiyonu
-  const saveCurrentColumnSettings = useCallback((visibility, sizing, order) => {
-    const settings = {
-      columnVisibility: visibility,
-      columnSizing: sizing,
-      columnOrder: order,
-      timestamp: Date.now()
-    };
-    saveColumnSettings(entityType, settings);
-  }, [entityType]);
+  // Debounced kaydetme fonksiyonu
+  const debouncedSaveSettings = useCallback(
+    (() => {
+      let timeoutId;
+      return (columnSettings, delay = 1000) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          updateUserColumnSettings(entityType, columnSettings);
+        }, delay);
+      };
+    })(),
+    [entityType, updateUserColumnSettings]
+  );
 
-  // Kolon görünürlüğü değiştiğinde localStorage'a kaydet
+  // Kolon görünürlüğü değiştiğinde veritabanına kaydet
   const handleColumnVisibilityChange = useCallback((updaterOrValue) => {
     const newVisibility = typeof updaterOrValue === 'function' ? updaterOrValue(columnVisibility) : updaterOrValue;
     setColumnVisibility(newVisibility);
-    // Debounce ile kaydetme işlemini geciktir
-    setTimeout(() => {
-      saveCurrentColumnSettings(newVisibility, columnSizing, columnOrder);
+    
+    // Debounced kaydetme
+    debouncedSaveSettings({
+      columnVisibility: newVisibility,
+      columnSizing,
+      columnOrder
     }, 500);
-  }, [columnVisibility, columnSizing, columnOrder, saveCurrentColumnSettings]);
+  }, [columnVisibility, columnSizing, columnOrder, debouncedSaveSettings]);
 
-  // Kolon boyutu değiştiğinde localStorage'a kaydet
+  // Kolon boyutu değiştiğinde veritabanına kaydet
   const handleColumnSizingChange = useCallback((updaterOrValue) => {
     const newSizing = typeof updaterOrValue === 'function' ? updaterOrValue(columnSizing) : updaterOrValue;
     setColumnSizing(newSizing);
-    // Debounce ile kaydetme işlemini geciktir
-    setTimeout(() => {
-      saveCurrentColumnSettings(columnVisibility, newSizing, columnOrder);
-    }, 1000); // Boyut değişikliği için daha uzun süre
-  }, [columnVisibility, columnSizing, columnOrder, saveCurrentColumnSettings]);
+    
+    // Debounced kaydetme (boyut değişikliği için daha uzun süre)
+    debouncedSaveSettings({
+      columnVisibility,
+      columnSizing: newSizing,
+      columnOrder
+    }, 1500);
+  }, [columnVisibility, columnSizing, columnOrder, debouncedSaveSettings]);
 
-  // Kolon sırası değiştiğinde localStorage'a kaydet
+  // Kolon sırası değiştiğinde veritabanına kaydet
   const handleColumnOrderChange = useCallback((updaterOrValue) => {
     const newOrder = typeof updaterOrValue === 'function' ? updaterOrValue(columnOrder) : updaterOrValue;
     setColumnOrder(newOrder);
-    setTimeout(() => {
-      saveCurrentColumnSettings(columnVisibility, columnSizing, newOrder);
+    
+    debouncedSaveSettings({
+      columnVisibility,
+      columnSizing,
+      columnOrder: newOrder
     }, 500);
-  }, [columnVisibility, columnSizing, columnOrder, saveCurrentColumnSettings]);
-
-  // Kaydedilmiş kolon sırasını yükle
-  useEffect(() => {
-    if (savedColumnSettings?.columnOrder && savedColumnSettings.columnOrder.length > 0) {
-      setColumnOrder(savedColumnSettings.columnOrder);
-    }
-  }, [savedColumnSettings]);
+  }, [columnVisibility, columnSizing, columnOrder, debouncedSaveSettings]);
 
   const table = useReactTable({
     data,
@@ -427,22 +491,48 @@ export function DataTable({
     [onRowClick, enableRowSelection],
   );
 
-  // Kolon ayarlarını sıfırlama fonksiyonu (isteğe bağlı)
-  const resetColumnSettings = useCallback(() => {
+  // Kolon ayarlarını sıfırlama fonksiyonu
+  const resetColumnSettings = useCallback(async () => {
     try {
-      localStorage.removeItem(getColumnSettingsKey(entityType));
       // Varsayılan ayarlara dön
       const auditColumnDefaultVisibility = includeAuditColumns ? { createdBy: false, createdAt: false, updatedBy: false, updatedAt: false } : {};
       const defaultVisibility = { ...auditColumnDefaultVisibility, ...columnVisibilityData };
+      
       setColumnVisibility(defaultVisibility);
       setColumnSizing({});
       setColumnOrder([]);
-      toast.success('Kolon ayarları sıfırlandı');
+
+      // Veritabanından da sil
+      const success = await updateUserColumnSettings(entityType, {
+        columnVisibility: defaultVisibility,
+        columnSizing: {},
+        columnOrder: []
+      });
+
+      if (success) {
+        toast.success('Kolon ayarları sıfırlandı');
+      } else {
+        toast.error('Kolon ayarları sıfırlanamadı');
+      }
     } catch (error) {
       console.error('Error resetting column settings:', error);
       toast.error('Kolon ayarları sıfırlanamadı');
     }
-  }, [entityType, includeAuditColumns, columnVisibilityData]);
+  }, [entityType, includeAuditColumns, columnVisibilityData, updateUserColumnSettings]);
+
+  // Yükleme durumunu göster
+  if (isLoadingSettings) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Ayarlar yükleniyor...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden">
@@ -479,7 +569,7 @@ export function DataTable({
           onToggleStatus={onToggleStatus}
           isTableFiltered={isTableFiltered}
           bulkActions={bulkActions}
-          resetColumnSettings={resetColumnSettings} // Opsiyonel: Toolbar'a reset butonu eklemek için
+          resetColumnSettings={resetColumnSettings}
         />
       </div>
 

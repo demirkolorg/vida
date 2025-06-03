@@ -291,12 +291,12 @@ model Personel {
 }
 
 model UserSettings {
-  id         String   @id
-  themeName  String?  @default("violet")
-  isDarkMode Boolean? @default(true)
-
-  personelId String   @unique
-  personel   Personel @relation("PersonelSettings", fields: [personelId], references: [id], onDelete: Cascade)
+  id                String   @id
+  themeName         String?  @default("violet")
+  isDarkMode        Boolean? @default(true)
+  dataTableSettings Json?
+  personelId        String   @unique
+  personel          Personel @relation("PersonelSettings", fields: [personelId], references: [id], onDelete: Cascade)
 
   // Gelecekte eklenebilecek diğer ayarlar:
   // language            String?  @default("tr")
