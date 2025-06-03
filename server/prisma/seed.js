@@ -24,7 +24,7 @@ import helper from '../utils/helper.js';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log(`Seed işlemi başlıyor...`);
+  console.log(`Seed işlemi başlıyor....`);
 
   // --- Süper Admin Kullanıcısı ---
   const adminSicil = '999999';
