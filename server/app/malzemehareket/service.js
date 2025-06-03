@@ -1,7 +1,7 @@
 // server/app/malzemeHareket/service.js - Bulk işlemleri eklenmiş versiyon
 import { prisma } from '../../config/db.js';
 import helper from '../../utils/helper.js';
-import { HizmetName, PrismaName, HumanName } from './base.js';
+import { VarlıkKod, PrismaName, HumanName } from './base.js';
 import { AuditStatusEnum, HareketTuruEnum, MalzemeKondisyonuEnum } from '@prisma/client';
 
 // Ortak include ve orderBy
@@ -257,7 +257,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(HizmetName);
+          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
             id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -345,7 +345,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(HizmetName);
+          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
             id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -448,7 +448,7 @@ const service = {
           const kaynakPersonelId = ilgiliMalzeme?.kaynakPersonelId;
 
 
-          const yeniId = helper.generateId(HizmetName);
+          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
             id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -547,7 +547,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(HizmetName);
+          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
             id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -643,7 +643,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(HizmetName);
+          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
             id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -745,7 +745,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(HizmetName);
+          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
             id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -850,7 +850,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(HizmetName);
+          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
             id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -964,7 +964,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(HizmetName);
+          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
             id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -1184,7 +1184,7 @@ const service = {
     try {
       await service.checkMalzemeExists(data.malzemeId);
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -1358,7 +1358,7 @@ const service = {
         throw new Error('Kayıp veya düşüm yapılmış malzemeler zimmetlenemez.');
       }
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -1403,7 +1403,7 @@ const service = {
         throw new Error(`Bu malzeme "${malzemeDurum.currentPersonel.ad}" adlı personelde zimmetli. İade işlemi sadece o personel tarafından yapılabilir.`);
       }
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -1449,7 +1449,7 @@ const service = {
         throw new Error(`Bu malzeme "${malzemeDurum.currentPersonel.ad}" adlı personelde zimmetli. Devir işlemi sadece o personel tarafından yapılabilir.`);
       }
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -1495,7 +1495,7 @@ const service = {
         throw new Error('Kayıp veya düşüm yapılmış malzemeler transfer edilemez.');
       }
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -1532,7 +1532,7 @@ const service = {
         console.warn('Kondisyon güncelleme: Yeni kondisyon mevcut kondisyon ile aynı.');
       }
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -1573,7 +1573,7 @@ const service = {
         throw new Error('Zaten kayıp veya düşüm yapılmış malzemeler için tekrar kayıp bildirimi yapılamaz.');
       }
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -1615,7 +1615,7 @@ const service = {
         throw new Error('Zaten kayıp veya düşüm yapılmış malzemeler için tekrar düşüm yapılamaz.');
       }
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
@@ -1661,7 +1661,7 @@ const service = {
         throw new Error('Bu malzemenin zaten hareket geçmişi var. Kayıp olmayan malzemeler haricinde "Kayıt" işlemi yapılamaz.');
       }
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),

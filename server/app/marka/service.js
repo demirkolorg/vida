@@ -1,6 +1,6 @@
 import { prisma } from '../../config/db.js';
 import helper from '../../utils/helper.js';
-import { HizmetName, PrismaName, HumanName } from './base.js';
+import { VarlıkKod, PrismaName, HumanName } from './base.js';
 import { AuditStatusEnum } from '@prisma/client';
 import ModelService from '../model/service.js'; // Marka varlığını kontrol etmek için
 import MalzemeService from '../malzeme/service.js'; // Marka varlığını kontrol etmek için
@@ -83,7 +83,7 @@ const service = {
 
   create: async data => {
     try {
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         ad: data.ad,

@@ -1,6 +1,6 @@
 import { prisma } from '../../config/db.js';
 import helper from '../../utils/helper.js';
-import { HizmetName, PrismaName, HumanName } from './base.js';
+import { HizmetName, PrismaName, VarlıkKod } from './base.js';
 import { AuditStatusEnum } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -68,7 +68,7 @@ const service = {
   },
   register: async data => {
     try {
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
 
       const hashedPassword = await bcrypt.hash(data.parola, 12);
       const result = await prisma[PrismaName].create({

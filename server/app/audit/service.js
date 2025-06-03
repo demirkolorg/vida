@@ -1,6 +1,6 @@
 import { prisma } from '../../config/db.js';
 import helper from '../../utils/helper.js';
-import { PrismaName } from './base.js';
+import { PrismaName,VarlıkKod } from './base.js';
 import { AuditStatusEnum } from '@prisma/client';
 
 const serializeLog = log => {
@@ -35,7 +35,7 @@ const service = {
     const logData = serializeLog(log);
     const newAudit = await prisma[PrismaName].create({
       data: {
-        id: helper.generateId(HizmetName),
+        id: helper.generateId(VarlıkKod),
         level: 'INFO',
         createdById,
         hizmet: HizmetName,
@@ -51,7 +51,7 @@ const service = {
 
     const newAudit = await prisma[PrismaName].create({
       data: {
-        id: helper.generateId(HizmetName),
+        id: helper.generateId(VarlıkKod),
         level: 'ERROR',
         createdById,
         hizmet: HizmetName,
@@ -66,7 +66,7 @@ const service = {
     const logData = serializeLog(log);
     const newAudit = await prisma[PrismaName].create({
       data: {
-        id: helper.generateId(HizmetName),
+        id: helper.generateId(VarlıkKod),
         level: 'WARNING',
         createdById,
         hizmet: HizmetName,
@@ -81,7 +81,7 @@ const service = {
     const logData = serializeLog(log);
     const newAudit = await prisma[PrismaName].create({
       data: {
-        id: helper.generateId(HizmetName),
+        id: helper.generateId(VarlıkKod),
         level: 'SUCCESS',
         createdById,
         hizmet: HizmetName,

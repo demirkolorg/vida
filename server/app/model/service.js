@@ -1,6 +1,6 @@
 import { prisma } from '../../config/db.js';
 import helper from '../../utils/helper.js';
-import { HizmetName, PrismaName, HumanName } from './base.js';
+import { VarlıkKod, PrismaName, HumanName } from './base.js';
 import { AuditStatusEnum } from '@prisma/client';
 import MarkaService from '../marka/service.js';
 
@@ -115,7 +115,7 @@ const service = {
       await MarkaService.checkExistsById(data.markaId);
       await service.checkModelMarkaUnique(data.ad, data.markaId);
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         ad: data.ad,

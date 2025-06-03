@@ -7,14 +7,15 @@ import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { ToolbarIndex } from '@/components/toolbar/ToolbarIndex';
 import { AuditColumns } from '@/components/table/AuditColumns';
 import { DataTablePagination } from '@/components/table/Pagination';
-import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
+import { DataTableHeader } from '@/components/table/DataTableHeader';
+import { DataTableBody } from '@/components/table/DataTableBody';
+import { DataTableFooter } from '@/components/table/DataTableFooter';
 import { customGlobalFilterFn, useDebounce } from '@/components/table/Functions';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { getSortedRowModel, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
+import { Table } from '@/components/ui/table';
+import { getSortedRowModel, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
 import { FilterManagementSheet } from '@/app/filter/sheet/FilterManagementSheet';
 import { AdvancedFilterSheet } from '@/app/filter/sheet/AdvancedFilterSheet';
 import { toast } from 'sonner';
-import { HeaderContextMenu } from '@/components/contextMenu/HeaderContextMenu';
 import { getMySettings, updateMySettings } from '@/api/userSettings';
 
 export function DataTable({
@@ -54,7 +55,6 @@ export function DataTable({
   const [isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen] = useState(false);
   const [columnOrder, setColumnOrder] = useState([]);
   const scrollRef = useRef(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [userSettings, setUserSettings] = useState(null);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
@@ -98,10 +98,10 @@ export function DataTable({
   const updateUserColumnSettings = useCallback(async (entityType, columnSettings) => {
     try {
       const currentSettings = userSettings || {};
-      
+
       // Mevcut dataTableSettings'i al veya boş obje oluştur
       const dataTableSettings = currentSettings.dataTableSettings || {};
-      
+
       // Bu entity için ayarları güncelle
       const updatedDataTableSettings = {
         ...dataTableSettings,
@@ -141,12 +141,12 @@ export function DataTable({
   const initialVisibility = useMemo(() => {
     const auditColumnDefaultVisibility = includeAuditColumns ? { createdBy: false, createdAt: false, updatedBy: false, updatedAt: false } : {};
     const defaultVisibility = { ...auditColumnDefaultVisibility, ...columnVisibilityData };
-    
+
     // Eğer kaydedilmiş ayarlar varsa, onları kullan
     if (savedColumnSettings?.columnVisibility) {
       return { ...defaultVisibility, ...savedColumnSettings.columnVisibility };
     }
-    
+
     return defaultVisibility;
   }, [columnVisibilityData, includeAuditColumns, savedColumnSettings]);
 
@@ -168,32 +168,16 @@ export function DataTable({
         const defaultVisibility = { ...auditColumnDefaultVisibility, ...columnVisibilityData };
         setColumnVisibility({ ...defaultVisibility, ...savedColumnSettings.columnVisibility });
       }
-      
+
       if (savedColumnSettings.columnSizing) {
         setColumnSizing(savedColumnSettings.columnSizing);
       }
-      
+
       if (savedColumnSettings.columnOrder) {
         setColumnOrder(savedColumnSettings.columnOrder);
       }
     }
   }, [isLoadingSettings, savedColumnSettings, includeAuditColumns, columnVisibilityData]);
-
-  useEffect(() => {
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark') || window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setIsDarkMode(isDark);
-    };
-    checkDarkMode();
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    mediaQuery.addEventListener('change', checkDarkMode);
-    return () => {
-      observer.disconnect();
-      mediaQuery.removeEventListener('change', checkDarkMode);
-    };
-  }, []);
 
   const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
@@ -289,7 +273,7 @@ export function DataTable({
   const handleColumnVisibilityChange = useCallback((updaterOrValue) => {
     const newVisibility = typeof updaterOrValue === 'function' ? updaterOrValue(columnVisibility) : updaterOrValue;
     setColumnVisibility(newVisibility);
-    
+
     // Debounced kaydetme
     debouncedSaveSettings({
       columnVisibility: newVisibility,
@@ -302,7 +286,7 @@ export function DataTable({
   const handleColumnSizingChange = useCallback((updaterOrValue) => {
     const newSizing = typeof updaterOrValue === 'function' ? updaterOrValue(columnSizing) : updaterOrValue;
     setColumnSizing(newSizing);
-    
+
     // Debounced kaydetme (boyut değişikliği için daha uzun süre)
     debouncedSaveSettings({
       columnVisibility,
@@ -315,7 +299,7 @@ export function DataTable({
   const handleColumnOrderChange = useCallback((updaterOrValue) => {
     const newOrder = typeof updaterOrValue === 'function' ? updaterOrValue(columnOrder) : updaterOrValue;
     setColumnOrder(newOrder);
-    
+
     debouncedSaveSettings({
       columnVisibility,
       columnSizing,
@@ -352,7 +336,7 @@ export function DataTable({
       columnOrder,
       columnSizing,
     },
-    initialState: { 
+    initialState: {
       pagination: { pageSize: 20 },
       columnSizing: savedColumnSettings?.columnSizing || {}
     },
@@ -480,24 +464,13 @@ export function DataTable({
     if (enableColumnReordering) console.log('Yeni Sütun Sırası:', columnOrder);
   }, [columnOrder, enableColumnReordering]);
 
-  const handleRowClick = useCallback(
-    (rowData, row) => {
-      if (enableRowSelection && (window.event?.ctrlKey || window.event?.metaKey)) {
-        row.toggleSelected();
-        return;
-      }
-      onRowClick?.(rowData);
-    },
-    [onRowClick, enableRowSelection],
-  );
-
   // Kolon ayarlarını sıfırlama fonksiyonu
   const resetColumnSettings = useCallback(async () => {
     try {
       // Varsayılan ayarlara dön
       const auditColumnDefaultVisibility = includeAuditColumns ? { createdBy: false, createdAt: false, updatedBy: false, updatedAt: false } : {};
       const defaultVisibility = { ...auditColumnDefaultVisibility, ...columnVisibilityData };
-      
+
       setColumnVisibility(defaultVisibility);
       setColumnSizing({});
       setColumnOrder([]);
@@ -590,115 +563,18 @@ export function DataTable({
       <div className="flex-1 min-h-0 rounded-md border overflow-hidden">
         <div className="h-full overflow-y-auto relative scrollbar dark:dark-scrollbar" ref={scrollRef}>
           <Table className="w-full table-fixed">
-            <TableHeader className="sticky top-0 z-20 bg-background border-b">
-              {table.getHeaderGroups().map(headerGroup => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map(header => {
-                    const headerContent = header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext());
-                    return (
-                      <TableHead
-                        className="group relative bg-primary/10"
-                        key={header.id}
-                        style={{
-                          width: header.getSize(),
-                        }}
-                      >
-                        <HeaderContextMenu column={header.column} table={table}>
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex-grow">{headerContent}</div>
-                            {header.column.getCanResize() && (
-                              <div
-                                onMouseDown={header.getResizeHandler()}
-                                onTouchStart={header.getResizeHandler()}
-                                className={cn(
-                                  'absolute top-0 right-0 h-full w-1.5 cursor-col-resize select-none touch-none bg-transparent group-hover:bg-border transition-colors duration-200 ease-in-out z-10 opacity-0 group-hover:opacity-100',
-                                  header.column.getIsResizing() && 'bg-primary opacity-100',
-                                )}
-                              />
-                            )}
-                          </div>
-                        </HeaderContextMenu>
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map(row => {
-                  const rowData = row.original;
-                  const contextMenuContent = rowContextMenu ? rowContextMenu(row) : null;
-                  const renderRowContent = () =>
-                    row.getVisibleCells().map(cell => {
-                      const cellContent = flexRender(cell.column.columnDef.cell, cell.getContext());
-                      return (
-                        <TableCell
-                          className="break-words px-5"
-                          key={cell.id}
-                          style={{
-                            width: cell.column.getSize(),
-                          }}
-                        >
-                          {cellContent}
-                        </TableCell>
-                      );
-                    });
-                  const rowClassName = cn('even:bg-primary/3  cursor-default transition-colors', row.getIsSelected() && 'bg-muted/50', onRowClick && 'hover:bg-muted/30');
-                  if (contextMenuContent) {
-                    return (
-                      <ContextMenu key={`context-${row.id}`}>
-                        <ContextMenuTrigger asChild>
-                          <TableRow data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => handleRowClick(rowData, row)} className={rowClassName}>
-                            {renderRowContent()}
-                          </TableRow>
-                        </ContextMenuTrigger>
-                        {contextMenuContent}
-                      </ContextMenu>
-                    );
-                  } else {
-                    return (
-                      <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => handleRowClick(rowData, row)} className={rowClassName}>
-                        {renderRowContent()}
-                      </TableRow>
-                    );
-                  }
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={visibleColumnsCount} className="h-24 text-center">
-                    {isLoading ? 'Yükleniyor...' : 'Sonuç bulunamadı.'}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
+            <DataTableHeader table={table} />
+            <DataTableBody
+              table={table}
+              isLoading={isLoading}
+              onRowClick={onRowClick}
+              rowContextMenu={rowContextMenu}
+              enableRowSelection={enableRowSelection}
+              visibleColumnsCount={visibleColumnsCount}
+            />
           </Table>
 
-          {summarySetup.length > 0 && allSummaries && Object.keys(allSummaries).length > 0 && (
-            <div className="sticky bottom-0 z-20 bg-background border-t">
-              <Table className="w-full table-fixed">
-                <tfoot>
-                  <TableRow className="border-t-1 border-b-0 h-11 bg-primary-foreground">
-                    <TableCell colSpan={visibleColumnsCount} className="p-2 text-left space-y-1">
-                      <div className="flex gap-10 mx-5">
-                        {Object.values(allSummaries).map(summaryGroup => (
-                          <div key={summaryGroup.title} className="flex items-center flex-wrap gap-x-2 gap-y-1">
-                            <span className="text-sm font-semibold text-muted-foreground mr-1">{summaryGroup.title}</span>
-                            {summaryGroup.items.map(({ key, count }) => (
-                              <Badge key={key} variant="secondary" className="whitespace-nowrap">
-                                {key}:<span className="font-bold ml-1">{count}</span>
-                              </Badge>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                </tfoot>
-              </Table>
-            </div>
-          )}
+          {/* <DataTableFooter summarySetup={summarySetup} allSummaries={allSummaries} visibleColumnsCount={visibleColumnsCount} /> */}
         </div>
       </div>
 

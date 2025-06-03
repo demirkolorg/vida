@@ -22,7 +22,7 @@ export const Audit_Columns = () => [
     header: ({ column }) => <HeaderButton column={column} title="Log ID" />,
     cell: ({ row }) => {
       const id = row.getValue('id');
-      return <div className="font-mono text-xs truncate max-w-[120px] text-muted-foreground">{id || '-'}</div>;
+      return <div className="font-mono text-xs  text-muted-foreground">{id || '-'}</div>;
     },
     size: 150,
     minSize: 120,

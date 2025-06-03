@@ -1,6 +1,6 @@
 import { prisma } from '../../config/db.js';
 import helper from '../../utils/helper.js';
-import { HizmetName, PrismaName, HumanName } from './base.js';
+import { VarlıkKod, PrismaName, HumanName } from './base.js';
 import { AuditStatusEnum, MalzemeTipiEnum } from '@prisma/client';
 import BirimService from '../birim/service.js';
 import SubeService from '../sube/service.js';
@@ -238,7 +238,7 @@ const service = {
       if (data.stokDemirbasNo) await service.checkStokDemirbasNoExists(data.stokDemirbasNo);
       if (data.bademSeriNo) await service.checkBademSeriNoExists(data.bademSeriNo);
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
         id: yeniId,
         malzemeTipi: data.malzemeTipi,

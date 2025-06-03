@@ -13,6 +13,7 @@ const ENTITY_ID_PREFIXES = {
   USERSETTINGS: 'UST',
   SAVEDFILTER: 'SFL',
   AUDITLOG: 'ALG',
+  AUTH: 'ATH',
 };
 
 // prisma/seed.js

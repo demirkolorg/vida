@@ -1,6 +1,6 @@
 import { prisma } from '../../config/db.js';
 import helper from '../../utils/helper.js';
-import { HizmetName, HumanName, PrismaName } from './base.js';
+import { VarlıkKod, HumanName, PrismaName } from './base.js';
 import { AuditStatusEnum } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import BuroService from '../buro/service.js';
@@ -108,7 +108,7 @@ const service = {
     try {
       if (data.buroId) await BuroService.checkExistsById(data.buroId);
 
-      const yeniId = helper.generateId(HizmetName);
+      const yeniId = helper.generateId(VarlıkKod);
 
       const createPayload = {
         id: yeniId,

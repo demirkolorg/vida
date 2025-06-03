@@ -2,3 +2,4 @@
 export const HumanName = "Malzeme Hareket";   
 export const HizmetName = "MALZEMEHAREKET"; 
 export const PrismaName = "malzemeHareket";
+export const VarlıkKod="MHR"
