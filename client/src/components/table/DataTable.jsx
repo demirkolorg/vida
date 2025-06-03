@@ -16,6 +16,27 @@ import { AdvancedFilterSheet } from '@/app/filter/sheet/AdvancedFilterSheet';
 import { toast } from 'sonner';
 import { HeaderContextMenu } from '@/components/contextMenu/HeaderContextMenu';
 
+// LocalStorage için yardımcı fonksiyonlar
+const getColumnSettingsKey = (entityType) => `datatable-columns-${entityType}`;
+
+const saveColumnSettings = (entityType, settings) => {
+  try {
+    localStorage.setItem(getColumnSettingsKey(entityType), JSON.stringify(settings));
+  } catch (error) {
+    console.warn('Column settings could not be saved to localStorage:', error);
+  }
+};
+
+const loadColumnSettings = (entityType) => {
+  try {
+    const saved = localStorage.getItem(getColumnSettingsKey(entityType));
+    return saved ? JSON.parse(saved) : null;
+  } catch (error) {
+    console.warn('Column settings could not be loaded from localStorage:', error);
+    return null;
+  }
+};
+
 export function DataTable({
   entityType,
   entityHuman,
@@ -43,7 +64,7 @@ export function DataTable({
   selectionMode,
   selectedRowIds = [],
   enableSelectAll,
-  showRowNumberColumn = true, // YENİ PROP: Satır numarası sütununu göster/gizle
+  showRowNumberColumn = true,
 }) {
   const openSheet = useSheetStore(state => state.openSheet);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -95,12 +116,27 @@ export function DataTable({
 
   const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
+  // localStorage'dan kolon ayarlarını yükle
+  const savedColumnSettings = useMemo(() => {
+    return loadColumnSettings(entityType);
+  }, [entityType]);
+
   const initialVisibility = useMemo(() => {
     const auditColumnDefaultVisibility = includeAuditColumns ? { createdBy: false, createdAt: false, updatedBy: false, updatedAt: false } : {};
-    return { ...auditColumnDefaultVisibility, ...columnVisibilityData };
-  }, [columnVisibilityData, includeAuditColumns]);
+    const defaultVisibility = { ...auditColumnDefaultVisibility, ...columnVisibilityData };
+    
+    // Eğer kaydedilmiş ayarlar varsa, onları kullan
+    if (savedColumnSettings?.columnVisibility) {
+      return { ...defaultVisibility, ...savedColumnSettings.columnVisibility };
+    }
+    
+    return defaultVisibility;
+  }, [columnVisibilityData, includeAuditColumns, savedColumnSettings]);
 
   const [columnVisibility, setColumnVisibility] = useState(initialVisibility);
+  const [columnSizing, setColumnSizing] = useState(() => {
+    return savedColumnSettings?.columnSizing || {};
+  });
 
   const activeGlobalFilter = useMemo(() => {
     if (advancedFilterObject && advancedFilterObject.rules && advancedFilterObject.rules.length > 0) return advancedFilterObject;
@@ -134,7 +170,6 @@ export function DataTable({
     [enableSelectAll, selectionMode],
   );
 
-  // YENİ: Satır Numarası Sütun Tanımı
   const rowNumberColumn = useMemo(
     () => ({
       id: 'rowNumber',
@@ -144,14 +179,14 @@ export function DataTable({
       minSize: 30,
       maxSize: 30,
       enableSorting: false,
-      enableHiding: true, // Satır numarası sütunu genellikle gizlenmez
-      enableResizing: false, // Yeniden boyutlandırmaya gerek yok
+      enableHiding: true,
+      enableResizing: false,
       meta: {
         exportHeader: '#',
         filterVariant: 'text',
       },
     }),
-    [], // Bağımlılık yok, çünkü içeriği sabit
+    [],
   );
 
   const allColumns = useMemo(() => {
@@ -162,7 +197,6 @@ export function DataTable({
       leadingCols.push(selectionColumn);
     }
 
-    // YENİ: Satır numarası sütununu ekle (eğer prop ile aktif edilmişse)
     if (showRowNumberColumn) {
       leadingCols.push(rowNumberColumn);
     }
@@ -174,9 +208,56 @@ export function DataTable({
     enableRowSelection,
     showRowSelectionColumn,
     selectionColumn,
-    showRowNumberColumn, // Bağımlılıklara ekle
-    rowNumberColumn, // Bağımlılıklara ekle
+    showRowNumberColumn,
+    rowNumberColumn,
   ]);
+
+  // Kolon ayarlarını localStorage'a kaydetme fonksiyonu
+  const saveCurrentColumnSettings = useCallback((visibility, sizing, order) => {
+    const settings = {
+      columnVisibility: visibility,
+      columnSizing: sizing,
+      columnOrder: order,
+      timestamp: Date.now()
+    };
+    saveColumnSettings(entityType, settings);
+  }, [entityType]);
+
+  // Kolon görünürlüğü değiştiğinde localStorage'a kaydet
+  const handleColumnVisibilityChange = useCallback((updaterOrValue) => {
+    const newVisibility = typeof updaterOrValue === 'function' ? updaterOrValue(columnVisibility) : updaterOrValue;
+    setColumnVisibility(newVisibility);
+    // Debounce ile kaydetme işlemini geciktir
+    setTimeout(() => {
+      saveCurrentColumnSettings(newVisibility, columnSizing, columnOrder);
+    }, 500);
+  }, [columnVisibility, columnSizing, columnOrder, saveCurrentColumnSettings]);
+
+  // Kolon boyutu değiştiğinde localStorage'a kaydet
+  const handleColumnSizingChange = useCallback((updaterOrValue) => {
+    const newSizing = typeof updaterOrValue === 'function' ? updaterOrValue(columnSizing) : updaterOrValue;
+    setColumnSizing(newSizing);
+    // Debounce ile kaydetme işlemini geciktir
+    setTimeout(() => {
+      saveCurrentColumnSettings(columnVisibility, newSizing, columnOrder);
+    }, 1000); // Boyut değişikliği için daha uzun süre
+  }, [columnVisibility, columnSizing, columnOrder, saveCurrentColumnSettings]);
+
+  // Kolon sırası değiştiğinde localStorage'a kaydet
+  const handleColumnOrderChange = useCallback((updaterOrValue) => {
+    const newOrder = typeof updaterOrValue === 'function' ? updaterOrValue(columnOrder) : updaterOrValue;
+    setColumnOrder(newOrder);
+    setTimeout(() => {
+      saveCurrentColumnSettings(columnVisibility, columnSizing, newOrder);
+    }, 500);
+  }, [columnVisibility, columnSizing, columnOrder, saveCurrentColumnSettings]);
+
+  // Kaydedilmiş kolon sırasını yükle
+  useEffect(() => {
+    if (savedColumnSettings?.columnOrder && savedColumnSettings.columnOrder.length > 0) {
+      setColumnOrder(savedColumnSettings.columnOrder);
+    }
+  }, [savedColumnSettings]);
 
   const table = useReactTable({
     data,
@@ -190,13 +271,14 @@ export function DataTable({
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
     onRowSelectionChange: handleRowSelectionChange,
+    onColumnSizingChange: handleColumnSizingChange,
     globalFilterFn: customGlobalFilterFn,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
     enableColumnOrdering: enableColumnReordering,
-    onColumnOrderChange: setColumnOrder,
+    onColumnOrderChange: handleColumnOrderChange,
     state: {
       sorting,
       columnFilters,
@@ -204,8 +286,12 @@ export function DataTable({
       columnVisibility,
       rowSelection,
       columnOrder,
+      columnSizing,
     },
-    initialState: { pagination: { pageSize: 20 } },
+    initialState: { 
+      pagination: { pageSize: 20 },
+      columnSizing: savedColumnSettings?.columnSizing || {}
+    },
   });
 
   const visibleColumnsCount = table.getVisibleLeafColumns().length;
@@ -294,7 +380,7 @@ export function DataTable({
     setAdvancedFilterObject(null);
     clearSelection();
     toast.info('Tüm filtreler temizlendi.');
-  }, [table, clearSelection]); // clearSelection'ı bağımlılıklara ekledim
+  }, [table, clearSelection]);
 
   const handleApplySavedFilter = useCallback(
     savedFilterState => {
@@ -341,6 +427,23 @@ export function DataTable({
     [onRowClick, enableRowSelection],
   );
 
+  // Kolon ayarlarını sıfırlama fonksiyonu (isteğe bağlı)
+  const resetColumnSettings = useCallback(() => {
+    try {
+      localStorage.removeItem(getColumnSettingsKey(entityType));
+      // Varsayılan ayarlara dön
+      const auditColumnDefaultVisibility = includeAuditColumns ? { createdBy: false, createdAt: false, updatedBy: false, updatedAt: false } : {};
+      const defaultVisibility = { ...auditColumnDefaultVisibility, ...columnVisibilityData };
+      setColumnVisibility(defaultVisibility);
+      setColumnSizing({});
+      setColumnOrder([]);
+      toast.success('Kolon ayarları sıfırlandı');
+    } catch (error) {
+      console.error('Error resetting column settings:', error);
+      toast.error('Kolon ayarları sıfırlanamadı');
+    }
+  }, [entityType, includeAuditColumns, columnVisibilityData]);
+
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden">
       <FilterManagementSheet
@@ -376,6 +479,7 @@ export function DataTable({
           onToggleStatus={onToggleStatus}
           isTableFiltered={isTableFiltered}
           bulkActions={bulkActions}
+          resetColumnSettings={resetColumnSettings} // Opsiyonel: Toolbar'a reset butonu eklemek için
         />
       </div>
 
@@ -441,7 +545,7 @@ export function DataTable({
                       const cellContent = flexRender(cell.column.columnDef.cell, cell.getContext());
                       return (
                         <TableCell
-                          className="break-words px-5" // px-5 yerine px-3 veya px-4 daha iyi olabilir, sütunlar sıkışmasın
+                          className="break-words px-5"
                           key={cell.id}
                           style={{
                             width: cell.column.getSize(),
