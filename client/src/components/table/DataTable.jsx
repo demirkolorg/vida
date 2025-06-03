@@ -39,10 +39,11 @@ export function DataTable({
   displayStatusFilter,
   enableColumnReordering = false,
   onRowSelectionChange,
-  showRowSelectionColumn, // Yeni prop: seçim sütununu göster/gizle
-  selectionMode, // 'single' | 'multiple'
-  selectedRowIds = [], // Dışarıdan kontrol edilen seçili satırlar
-  enableSelectAll, // Tümünü seç checkbox'ını göster/gizle
+  showRowSelectionColumn,
+  selectionMode,
+  selectedRowIds = [],
+  enableSelectAll,
+  showRowNumberColumn = true, // YENİ PROP: Satır numarası sütununu göster/gizle
 }) {
   const openSheet = useSheetStore(state => state.openSheet);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -54,19 +55,15 @@ export function DataTable({
   const scrollRef = useRef(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Row selection state - controlled veya uncontrolled
   const [internalRowSelection, setInternalRowSelection] = useState({});
   const rowSelection = selectedRowIds?.length > 0 ? selectedRowIds.reduce((acc, id) => ({ ...acc, [id]: true }), {}) : internalRowSelection;
 
   const handleRowSelectionChange = useCallback(
     updaterOrValue => {
       const newSelection = typeof updaterOrValue === 'function' ? updaterOrValue(rowSelection) : updaterOrValue;
-
-      // Single selection mode kontrolü
       if (selectionMode === 'single') {
         const selectedKeys = Object.keys(newSelection).filter(key => newSelection[key]);
         if (selectedKeys.length > 1) {
-          // Sadece son seçileni tut
           const lastSelected = selectedKeys[selectedKeys.length - 1];
           const singleSelection = { [lastSelected]: true };
           setInternalRowSelection(singleSelection);
@@ -74,31 +71,22 @@ export function DataTable({
           return;
         }
       }
-
       setInternalRowSelection(newSelection);
       onRowSelectionChange?.(newSelection);
     },
     [rowSelection, selectionMode, onRowSelectionChange],
   );
 
-  // Dark mode algılama
   useEffect(() => {
     const checkDarkMode = () => {
       const isDark = document.documentElement.classList.contains('dark') || window.matchMedia('(prefers-color-scheme: dark)').matches;
       setIsDarkMode(isDark);
     };
-
     checkDarkMode();
-
     const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     mediaQuery.addEventListener('change', checkDarkMode);
-
     return () => {
       observer.disconnect();
       mediaQuery.removeEventListener('change', checkDarkMode);
@@ -108,27 +96,17 @@ export function DataTable({
   const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
   const initialVisibility = useMemo(() => {
-    const auditColumnDefaultVisibility = includeAuditColumns
-      ? {
-          createdBy: false,
-          createdAt: false,
-          updatedBy: false,
-          updatedAt: false,
-        }
-      : {};
+    const auditColumnDefaultVisibility = includeAuditColumns ? { createdBy: false, createdAt: false, updatedBy: false, updatedAt: false } : {};
     return { ...auditColumnDefaultVisibility, ...columnVisibilityData };
   }, [columnVisibilityData, includeAuditColumns]);
 
   const [columnVisibility, setColumnVisibility] = useState(initialVisibility);
 
   const activeGlobalFilter = useMemo(() => {
-    if (advancedFilterObject && advancedFilterObject.rules && advancedFilterObject.rules.length > 0) {
-      return advancedFilterObject;
-    }
+    if (advancedFilterObject && advancedFilterObject.rules && advancedFilterObject.rules.length > 0) return advancedFilterObject;
     return debouncedGlobalSearchTerm || '';
   }, [advancedFilterObject, debouncedGlobalSearchTerm]);
 
-  // Selection column tanımı
   const selectionColumn = useMemo(
     () => ({
       id: 'select',
@@ -141,30 +119,64 @@ export function DataTable({
           )}
         </div>
       ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={value => row.toggleSelected(!!value)}
-          aria-label={`Satır ${row.index + 1}'i seç`}
-          className="cursor-pointer translate-y-[2px]"
-          onClick={e => e.stopPropagation()} // Row click ile çakışmasın
-        />
-      ),
+      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={value => row.toggleSelected(!!value)} aria-label={`Satır ${row.index + 1}'i seç`} className="cursor-pointer translate-y-[2px]" onClick={e => e.stopPropagation()} />,
       enableSorting: false,
-      enableHiding: false,
-      size: 50,
-      maxSize: 50,
-      minSize: 50,
+      enableHiding: true,
+      enableResizing: false,
+      size: 30,
+      maxSize: 30,
+      minSize: 30,
+      meta: {
+        exportHeader: 'Seç',
+        filterVariant: 'text',
+      },
     }),
     [enableSelectAll, selectionMode],
   );
 
-  // Tüm kolonları birleştir
+  // YENİ: Satır Numarası Sütun Tanımı
+  const rowNumberColumn = useMemo(
+    () => ({
+      id: 'rowNumber',
+      header: () => <div className="text-center">#</div>,
+      cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
+      size: 30,
+      minSize: 30,
+      maxSize: 30,
+      enableSorting: false,
+      enableHiding: true, // Satır numarası sütunu genellikle gizlenmez
+      enableResizing: false, // Yeniden boyutlandırmaya gerek yok
+      meta: {
+        exportHeader: '#',
+        filterVariant: 'text',
+      },
+    }),
+    [], // Bağımlılık yok, çünkü içeriği sabit
+  );
+
   const allColumns = useMemo(() => {
     const auditCols = includeAuditColumns ? AuditColumns() : [];
-    const selectionCol = enableRowSelection && showRowSelectionColumn ? [selectionColumn] : [];
-    return [...selectionCol, ...specificColumns, ...auditCols];
-  }, [specificColumns, includeAuditColumns, enableRowSelection, showRowSelectionColumn, selectionColumn]);
+    const leadingCols = [];
+
+    if (enableRowSelection && showRowSelectionColumn) {
+      leadingCols.push(selectionColumn);
+    }
+
+    // YENİ: Satır numarası sütununu ekle (eğer prop ile aktif edilmişse)
+    if (showRowNumberColumn) {
+      leadingCols.push(rowNumberColumn);
+    }
+
+    return [...leadingCols, ...specificColumns, ...auditCols];
+  }, [
+    specificColumns,
+    includeAuditColumns,
+    enableRowSelection,
+    showRowSelectionColumn,
+    selectionColumn,
+    showRowNumberColumn, // Bağımlılıklara ekle
+    rowNumberColumn, // Bağımlılıklara ekle
+  ]);
 
   const table = useReactTable({
     data,
@@ -197,28 +209,22 @@ export function DataTable({
   });
 
   const visibleColumnsCount = table.getVisibleLeafColumns().length;
-
-  // Seçili satır sayısı ve seçili veriler
   const selectedRowCount = Object.keys(rowSelection).filter(key => rowSelection[key]).length;
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const selectedData = selectedRows.map(row => row.original);
 
-  // Seçim temizleme fonksiyonu
   const clearSelection = useCallback(() => {
     setInternalRowSelection({});
     onRowSelectionChange?.({});
     toast.info('Seçim temizlendi');
   }, [onRowSelectionChange]);
 
-  // Seçili satırları işleme alma fonksiyonları
   const bulkActions = useMemo(() => {
     if (selectedRowCount === 0) return null;
-
     return {
       count: selectedRowCount,
       data: selectedData,
       clear: clearSelection,
-      // Burada bulk işlemler için özel actionlar eklenebilir
       exportSelected: () => {
         console.log('Seçili satırlar export edilecek:', selectedData);
         toast.success(`${selectedRowCount} satır export edilecek`);
@@ -235,12 +241,8 @@ export function DataTable({
   }, [openSheet, entityType]);
 
   const allSummaries = useMemo(() => {
-    if (!summarySetup || summarySetup.length === 0 || !data || data.length === 0) {
-      return null;
-    }
-
+    if (!summarySetup || summarySetup.length === 0 || !data || data.length === 0) return null;
     const summaries = {};
-
     summarySetup.forEach(setup => {
       const { columnId, title } = setup;
       const counts = {};
@@ -250,17 +252,14 @@ export function DataTable({
           const key = String(value ?? 'Bilinmeyen');
           counts[key] = (counts[key] || 0) + 1;
         });
-
         const items = Object.entries(counts)
           .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
           .map(([key, count]) => ({ key, count }));
-
         summaries[String(columnId)] = { title, items };
       } catch (error) {
         console.error(`Summary calculation failed for column: ${String(columnId)}`, error);
       }
     });
-
     return summaries;
   }, [data, summarySetup]);
 
@@ -268,7 +267,6 @@ export function DataTable({
     value => {
       const newSearchTerm = value || '';
       setGlobalSearchInput(newSearchTerm);
-
       if (newSearchTerm.trim() !== '' && advancedFilterObject) {
         setAdvancedFilterObject(null);
         toast.info('Gelişmiş filtre temizlendi, basit arama uygulanıyor.');
@@ -281,9 +279,7 @@ export function DataTable({
     newAdvancedFilterLogic => {
       if (newAdvancedFilterLogic && newAdvancedFilterLogic.rules && newAdvancedFilterLogic.rules.length > 0) {
         setAdvancedFilterObject(newAdvancedFilterLogic);
-        if (globalSearchInput) {
-          setGlobalSearchInput('');
-        }
+        if (globalSearchInput) setGlobalSearchInput('');
         toast.success('Gelişmiş filtreler uygulandı.');
       } else {
         setAdvancedFilterObject(null);
@@ -298,7 +294,7 @@ export function DataTable({
     setAdvancedFilterObject(null);
     clearSelection();
     toast.info('Tüm filtreler temizlendi.');
-  }, [table]);
+  }, [table, clearSelection]); // clearSelection'ı bağımlılıklara ekledim
 
   const handleApplySavedFilter = useCallback(
     savedFilterState => {
@@ -306,11 +302,8 @@ export function DataTable({
         toast.error('Kaydedilmiş filtre durumu bulunamadı.');
         return;
       }
-
       const { columnFilters: savedColumnFilters, globalFilter: savedGlobalFilter, sorting: savedSorting } = savedFilterState;
-
       table.setColumnFilters(savedColumnFilters || []);
-
       if (typeof savedGlobalFilter === 'string') {
         setGlobalSearchInput(savedGlobalFilter);
         setAdvancedFilterObject(null);
@@ -321,7 +314,6 @@ export function DataTable({
         setGlobalSearchInput('');
         setAdvancedFilterObject(null);
       }
-
       table.setSorting(savedSorting || []);
     },
     [table],
@@ -335,21 +327,15 @@ export function DataTable({
   }, [table.getState().columnFilters, table.getState().globalFilter]);
 
   useEffect(() => {
-    if (enableColumnReordering) {
-      console.log('Yeni Sütun Sırası:', columnOrder);
-    }
+    if (enableColumnReordering) console.log('Yeni Sütun Sırası:', columnOrder);
   }, [columnOrder, enableColumnReordering]);
 
-  // Enhanced row click handler
   const handleRowClick = useCallback(
     (rowData, row) => {
-      // Eğer checkbox seçimi aktifse ve Ctrl/Cmd tuşu basılıysa sadece seçim yap
       if (enableRowSelection && (window.event?.ctrlKey || window.event?.metaKey)) {
         row.toggleSelected();
         return;
       }
-
-      // Normal row click
       onRowClick?.(rowData);
     },
     [onRowClick, enableRowSelection],
@@ -368,7 +354,6 @@ export function DataTable({
       />
       <AdvancedFilterSheet sheetTypeIdentifier="advancedFilter" entityType={entityType} entityHuman={entityHuman} table={table} onApplyFilters={applyAdvancedFiltersToTable} />
 
-      {/* Toolbar - Sabit yükseklik */}
       <div className="flex-shrink-0">
         <ToolbarIndex
           table={table}
@@ -390,11 +375,10 @@ export function DataTable({
           displayStatusFilter={displayStatusFilter}
           onToggleStatus={onToggleStatus}
           isTableFiltered={isTableFiltered}
-          bulkActions={bulkActions} // Bulk actions'ı toolbar'a geç
+          bulkActions={bulkActions}
         />
       </div>
 
-      {/* Seçim Bilgileri Banner */}
       {selectedRowCount > 0 && (
         <div className="flex-shrink-0 bg-primary/5 border border-primary/20 rounded-md p-3 mb-2">
           <div className="flex items-center justify-between">
@@ -403,31 +387,15 @@ export function DataTable({
               <Button onClick={clearSelection} variant="outline" className="h-6">
                 Seçimi Temizle
               </Button>
-              {/* <span className="text-sm text-muted-foreground">{selectionMode === 'single' ? 'Tek seçim modu' : 'Çoklu seçim modu'}</span> */}
             </div>
-            <div className="flex items-center space-x-2">
-              {/* <button
-                onClick={bulkActions?.exportSelected}
-                className="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-              >
-                Export Et
-              </button> */}
-              {/* <button
-                onClick={bulkActions?.deleteSelected}
-                className="text-sm px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-              >
-                Sil
-              </button> */}
-            </div>
+            <div className="flex items-center space-x-2">{/* Bulk action butonları buraya eklenebilir */}</div>
           </div>
         </div>
       )}
 
-      {/* Tablo Container - Kalan alanı kaplar */}
       <div className="flex-1 min-h-0 rounded-md border overflow-hidden">
         <div className="h-full overflow-y-auto relative scrollbar dark:dark-scrollbar" ref={scrollRef}>
           <Table className="w-full table-fixed">
-            {/* Header - Sabit */}
             <TableHeader className="sticky top-0 z-20 bg-background border-b">
               {table.getHeaderGroups().map(headerGroup => (
                 <TableRow key={headerGroup.id}>
@@ -463,19 +431,17 @@ export function DataTable({
               ))}
             </TableHeader>
 
-            {/* Body - Scrollable */}
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map(row => {
                   const rowData = row.original;
                   const contextMenuContent = rowContextMenu ? rowContextMenu(row) : null;
-
                   const renderRowContent = () =>
                     row.getVisibleCells().map(cell => {
                       const cellContent = flexRender(cell.column.columnDef.cell, cell.getContext());
                       return (
                         <TableCell
-                          className="break-words px-5"
+                          className="break-words px-5" // px-5 yerine px-3 veya px-4 daha iyi olabilir, sütunlar sıkışmasın
                           key={cell.id}
                           style={{
                             width: cell.column.getSize(),
@@ -485,9 +451,7 @@ export function DataTable({
                         </TableCell>
                       );
                     });
-
                   const rowClassName = cn('even:bg-primary/3  cursor-default transition-colors', row.getIsSelected() && 'bg-muted/50', onRowClick && 'hover:bg-muted/30');
-
                   if (contextMenuContent) {
                     return (
                       <ContextMenu key={`context-${row.id}`}>
@@ -517,7 +481,6 @@ export function DataTable({
             </TableBody>
           </Table>
 
-          {/* Footer - Summary */}
           {summarySetup.length > 0 && allSummaries && Object.keys(allSummaries).length > 0 && (
             <div className="sticky bottom-0 z-20 bg-background border-t">
               <Table className="w-full table-fixed">
@@ -545,7 +508,6 @@ export function DataTable({
         </div>
       </div>
 
-      {/* Pagination - Sabit yükseklik */}
       <div className="flex-shrink-0 pt-2">
         <DataTablePagination table={table} />
       </div>
