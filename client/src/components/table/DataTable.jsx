@@ -493,20 +493,6 @@ export function DataTable({
     }
   }, [entityType, includeAuditColumns, columnVisibilityData, updateUserColumnSettings]);
 
-  // Yükleme durumunu göster
-  if (isLoadingSettings) {
-    return (
-      <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Ayarlar yükleniyor...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden">
       <FilterManagementSheet
