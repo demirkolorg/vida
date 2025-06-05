@@ -12,7 +12,7 @@ export const MalzemeHareketTutanagiHeader = ({title}) => {
         <div className="text-lg font-bold">İÇİŞLERİ BAKANLIĞI</div>
         {/* <div className="text-lg font-bold">HAVALİMANI BAŞKANLIĞI</div> */}
         <div className="text-lg font-bold">VAN HAVALİMANI ŞUBE MÜDÜRLÜĞÜ</div>
-        <div className="text-xl font-bold">{title}</div>
+        <div className="text-lg font-bold">{title}</div>
       </div>
 
       {/* Sağ Logo */}

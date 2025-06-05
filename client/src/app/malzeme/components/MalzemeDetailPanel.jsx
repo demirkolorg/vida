@@ -109,8 +109,6 @@ const MalzemeDetailPanel = ({ selectedMalzeme, onClose }) => {
     }
   };
 
-  // Malzeme durumu analizi
-  // const sonHareket = selectedMalzeme.malzemeHareketleri?.[0];
   const sonHareket = anlamliSonHareketi(selectedMalzeme);
 
   const malzemeDurumu = (() => {
@@ -241,7 +239,7 @@ const MalzemeDetailPanel = ({ selectedMalzeme, onClose }) => {
             <div className="flex items-center justify-between px-8 pb-4">
               <div className="flex items-center gap-2">
                 <History className="h-4 w-4" />
-                <h3 className="font-medium">Hareket Geçmişi</h3>
+                <h3 className="font-medium">Hareket Geçmişi ({hareketler.length})</h3>
               </div>
               <Button variant="outline" size="sm" onClick={fetchMalzemeGecmisi} disabled={loadingHareketler}>
                 {loadingHareketler ? 'Yükleniyor...' : 'Yenile'}

@@ -37,9 +37,6 @@ export function Tutanak_DataTable({ onRowClick }) {
     fetchData({ showToast: true });
   }, [fetchData]);
 
-  const filteredDatas = useMemo(() => {
-    return datas.filter(item => item.status === displayStatusFilter);
-  }, [datas, displayStatusFilter]);
 
   const handleRowClick = useCallback(
     rowData => {
@@ -51,11 +48,10 @@ export function Tutanak_DataTable({ onRowClick }) {
   );
   return (
     <DataTable
-      data={filteredDatas}
+      data={datas}
       columns={columns}
       isLoading={isLoading}
       onRefresh={handleRefreshData}
-      onToggleStatus={toggleDisplayStatusFilter}
       entityType={EntityType}
       entityHuman={EntityHuman}
       rowContextMenu={contextMenu}
