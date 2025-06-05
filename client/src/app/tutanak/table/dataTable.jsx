@@ -65,6 +65,7 @@ export function Tutanak_DataTable({ onRowClick }) {
       renderCollapsibleToolbarContent={() => <EntitySpecificToolbar />}
       displayStatusFilter={displayStatusFilter}
       onRowClick={handleRowClick} // Row click handler'ı ekle
+      autoClickFirstRow={true}
     />
   );
 }

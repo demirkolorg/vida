@@ -18,7 +18,7 @@ import { AdvancedFilterSheet } from '@/app/filter/sheet/AdvancedFilterSheet';
 import { toast } from 'sonner';
 import { getMySettings, updateMySettings } from '@/api/userSettings';
 
-export function DataTable({ entityType, entityHuman, columns: specificColumns, data, isLoading, onRowClick, facetedFilterSetup = [], onRefresh, onToggleStatus, toolbarActions, enableRowSelection = true, hideNewButton = false, moreButtonRendered, rowContextMenu, initialSortingState = [], summarySetup = [], columnVisibilityData = {}, includeAuditColumns = true, renderCollapsibleToolbarContent, displayStatusFilter, enableColumnReordering = false, onRowSelectionChange, showRowSelectionColumn, selectionMode, selectedRowIds = [], enableSelectAll, showRowNumberColumn = true }) {
+export function DataTable({ entityType, entityHuman, columns: specificColumns, data, isLoading, onRowClick, facetedFilterSetup = [], onRefresh, onToggleStatus, toolbarActions, enableRowSelection = true, hideNewButton = false, moreButtonRendered, rowContextMenu, initialSortingState = [], summarySetup = [], columnVisibilityData = {}, includeAuditColumns = true, renderCollapsibleToolbarContent, displayStatusFilter, enableColumnReordering = false, onRowSelectionChange, showRowSelectionColumn, selectionMode, selectedRowIds = [], enableSelectAll, showRowNumberColumn = true, autoClickFirstRow = false }) {
   const openSheet = useSheetStore(state => state.openSheet);
   const [columnFilters, setColumnFilters] = useState([]);
   const [globalSearchInput, setGlobalSearchInput] = useState('');
@@ -470,34 +470,24 @@ export function DataTable({ entityType, entityHuman, columns: specificColumns, d
     }
   }, [entityType, includeAuditColumns, columnVisibilityData, updateUserColumnSettings]);
 
+  const handleFirstRowClicked = useCallback(() => {}, []);
+
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden">
       <FilterManagementSheet sheetTypeIdentifier="filterManagement" entityType={entityType} entityHuman={entityHuman} table={table} onClearAllFilters={handleClearAllFilters} onApplySavedFilter={handleApplySavedFilter} isTableFiltered={isTableFiltered} />
       <AdvancedFilterSheet sheetTypeIdentifier="advancedFilter" entityType={entityType} entityHuman={entityHuman} table={table} onApplyFilters={applyAdvancedFiltersToTable} />
 
       <div className="flex-shrink-0">
-        <ToolbarIndex table={table} globalSearchTerm={globalSearchInput} onGlobalSearchChange={handleGlobalSearchInputChange} facetedFilterSetup={facetedFilterSetup} data={data} moreButtonRendered={moreButtonRendered} toolbarActions={toolbarActions} onRefresh={onRefresh} isLoading={isLoading} hideNewButton={hideNewButton} handleCreate={handleCreate} isCollapsibleToolbarOpen={isCollapsibleToolbarOpen} setIsCollapsibleToolbarOpen={setIsCollapsibleToolbarOpen} onClearAllFilters={handleClearAllFilters} renderCollapsibleToolbarContent={renderCollapsibleToolbarContent} entityType={entityType} displayStatusFilter={displayStatusFilter} onToggleStatus={onToggleStatus} isTableFiltered={isTableFiltered} bulkActions={bulkActions} resetColumnSettings={resetColumnSettings} />
+        <ToolbarIndex table={table} globalSearchTerm={globalSearchInput} onGlobalSearchChange={handleGlobalSearchInputChange} facetedFilterSetup={facetedFilterSetup} data={data} moreButtonRendered={moreButtonRendered} toolbarActions={toolbarActions} onRefresh={onRefresh} isLoading={isLoading} hideNewButton={hideNewButton} handleCreate={handleCreate} isCollapsibleToolbarOpen={isCollapsibleToolbarOpen} setIsCollapsibleToolbarOpen={setIsCollapsibleToolbarOpen} onClearAllFilters={handleClearAllFilters} renderCollapsibleToolbarContent={renderCollapsibleToolbarContent} entityType={entityType} displayStatusFilter={displayStatusFilter} onToggleStatus={onToggleStatus} isTableFiltered={isTableFiltered} bulkActions={bulkActions} resetColumnSettings={resetColumnSettings} selectedRowCount={selectedRowCount} clearSelection={clearSelection}/>
       </div>
 
-      {selectedRowCount > 0 && (
-        <div className="flex-shrink-0 bg-primary/5 border border-primary/20 rounded-md p-3 mb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Badge className="bg-primary/70">{selectedRowCount} satır seçildi</Badge>
-              <Button onClick={clearSelection} variant="outline" className="h-6">
-                Seçimi Temizle
-              </Button>
-            </div>
-            <div className="flex items-center space-x-2">{/* Bulk action butonları buraya eklenebilir */}</div>
-          </div>
-        </div>
-      )}
+    
 
       <div className="flex-1 min-h-0 rounded-md border overflow-hidden">
         <div className="h-full overflow-y-auto relative scrollbar dark:dark-scrollbar" ref={scrollRef}>
           <Table className="w-full table-fixed">
             <DataTableHeader table={table} />
-            <DataTableBody table={table} isLoading={isLoading} onRowClick={onRowClick} rowContextMenu={rowContextMenu} enableRowSelection={enableRowSelection} visibleColumnsCount={visibleColumnsCount} />
+            <DataTableBody table={table} isLoading={isLoading} onRowClick={onRowClick} autoClickFirstRow={autoClickFirstRow} onFirstRowClicked={handleFirstRowClicked} rowContextMenu={rowContextMenu} enableRowSelection={enableRowSelection} visibleColumnsCount={visibleColumnsCount} />
           </Table>
 
           {/* <DataTableFooter summarySetup={summarySetup} allSummaries={allSummaries} visibleColumnsCount={visibleColumnsCount} /> */}

@@ -130,6 +130,7 @@ export function Malzeme_DataTable({ onRowClick }) {
       { columnId: 'birim', title: 'Kuvve Birimi' },
       { columnId: 'sube', title: 'İş Karşılığı Şube' },
       { columnId: 'createdBy', title: 'Oluşturan' },
+      { columnId: 'zimmetOzet', title: 'zimmetOzet' },
     ],
     [],
   );

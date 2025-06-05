@@ -3,7 +3,7 @@ import illogo from '@/assets/logo/il-logo.png';
 
 export const MalzemeHareketTutanagiHeader = ({title}) => {
   return (
-    <div className="flex items-center justify-between mb-6 border-b-0 border-black pb-8">
+    <div className="flex items-center justify-between mb-6 border-b-0 border-black pb-4">
       {/* Sol Logo */}
       <img src={baskanliklogo} alt="Logo" className="w-20 h-20 " />
 

@@ -4,6 +4,7 @@ import { createCrudStore } from '@/stores/crudStoreFactory';
 import { EntityHuman } from './api';
 import { MalzemeHareket_ApiService as EntityApiService } from './api';
 import { Malzeme_Store } from '@/app/malzeme/constants/store';
+import { Tutanak_Store } from '@/app/tutanak/constants/store';
 
 export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiService, (set, get, baseStore) => {
   return {
@@ -70,6 +71,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
 
         // Malzeme listesini yenile
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
 
         return result;
       } catch (error) {
@@ -398,6 +400,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
           toast.success(`Malzeme başarıyla zimmetlendi.`);
         }
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.message || error.message || 'Zimmet işlemi başarısız.';

@@ -1,5 +1,5 @@
 // Navigation data (güncellenmiş)
-import { FileStack, Shield, LayoutDashboard, Users, Warehouse, Package, ShieldCheck, Route, Pyramid, Briefcase, Layers, Construction, Building2, MapPin, Tag } from 'lucide-react';
+import { FileTextIcon, Shield, LayoutDashboard, Users, Warehouse, Package, ShieldCheck, Route, Pyramid, Briefcase, Layers, Construction, Building2, MapPin, Tag } from 'lucide-react';
 
 export const NavMainData = [
   {
@@ -20,27 +20,9 @@ export const NavMainData = [
   },
 
   {
-    to: '/organizasyon',
-    label: 'Organizasyon',
-    icon: Building2,
-    isDropdown: true,
-    children: [
-      {
-        to: '/birim',
-        label: 'Birimler',
-        icon: Building2,
-      },
-      {
-        to: '/sube',
-        label: 'Şubeler',
-        icon: ShieldCheck,
-      },
-      {
-        to: '/buro',
-        label: 'Bürolar',
-        icon: Briefcase,
-      },
-    ],
+    to: '/tutanak',
+    label: 'Tutanak',
+    icon: FileTextIcon,
   },
 
   {
@@ -67,10 +49,40 @@ export const NavMainData = [
   },
 
   {
-    label: 'Depo Yönetimi',
-    icon: Building2,
+    label: 'Tanımlamalar',
+    icon: Layers,
     isDropdown: true,
     children: [
+      {
+        to: '/birim',
+        label: 'Birimler',
+        icon: Building2,
+      },
+      {
+        to: '/sube',
+        label: 'Şubeler',
+        icon: ShieldCheck,
+      },
+      {
+        to: '/buro',
+        label: 'Bürolar',
+        icon: Briefcase,
+      },
+      {
+        to: '/sabitkodu',
+        label: 'Stok Kodu',
+        icon: Construction,
+      },
+      {
+        to: '/marka',
+        label: 'Marka',
+        icon: Pyramid,
+      },
+      {
+        to: '/model',
+        label: 'Model',
+        icon: Tag,
+      },
       {
         to: '/depo',
         label: 'Depolar',
@@ -85,36 +97,8 @@ export const NavMainData = [
   },
 
   {
-    label: 'Malzeme Tanımları',
-    icon: Layers,
-    isDropdown: true,
-    children: [
-      {
-        to: '/sabitkodu',
-        label: 'Sabit Kodu',
-        icon: Construction,
-      },
-      {
-        to: '/marka',
-        label: 'Marka',
-        icon: Pyramid,
-      },
-      {
-        to: '/model',
-        label: 'Model',
-        icon: Tag,
-      },
-    ],
-  },
-
-  {
     to: '/denetim-kaydi',
     label: 'Denetim Kaydı',
     icon: Shield,
-  },
-  {
-    to: '/tutanak',
-    label: 'Tutanak',
-    icon: FileStack,
   },
 ];

@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Check, ChevronsUpDown, Package, Info, Tag, Barcode, Users, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner'; // toast importunu ekledim
+import { useNavigate } from 'react-router-dom'; // Bu import'u ekleyin
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ import { Card, CardDescription, CardContent, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Store ve Enum importları
 import { MalzemeHareket_Store } from '@/app/malzemehareket/constants/store';
@@ -36,6 +38,7 @@ const bulkZimmetFormSchema = z.object({
     required_error: 'Lütfen malzeme kondisyonunu seçin.',
   }),
   aciklama: z.string().max(500, 'Açıklama en fazla 500 karakter olabilir.').optional(),
+  tutanakYazdir: z.boolean().default(true),
 });
 
 export function BulkZimmetSheet() {
@@ -52,6 +55,7 @@ export function BulkZimmetSheet() {
 
   const [personelPopoverOpen, setPersonelPopoverOpen] = useState(false);
   const [kondisyonPopoverOpen, setKondisyonPopoverOpen] = useState(false);
+  const navigate = useNavigate(); // Bu satırı ekleyin
 
   const SetSelectedRowIds = Malzeme_Store(state => state.SetSelectedRowIds);
 
@@ -61,6 +65,7 @@ export function BulkZimmetSheet() {
       malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
       aciklama: '',
       hedefPersonelId: undefined,
+      tutanakYazdir: true,
     },
   });
 
@@ -82,6 +87,7 @@ export function BulkZimmetSheet() {
         malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
         aciklama: '',
         hedefPersonelId: undefined,
+        tutanakYazdir: true,
       });
     }
   }, [isSheetOpen, form]);
@@ -105,6 +111,13 @@ export function BulkZimmetSheet() {
       if (result && (typeof result.successCount === 'undefined' || result.successCount >= 0)) {
         SetSelectedRowIds({});
         closeSheet();
+        if (formData.tutanakYazdir) {
+          navigate('/tutanak', {
+            state: {
+              showPrint: formData.tutanakYazdir,
+            },
+          });
+        }
       }
     } catch (error) {
       console.error('BulkZimmetSheet onSubmit içinde beklenmedik hata:', error);
@@ -211,8 +224,6 @@ export function BulkZimmetSheet() {
               <CardContent className="flex-grow overflow-y-auto p-4">
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} id="bulkZimmetForm" className="space-y-6">
-                  
-
                     {/* Malzeme Kondisyonu */}
                     <FormField
                       control={form.control}
@@ -259,7 +270,7 @@ export function BulkZimmetSheet() {
                       )}
                     />
 
-  {/* Hedef Personel */}
+                    {/* Hedef Personel */}
                     <FormField
                       control={form.control}
                       name="hedefPersonelId"
@@ -311,7 +322,7 @@ export function BulkZimmetSheet() {
                         </FormItem>
                       )}
                     />
-                    
+
                     {/* Açıklama */}
                     <FormField
                       control={form.control}
@@ -323,6 +334,23 @@ export function BulkZimmetSheet() {
                             <Textarea placeholder={`Toplu zimmet işlemi ile ilgili ek bilgiler (${bulkZimmetlenmekIstenenMalzemeler.length} malzeme)...`} className="resize-none" rows={3} {...field} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Tutanak Yazdır Checkbox */}
+                    <FormField
+                      control={form.control}
+                      name="tutanakYazdir"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4  ">
+                          <FormControl>
+                            <Checkbox checked={field.value} onCheckedChange={field.onChange} className="cursor-pointer" />
+                          </FormControl>
+                          <div className="space-y-1 leading-none ">
+                            <FormLabel className="cursor-pointer">Tutanak yazdır</FormLabel>
+                            <p className="text-sm text-muted-foreground">İşlem tamamlandıktan sonra otomatik olarak tutanak sayfasını açar</p>
+                          </div>
                         </FormItem>
                       )}
                     />

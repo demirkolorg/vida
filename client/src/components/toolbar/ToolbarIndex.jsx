@@ -22,12 +22,12 @@ export const ToolbarIndex = props => {
     displayStatusFilter,
     onToggleStatus,
     onClearAllFilters,
-    isTableFiltered
+    isTableFiltered,selectedRowCount, clearSelection
   } = props;
 
   return (
     <div className="flex items-center py-4 gap-2 flex-wrap">
-      <ToolbarSearch globalSearchTerm={globalSearchTerm} onGlobalSearchChange={onGlobalSearchChange} />
+      <ToolbarSearch globalSearchTerm={globalSearchTerm} onGlobalSearchChange={onGlobalSearchChange} selectedRowCount={selectedRowCount} clearSelection={clearSelection} />
 
       <ToolbarFacetedFilter data={data} table={table} onClearAllFilters={onClearAllFilters} facetedFilterSetup={facetedFilterSetup}  isTableFiltered={isTableFiltered} />
 

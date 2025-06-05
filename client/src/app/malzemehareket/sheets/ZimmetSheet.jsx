@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose } from '@/components/ui/sheet';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Calendar } from '@/components/ui/calendar';
@@ -35,6 +36,7 @@ import { MalzemeHareket_Store } from '@/app/malzemehareket/constants/store';
 import { Personel_Store } from '@/app/personel/constants/store';
 import { MalzemeKondisyonuEnum, malzemeKondisyonuOptions } from '@/app/malzemehareket/constants/malzemeKondisyonuEnum';
 import { useMalzemeHareketStore } from '@/stores/useMalzemeHareketStore';
+import { useNavigate } from 'react-router-dom'; // Bu import'u ekleyin
 
 const zimmetFormSchema = z.object({
   hedefPersonelId: z.string({
@@ -47,6 +49,7 @@ const zimmetFormSchema = z.object({
     required_error: 'Lütfen malzeme kondisyonunu seçin.',
   }),
   aciklama: z.string().max(500, 'Açıklama en fazla 500 karakter olabilir.').optional(),
+  tutanakYazdir: z.boolean().default(true),
 });
 
 export function ZimmetSheet() {
@@ -66,6 +69,7 @@ export function ZimmetSheet() {
   const [personelPopoverOpen, setPersonelPopoverOpen] = useState(false);
   const [tarihPopoverOpen, setTarihPopoverOpen] = useState(false);
   const [kondisyonPopoverOpen, setKondisyonPopoverOpen] = useState(false);
+  const navigate = useNavigate(); // Bu satırı ekleyin
 
   useEffect(() => {
     if (isSheetOpen && !personelFetched && loadPersonelList) {
@@ -88,6 +92,7 @@ export function ZimmetSheet() {
       malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
       aciklama: '',
       hedefPersonelId: undefined,
+      tutanakYazdir: true,
     },
   });
 
@@ -98,6 +103,7 @@ export function ZimmetSheet() {
         malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
         aciklama: '',
         hedefPersonelId: undefined,
+        tutanakYazdir: true,
       });
     }
   }, [isSheetOpen, form]);
@@ -119,8 +125,20 @@ export function ZimmetSheet() {
         kaynakPersonelId: null,
         konumId: null,
       };
-      await createAction(hareketVerisi, { showToast: true });
-      closeSheet();
+
+      const result = await createAction(hareketVerisi, { showToast: true });
+      if (result) {
+        closeSheet();
+
+        if (data.tutanakYazdir) {
+          navigate('/tutanak', {
+            state: {
+              showPrint: data.tutanakYazdir,
+            },
+          });
+        }
+      }
+
       // form.reset(); // Zaten useEffect içinde sheet açıldığında resetleniyor.
       // Ancak başarılı submit sonrası hemen resetlemek de isteyebilirsiniz.
       // Bu durumda useEffect'teki resetleme ile çakışmaması için dikkatli olunmalı
@@ -360,6 +378,23 @@ export function ZimmetSheet() {
                     <Textarea placeholder="Zimmet ile ilgili ek bilgiler (isteğe bağlı)..." className="resize-none" rows={3} {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Tutanak Yazdır Checkbox */}
+            <FormField
+              control={form.control}
+              name="tutanakYazdir"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4  ">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} className="cursor-pointer" />
+                  </FormControl>
+                  <div className="space-y-1 leading-none ">
+                    <FormLabel className="cursor-pointer">Tutanak yazdır</FormLabel>
+                    <p className="text-sm text-muted-foreground">İşlem tamamlandıktan sonra otomatik olarak tutanak sayfasını açar</p>
+                  </div>
                 </FormItem>
               )}
             />

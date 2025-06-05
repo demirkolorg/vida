@@ -18,6 +18,7 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
       error: initialBaseState?.error ?? null,
       displayStatusFilter: initialBaseState?.displayStatusFilter ?? EntityStatusOptions.Aktif,
       selectedRowIds: initialBaseState?.selectedRowIds ?? {},
+      selectedRowId: initialBaseState?.selectedRowId ?? null,
     };
 
     const baseActions = {
@@ -255,6 +256,9 @@ export function createCrudStore(entityName, api, extender, initialBaseState = {}
 
       SetSelectedRowIds: async data => {
         set({ selectedRowIds: data });
+      },
+      SetSelectedRowId: async data => {
+        set({ selectedRowId: data });
       },
     };
 

@@ -59,6 +59,11 @@ export function MalzemeHareket_DataTable() {
       renderCollapsibleToolbarContent={() => <EntitySpecificToolbar />}
       displayStatusFilter={displayStatusFilter}
       hideNewButton={true}
+
+      
+      showRowSelectionColumn={false} // Yeni prop: seçim sütununu göster/gizle
+      selectionMode="single" // 'single' | 'multiple'
+      enableSelectAll={false}
     />
   );
 }

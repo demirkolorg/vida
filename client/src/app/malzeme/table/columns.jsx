@@ -280,10 +280,12 @@ export const Malzeme_Columns = () => {
     {
       accessorKey: 'zimmetOzet',
       accessorFn: row => {
-        if (row.malzemeHareketleri && row.malzemeHareketleri.length > 0) {
-          return row.malzemeHareketleri[0].hareketTuru || '';
-        }
-        return '';
+        const depoda = malzemeDepoda(row?.original);
+        const personelde = malzemePersonelde(row?.original);
+        let text = '';
+        if (depoda) text = 'Depoda';
+        if (personelde) text = 'Personelde';
+        return text;
       },
       header: ({ column }) => <HeaderButton column={column} title="Özet" />,
       cell: ({ row }) => {

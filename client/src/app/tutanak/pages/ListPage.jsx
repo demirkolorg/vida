@@ -10,10 +10,13 @@ import { Tutanak_StatusDialog as EntityStatusDialog } from '../dialogs/StatusDia
 
 // Tutanak önizleme paneli
 import TutanakDetailPanel from '../components/TutanakDetailPanel';
+import { useLocation } from 'react-router-dom'; // Bu import'u ekleyin
 
 export function Tutanak_ListPage() {
   const [selectedTutanak, setSelectedTutanak] = useState(null);
   const { setDisablePadding, setIsDetailPanelOpen } = useLayout();
+const location = useLocation();
+const showPrint = location.state?.showPrint;
 
   // selectedTutanak durumuna göre layout padding'ini kontrol et
   useEffect(() => {
@@ -47,7 +50,7 @@ export function Tutanak_ListPage() {
       {/* Ana İçerik - Split Layout */}
       <div className="flex-1 flex min-h-0 gap-4">
         {/* Sol Panel - Tutanak Tablosu */}
-        <div className={`transition-all duration-300 ${selectedTutanak ? 'w-[60%]' : 'w-full'} overflow-hidden`}>
+        <div className={`transition-all duration-300 ${selectedTutanak ? 'w-[65%]' : 'w-full'} overflow-hidden`}>
           {/* Page Header - Sabit yükseklik */}
           <div className="flex-shrink-0">
             <PageHeader EntityHuman={EntityHuman} useEntityStore={EntityStore} />
@@ -57,8 +60,8 @@ export function Tutanak_ListPage() {
 
         {/* Sağ Panel - Tutanak Önizlemesi */}
         {selectedTutanak && (
-          <div className="w-[40%] transition-all duration-300 mb-16">
-            <TutanakDetailPanel selectedTutanak={selectedTutanak} onClose={handleCloseDetailPanel} />
+          <div className="w-[35%] transition-all duration-300 mb-16">
+            <TutanakDetailPanel selectedTutanak={selectedTutanak} onClose={handleCloseDetailPanel} showPrint={showPrint} />
           </div>
         )}
       </div>
