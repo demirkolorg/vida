@@ -2,6 +2,7 @@ export const Imza = ({imzaAlanlari}) => {
   return (
     <div className="mt-auto pt-8">
       <div className="grid grid-cols-3 text-center">
+        
         {imzaAlanlari.map((alan, index) => (
           <div key={index} className={` ${alan.hidden ? 'invisible' : ''}`}>
             <div className="font-semibold">{alan.label}</div>

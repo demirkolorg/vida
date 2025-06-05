@@ -31,8 +31,8 @@ export const DemirbasMalzemeTablo = ({ demirbasMalzemeler }) => {
             ))}
           </tbody>
         </table>
-        <div className="mt-3 text-right text-sm font-bold">
-          <strong>Toplam Demirbaş:</strong> {sayiyiYaziyaCevir(demirbasMalzemeler.length)} ({demirbasMalzemeler.length}) adet
+        <div className="mt-3 text-right text-sm">
+          Toplam {sayiyiYaziyaCevir(demirbasMalzemeler.length).toLowerCase()} ({demirbasMalzemeler.length}) kalem demirbaş malzemedir.
         </div>
       </div>
     )

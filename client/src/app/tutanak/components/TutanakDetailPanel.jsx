@@ -1,5 +1,5 @@
 // client/src/app/tutanak/components/TutanakDetailPanel.jsx
-import React, { useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,9 +10,27 @@ import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { XIcon, PrinterIcon, FileTextIcon, CalendarIcon, UserIcon, PackageIcon, MapPinIcon, DownloadIcon } from 'lucide-react';
 import BaseMalzemeHareketTutanagi from '@/components/tutanak/BaseMalzemeHareketTutanagi';
+import { useReactToPrint } from 'react-to-print';
 
 export default function TutanakDetailPanel({ selectedTutanak, onClose }) {
   const [activeTab, setActiveTab] = useState('preview');
+  const componentRef = useRef(null);
+
+  const handleAfterPrint = useCallback(() => {
+    console.log('`onAfterPrint` called');
+  }, []);
+
+  const handleBeforePrint = useCallback(() => {
+    console.log('`onBeforePrint` called');
+    return Promise.resolve();
+  }, []);
+
+  const printFn = useReactToPrint({
+    contentRef: componentRef,
+    documentTitle: `Tutanak-${selectedTutanak?.id || 'Document'}`,
+    onAfterPrint: handleAfterPrint,
+    onBeforePrint: handleBeforePrint,
+  });
 
   if (!selectedTutanak) return null;
 
@@ -30,18 +48,13 @@ export default function TutanakDetailPanel({ selectedTutanak, onClose }) {
   // Konum bilgilerini parse et
   const konum = konumBilgileri || null;
 
-  const handlePrint = () => {
-    // Mevcut sayfayı yazdır - BaseMalzemeHareketTutanagi zaten print CSS'leri içeriyor
-    window.print();
-  };
-
   const handleDownloadPDF = () => {
     console.log('PDF indirme:', id);
     // PDF indirme işlemi burada implementé edilecek
   };
 
   return (
-    <div className="h-[calc(100vh-160px)] flex flex-col border rounded-lg bg-background py-8">
+    <div className="h-[calc(100vh-160px)] flex flex-col border rounded-lg bg-background pb-8">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 bg-primary/10 border-b gap-2">
         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -51,7 +64,7 @@ export default function TutanakDetailPanel({ selectedTutanak, onClose }) {
           </div>
         </div>
 
-        <Button onClick={handlePrint}>
+        <Button onClick={printFn}>
           <PrinterIcon className="h-3 w-3" />
           Yazdır
         </Button>
@@ -88,9 +101,7 @@ export default function TutanakDetailPanel({ selectedTutanak, onClose }) {
           {/* Preview Tab */}
           <TabsContent value="preview" className="flex-1 overflow-hidden">
             <ScrollArea className="h-full pr-2">
-              <div className="space-y-4">
-                <BaseMalzemeHareketTutanagi selectedTutanak={selectedTutanak} className="border-2 border-primary" />
-              </div>
+              <BaseMalzemeHareketTutanagi ref={componentRef} selectedTutanak={selectedTutanak} className="border-1 border-primary rounded-lg shadow-2xl" />
             </ScrollArea>
           </TabsContent>
 

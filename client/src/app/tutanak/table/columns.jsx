@@ -22,16 +22,7 @@ export const Tutanak_Columns = () => [
     header: ({ column }) => <HeaderButton column={column} title="Hareket Türü" />,
     cell: ({ row }) => {
       const hareketTuru = row.getValue('hareketTuru');
-      const colorMap = {
-        Zimmet: 'bg-blue-100 text-blue-800',
-        Iade: 'bg-green-100 text-green-800',
-        Devir: 'bg-purple-100 text-purple-800',
-        DepoTransferi: 'bg-orange-100 text-orange-800',
-        KondisyonGuncelleme: 'bg-yellow-100 text-yellow-800',
-        Kayip: 'bg-red-100 text-red-800',
-        Dusum: 'bg-gray-100 text-gray-800',
-        Kayit: 'bg-cyan-100 text-cyan-800',
-      };
+    
 
       const labelMap = {
         Zimmet: 'Zimmet',
@@ -45,7 +36,7 @@ export const Tutanak_Columns = () => [
       };
 
       return (
-        <Badge variant="outline" className={`text-xs ${colorMap[hareketTuru] || 'bg-gray-100 text-gray-800'}`}>
+        <Badge variant="outline" className={`text-xs bg-primary/10`}>
           {labelMap[hareketTuru] || hareketTuru}
         </Badge>
       );

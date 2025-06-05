@@ -40,47 +40,47 @@ export const getTutanakBilgileri = (hareketTuru, mockMalzemeler) => {
     case 'Zimmet':
       return {
         title: 'MALZEME ZİMMET TUTANAĞI',
-        aciklama: `Yukarıdaki tabloda belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme zimmet olarak teslim edilmiştir. Teslim alan personel, malzemelerin sorumluluğunu kabul etmiş olup, herhangi bir kayıp, hasar veya kullanım hatası durumunda sorumlu tutulacaktır.`,
+        aciklama: `Yukarıdaki tabloda stok kodu, marka, model ve seri numaraları belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme tam ve sağlam olarak teslim edilmiştir. Teslim alan personel, malzemelerin sorumluluğunu kabul etmiş olup, herhangi bir kayıp, hasar veya kullanım hatası durumunda sorumlu tutulacaktır.`,
       };
     case 'Iade':
       return {
         title: 'MALZEME İADE TUTANAĞI',
-        aciklama: `Yukarıdaki tabloda belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme zimmetli personel tarafından iade edilmiştir. İade edilen malzemelerin durumu kontrol edilmiş ve kayda alınmıştır.`,
+        aciklama: `Yukarıdaki tabloda stok kodu, marka, model ve seri numaraları belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme zimmetli personel tarafından iade edilmiştir. İade edilen malzemelerin durumu kontrol edilmiş ve kayda alınmıştır.`,
       };
     case 'Devir':
       return {
         title: 'MALZEME DEVİR TUTANAĞI',
-        aciklama: `Yukarıdaki tabloda belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme bir personelden diğerine devredilmiştir. Devir işlemi tamamlanmış olup, malzeme sorumluluğu yeni personele geçmiştir.`,
+        aciklama: `Yukarıdaki tabloda stok kodu, marka, model ve seri numaraları belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme bir personelden diğerine devredilmiştir. Devir işlemi tamamlanmış olup, malzeme sorumluluğu yeni personele geçmiştir.`,
       };
     case 'DepoTransferi':
       return {
         title: 'MALZEME DEPO TRANSFERİ TUTANAĞI',
-        aciklama: `Yukarıdaki tabloda belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme depo transferi yapılmıştır. Transfer işlemi tamamlanmış olup, malzemeler yeni konumlarına nakledilmiştir.`,
+        aciklama: `Yukarıdaki tabloda stok kodu, marka, model ve seri numaraları belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme depo transferi yapılmıştır. Transfer işlemi tamamlanmış olup, malzemeler yeni konumlarına nakledilmiştir.`,
       };
     case 'KondisyonGuncelleme':
       return {
         title: 'MALZEME KONDİSYON GÜNCELLEME TUTANAĞI',
-        aciklama: `Yukarıdaki tabloda belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzemenin kondisyon bilgileri güncellenmiştir. Kondisyon değişiklikleri kayda alınmış ve gerekli işlemler tamamlanmıştır.`,
+        aciklama: `Yukarıdaki tabloda stok kodu, marka, model ve seri numaraları belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzemenin kondisyon bilgileri güncellenmiştir. Kondisyon değişiklikleri kayda alınmış ve gerekli işlemler tamamlanmıştır.`,
       };
     case 'Kayip':
       return {
         title: 'MALZEME KAYIP TUTANAĞI',
-        aciklama: `Yukarıdaki tabloda belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme kayıp olarak kayıtlara geçmiştir. Kayıp işlemi tamamlanmış olup, gerekli prosedürler uygulanmıştır.`,
+        aciklama: `Yukarıdaki tabloda stok kodu, marka, model ve seri numaraları belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme kayıp olarak kayıtlara geçmiştir. Kayıp işlemi tamamlanmış olup, gerekli prosedürler uygulanmıştır.`,
       };
     case 'Dusum':
       return {
         title: 'MALZEME DÜŞÜM TUTANAĞI',
-        aciklama: `Yukarıdaki tabloda belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme düşüm işlemi yapılmıştır. Düşüm işlemi tamamlanmış olup, malzemeler kayıtlardan çıkarılmıştır.`,
+        aciklama: `Yukarıdaki tabloda stok kodu, marka, model ve seri numaraları belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme düşüm işlemi yapılmıştır. Düşüm işlemi tamamlanmış olup, malzemeler kayıtlardan çıkarılmıştır.`,
       };
     case 'Kayit':
       return {
         title: 'MALZEME KAYIT TUTANAĞI',
-        aciklama: `Yukarıdaki tabloda belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme sisteme kayıt edilmiştir. Kayıt işlemi tamamlanmış olup, malzemeler envantere eklenmiştir.`,
+        aciklama: `Yukarıdaki tabloda stok kodu, marka, model ve seri numaraları belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme sisteme kayıt edilmiştir. Kayıt işlemi tamamlanmış olup, malzemeler envantere eklenmiştir.`,
       };
     default:
       return {
         title: 'MALZEME HAREKET TUTANAĞI',
-        aciklama: `Yukarıdaki tabloda belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme için hareket işlemi gerçekleştirilmiştir.`,
+        aciklama: `Yukarıdaki tabloda stok kodu, marka, model ve seri numaraları belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme için hareket işlemi gerçekleştirilmiştir.`,
       };
   }
 };
@@ -88,12 +88,14 @@ export const getTutanakBilgileri = (hareketTuru, mockMalzemeler) => {
 // Personel bilgilerini formatla
 export const formatPersonel = personel => {
   if (!personel) return '';
-  const ad = personel.ad || '';
+  const ad = personel.ad.split(" ")[0]
+  const soyad = personel.ad.split(" ")[1].toLocaleUpperCase('tr-TR')
+  const adSoyad = `${ad} ${soyad}`
   const sicil = personel.sicil || '';
 
   return (
     <div>
-      <p>{ad}</p>
+      <p>{adSoyad}</p>
       <p>{sicil}</p>
     </div>
   );
