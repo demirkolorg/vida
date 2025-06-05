@@ -288,7 +288,6 @@ const controller = {
       
       // Print için formatlanmış data
       const printData = {
-        tutanakNo: tutanak.tutanakNo,
         tarih: tutanak.islemBilgileri?.tarih || tutanak.createdAt,
         hareketTuru: tutanak.hareketTuru,
         malzemeler: tutanak.malzemeler,

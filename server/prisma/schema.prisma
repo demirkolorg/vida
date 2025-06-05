@@ -332,7 +332,6 @@ model AuditLog {
 
 model Tutanak {
   id          String          @id // String ID, uygulama tarafından atanacak
-  tutanakNo   String          @unique // Otomatik generate edilecek benzersiz numara
   hareketTuru HareketTuruEnum // Zimmet, Iade, Devir vs.
 
   // Malzeme bilgileri

@@ -1,5 +1,5 @@
 // Navigation data (güncellenmiş)
-import { Shield, LayoutDashboard, Users, Warehouse, Package, ShieldCheck, Route, Pyramid, Briefcase, Layers, Construction, Building2, MapPin, Tag } from 'lucide-react';
+import { FileStack, Shield, LayoutDashboard, Users, Warehouse, Package, ShieldCheck, Route, Pyramid, Briefcase, Layers, Construction, Building2, MapPin, Tag } from 'lucide-react';
 
 export const NavMainData = [
   {
@@ -111,5 +111,10 @@ export const NavMainData = [
     to: '/denetim-kaydi',
     label: 'Denetim Kaydı',
     icon: Shield,
+  },
+  {
+    to: '/tutanak',
+    label: 'Tutanak',
+    icon: FileStack,
   },
 ];

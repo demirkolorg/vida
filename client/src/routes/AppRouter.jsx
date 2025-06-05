@@ -23,6 +23,7 @@ import { Depo_ListPage } from '@/app/depo/pages/ListPage';
 import { Konum_ListPage } from '@/app/konum/pages/ListPage';
 import { Malzeme_ListPage } from '@/app/malzeme/pages/ListPage';
 import { MalzemeHareket_ListPage } from '@/app/malzemeHareket/pages/ListPage';
+import { Tutanak_ListPage } from '@/app/tutanak/pages/ListPage';
 
 const router = createBrowserRouter([
   {
@@ -108,6 +109,10 @@ const router = createBrowserRouter([
               {
                 path: '/denetim-kaydi',
                 element: <Audit_ListPage />,
+              },
+              {
+                path: '/tutanak',
+                element: <Tutanak_ListPage />,
               },
             ],
           },

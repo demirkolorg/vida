@@ -32,15 +32,14 @@ const service = {
   getByQuery: async (data = {}) => {
     try {
       const whereClause = { status: AuditStatusEnum.Aktif };
-      
+
       if (data.hareketTuru) whereClause.hareketTuru = data.hareketTuru;
-      if (data.tutanakNo) whereClause.tutanakNo = { contains: data.tutanakNo, mode: 'insensitive' };
       if (data.createdById) whereClause.createdById = data.createdById;
-      
+
       if (data.tarihBaslangic && data.tarihBitis) {
         whereClause.createdAt = {
           gte: new Date(data.tarihBaslangic),
-          lte: new Date(data.tarihBitis)
+          lte: new Date(data.tarihBitis),
         };
       }
 
@@ -48,8 +47,8 @@ const service = {
         where: whereClause,
         orderBy: { createdAt: 'desc' },
         include: {
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, avatar: true, sicil: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true, sicil: true } },
         },
       });
     } catch (error) {
@@ -76,29 +75,6 @@ const service = {
   create: async data => {
     try {
       const yeniId = helper.generateId(VarlıkKod);
-      
-      // Tutanak numarası oluştur (format: TTN-YYYY-MM-DD-XXXX)
-      const tarih = new Date();
-      const yil = tarih.getFullYear();
-      const ay = String(tarih.getMonth() + 1).padStart(2, '0');
-      const gun = String(tarih.getDate()).padStart(2, '0');
-      
-      // Aynı gün içindeki son tutanak numarasını bul
-      const sonTutanak = await prisma[PrismaName].findFirst({
-        where: {
-          tutanakNo: { startsWith: `TTN-${yil}-${ay}-${gun}-` },
-          status: AuditStatusEnum.Aktif
-        },
-        orderBy: { tutanakNo: 'desc' }
-      });
-
-      let siraNo = 1;
-      if (sonTutanak) {
-        const sonSiraNo = parseInt(sonTutanak.tutanakNo.split('-')[2]);
-        siraNo = sonSiraNo + 1;
-      }
-
-      const tutanakNo = `TTN-${yil}${ay}${gun}-${String(siraNo).padStart(4, '0')}`;
 
       // İstatistikleri hesapla
       const malzemeler = data.malzemeler || [];
@@ -108,7 +84,6 @@ const service = {
 
       const createPayload = {
         id: yeniId,
-        tutanakNo,
         hareketTuru: data.hareketTuru,
         malzemeIds: data.malzemeIds || [],
         malzemeler: data.malzemeler || [],
@@ -140,7 +115,7 @@ const service = {
       await service.checkExistsById(data.id);
 
       const updatePayload = { updatedById: data.islemYapanKullanici };
-      
+
       if (data.hareketTuru !== undefined) updatePayload.hareketTuru = data.hareketTuru;
       if (data.malzemeIds !== undefined) updatePayload.malzemeIds = data.malzemeIds;
       if (data.malzemeler !== undefined) {
@@ -176,9 +151,9 @@ const service = {
         throw new Error(`Girilen '${data.status}' durumu geçerli bir durum değildir.`);
       }
 
-      const updatePayload = { 
+      const updatePayload = {
         status: data.status,
-        updatedById: data.islemYapanKullanici 
+        updatedById: data.islemYapanKullanici,
       };
 
       return await prisma[PrismaName].update({
@@ -214,9 +189,6 @@ const service = {
     try {
       const whereClause = { status: AuditStatusEnum.Aktif };
 
-      if (data.tutanakNo) {
-        whereClause.tutanakNo = { contains: data.tutanakNo, mode: 'insensitive' };
-      }
       if (data.hareketTuru) {
         whereClause.hareketTuru = data.hareketTuru;
       }
@@ -240,7 +212,7 @@ const service = {
       const { hareketIds, hareketTuru, islemYapanKullanici } = data;
 
       if (!hareketIds || !Array.isArray(hareketIds) || hareketIds.length === 0) {
-        throw new Error('Tutanak için hareket ID\'leri gerekli.');
+        throw new Error("Tutanak için hareket ID'leri gerekli.");
       }
 
       if (!Object.values(HareketTuruEnum).includes(hareketTuru)) {
@@ -252,22 +224,22 @@ const service = {
         where: {
           id: { in: hareketIds },
           hareketTuru,
-          status: AuditStatusEnum.Aktif
+          status: AuditStatusEnum.Aktif,
         },
         include: {
           malzeme: {
             include: {
               sabitKodu: true,
               marka: true,
-              model: true
-            }
+              model: true,
+            },
           },
           kaynakPersonel: true,
           hedefPersonel: true,
           konum: {
-            include: { depo: true }
-          }
-        }
+            include: { depo: true },
+          },
+        },
       });
 
       if (hareketler.length === 0) {
@@ -284,21 +256,25 @@ const service = {
         model: hareket.malzeme.model?.ad,
         bademSeriNo: hareket.malzeme.bademSeriNo,
         malzemeTipi: hareket.malzeme.malzemeTipi,
-        kondisyon: hareket.malzemeKondisyonu
+        kondisyon: hareket.malzemeKondisyonu,
       }));
 
       // Personel bilgilerini düzenle
       const personelBilgileri = {
-        kaynakPersonel: hareketler[0]?.kaynakPersonel ? {
-          id: hareketler[0].kaynakPersonel.id,
-          ad: hareketler[0].kaynakPersonel.ad,
-          sicil: hareketler[0].kaynakPersonel.sicil
-        } : null,
-        hedefPersonel: hareketler[0]?.hedefPersonel ? {
-          id: hareketler[0].hedefPersonel.id,
-          ad: hareketler[0].hedefPersonel.ad,
-          sicil: hareketler[0].hedefPersonel.sicil
-        } : null
+        kaynakPersonel: hareketler[0]?.kaynakPersonel
+          ? {
+              id: hareketler[0].kaynakPersonel.id,
+              ad: hareketler[0].kaynakPersonel.ad,
+              sicil: hareketler[0].kaynakPersonel.sicil,
+            }
+          : null,
+        hedefPersonel: hareketler[0]?.hedefPersonel
+          ? {
+              id: hareketler[0].hedefPersonel.id,
+              ad: hareketler[0].hedefPersonel.ad,
+              sicil: hareketler[0].hedefPersonel.sicil,
+            }
+          : null,
       };
 
       // İşlem bilgileri
@@ -306,15 +282,17 @@ const service = {
         tarih: new Date(),
         hareketTuru,
         aciklama: data.aciklama || `${hareketTuru} işlemi için otomatik oluşturulan tutanak`,
-        hareketIds
+        hareketIds,
       };
 
       // Konum bilgileri
-      const konumBilgileri = hareketler[0]?.konum ? {
-        id: hareketler[0].konum.id,
-        ad: hareketler[0].konum.ad,
-        depo: hareketler[0].konum.depo?.ad
-      } : null;
+      const konumBilgileri = hareketler[0]?.konum
+        ? {
+            id: hareketler[0].konum.id,
+            ad: hareketler[0].konum.ad,
+            depo: hareketler[0].konum.depo?.ad,
+          }
+        : null;
 
       // Tutanak oluştur
       const tutanakData = {
@@ -324,7 +302,7 @@ const service = {
         personelBilgileri,
         islemBilgileri,
         konumBilgileri,
-        islemYapanKullanici
+        islemYapanKullanici,
       };
 
       return await service.create(tutanakData);
@@ -338,14 +316,14 @@ const service = {
       const { malzemeIds, hareketTuru, personelBilgileri, islemYapanKullanici } = data;
 
       if (!malzemeIds || !Array.isArray(malzemeIds) || malzemeIds.length === 0) {
-        throw new Error('Tutanak için malzeme ID\'leri gerekli.');
+        throw new Error("Tutanak için malzeme ID'leri gerekli.");
       }
 
       // Malzeme bilgilerini getir
       const malzemeler = await prisma.malzeme.findMany({
         where: {
           id: { in: malzemeIds },
-          status: AuditStatusEnum.Aktif
+          status: AuditStatusEnum.Aktif,
         },
         include: {
           sabitKodu: true,
@@ -354,9 +332,9 @@ const service = {
           malzemeHareketleri: {
             take: 1,
             orderBy: { createdAt: 'desc' },
-            where: { status: AuditStatusEnum.Aktif }
-          }
-        }
+            where: { status: AuditStatusEnum.Aktif },
+          },
+        },
       });
 
       if (malzemeler.length === 0) {
@@ -372,14 +350,14 @@ const service = {
         model: malzeme.model?.ad,
         bademSeriNo: malzeme.bademSeriNo,
         malzemeTipi: malzeme.malzemeTipi,
-        kondisyon: malzeme.malzemeHareketleri[0]?.malzemeKondisyonu || 'Saglam'
+        kondisyon: malzeme.malzemeHareketleri[0]?.malzemeKondisyonu || 'Saglam',
       }));
 
       // İşlem bilgileri
       const islemBilgileri = {
         tarih: new Date(),
         hareketTuru,
-        aciklama: data.aciklama || `${hareketTuru} işlemi için oluşturulan tutanak`
+        aciklama: data.aciklama || `${hareketTuru} işlemi için oluşturulan tutanak`,
       };
 
       // Tutanak oluştur
@@ -390,7 +368,7 @@ const service = {
         personelBilgileri: personelBilgileri || {},
         islemBilgileri,
         konumBilgileri: data.konumBilgileri || null,
-        islemYapanKullanici
+        islemYapanKullanici,
       };
 
       return await service.create(tutanakData);
@@ -399,16 +377,16 @@ const service = {
     }
   },
 
-  getByHareketTuru: async (hareketTuru) => {
+  getByHareketTuru: async hareketTuru => {
     try {
       if (!Object.values(HareketTuruEnum).includes(hareketTuru)) {
         throw new Error('Geçersiz hareket türü.');
       }
 
       return await prisma[PrismaName].findMany({
-        where: { 
+        where: {
           hareketTuru,
-          status: AuditStatusEnum.Aktif 
+          status: AuditStatusEnum.Aktif,
         },
         orderBy: { createdAt: 'desc' },
         include: {
@@ -424,36 +402,36 @@ const service = {
   getIstatistikler: async () => {
     try {
       const toplam = await prisma[PrismaName].count({
-        where: { status: AuditStatusEnum.Aktif }
+        where: { status: AuditStatusEnum.Aktif },
       });
 
       const hareketTuruIstatistik = await prisma[PrismaName].groupBy({
         by: ['hareketTuru'],
         where: { status: AuditStatusEnum.Aktif },
         _count: { hareketTuru: true },
-        _sum: { toplamMalzeme: true, demirbasSayisi: true, sarfSayisi: true }
+        _sum: { toplamMalzeme: true, demirbasSayisi: true, sarfSayisi: true },
       });
 
       const aylikIstatistik = await prisma[PrismaName].groupBy({
         by: ['createdAt'],
-        where: { 
+        where: {
           status: AuditStatusEnum.Aktif,
           createdAt: {
-            gte: new Date(new Date().getFullYear(), 0, 1)
-          }
+            gte: new Date(new Date().getFullYear(), 0, 1),
+          },
         },
-        _count: { createdAt: true }
+        _count: { createdAt: true },
       });
 
       return {
         toplam,
         hareketTuruIstatistik,
-        aylikIstatistik
+        aylikIstatistik,
       };
     } catch (error) {
       throw error;
     }
-  }
+  },
 };
 
 export default service;
