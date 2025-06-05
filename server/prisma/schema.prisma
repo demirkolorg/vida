@@ -278,6 +278,9 @@ model Personel {
   kendiKaydiniGuncelleyen     Personel[]       @relation("PersonelUpdatedBy")
   filtrelerOlusturan          SavedFilter[]    @relation("FilterCreatedBy")
   filtrelerGuncelleyen        SavedFilter[]    @relation("FilterUpdatedBy")
+  // Tutanak relationları
+  tutanaklarOlusturan         Tutanak[]        @relation("TutanakCreatedBy")
+  tutanaklarGuncelleyen       Tutanak[]        @relation("TutanakUpdatedBy")
 
   settings UserSettings? @relation("PersonelSettings")
 
@@ -325,4 +328,41 @@ model AuditLog {
   createdAt   DateTime  @default(now())
   createdById String?
   createdBy   Personel? @relation("AuditLogCreatedBy", fields: [createdById], references: [id])
+}
+
+model Tutanak {
+  id          String          @id // String ID, uygulama tarafından atanacak
+  tutanakNo   String          @unique // Otomatik generate edilecek benzersiz numara
+  hareketTuru HareketTuruEnum // Zimmet, Iade, Devir vs.
+
+  // Malzeme bilgileri
+  malzemeIds String[] // İşleme dahil malzeme ID'leri array olarak
+  malzemeler Json // Malzeme detaylarının snapshot'ı (tutanak anındaki hal)
+
+  // İşlem bilgileri
+  personelBilgileri Json // İlgili personel bilgileri (kaynak, hedef vs.)
+  islemBilgileri    Json // İşlem detayları (kondisyon, açıklama, tarih vs.)
+  konumBilgileri    Json? // Konum bilgileri (varsa)
+
+  // İstatistik bilgileri
+  toplamMalzeme  Int @default(0) // Hızlı erişim için
+  demirbasSayisi Int @default(0) // Demirbaş malzeme sayısı
+  sarfSayisi     Int @default(0) // Sarf malzeme sayısı
+
+  // Dosya ekleri (gelecek için)
+  ekDosyalar Json? // Imzalı tutanak, ek belgeler için
+
+  // Audit alanları
+  status      AuditStatusEnum @default(Aktif)
+  createdAt   DateTime        @default(now())
+  createdById String // Tutanağı oluşturan kullanıcı
+  createdBy   Personel        @relation("TutanakCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime        @updatedAt
+  updatedById String? // Tutanağı güncelleyen kullanıcı
+  updatedBy   Personel?       @relation("TutanakUpdatedBy", fields: [updatedById], references: [id])
+
+  // İndeksler için
+  @@index([hareketTuru])
+  @@index([createdAt])
+  @@index([createdById])
 }
