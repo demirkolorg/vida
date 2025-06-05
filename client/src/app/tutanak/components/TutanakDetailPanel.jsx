@@ -13,6 +13,7 @@ import BaseMalzemeHareketTutanagi from '@/components/tutanak/BaseMalzemeHareketT
 
 export default function TutanakDetailPanel({ selectedTutanak, onClose }) {
   const [activeTab, setActiveTab] = useState('preview');
+
   if (!selectedTutanak) return null;
 
   // Gelen data'dan gerekli alanları çıkar
@@ -30,8 +31,8 @@ export default function TutanakDetailPanel({ selectedTutanak, onClose }) {
   const konum = konumBilgileri || null;
 
   const handlePrint = () => {
-    console.log('Tutanak yazdırma:', id);
-    // Print işlemi burada implementé edilecek
+    // Mevcut sayfayı yazdır - BaseMalzemeHareketTutanagi zaten print CSS'leri içeriyor
+    window.print();
   };
 
   const handleDownloadPDF = () => {
@@ -67,9 +68,9 @@ export default function TutanakDetailPanel({ selectedTutanak, onClose }) {
       </div>
 
       {/* Content with Tabs */}
-      <div className="flex-1 overflow-hidden ">
+      <div className="flex-1 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <TabsList className="grid grid-cols-4 mx-auto mt-4 mb-2 ">
+          <TabsList className="grid grid-cols-4 mx-auto mt-4 mb-2">
             <TabsTrigger value="preview" className="text-xs">
               Önizleme
             </TabsTrigger>
@@ -79,13 +80,12 @@ export default function TutanakDetailPanel({ selectedTutanak, onClose }) {
             <TabsTrigger value="overview" className="text-xs">
               Genel
             </TabsTrigger>
-
             <TabsTrigger value="details" className="text-xs">
               Detaylar
             </TabsTrigger>
           </TabsList>
 
-          {/* preview Tab */}
+          {/* Preview Tab */}
           <TabsContent value="preview" className="flex-1 overflow-hidden">
             <ScrollArea className="h-full pr-2">
               <div className="space-y-4">
@@ -271,6 +271,7 @@ export default function TutanakDetailPanel({ selectedTutanak, onClose }) {
 
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Tutanak No:</span>
+                    <span className="font-mono text-xs">{id}</span>
                   </div>
 
                   <Separator />

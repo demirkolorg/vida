@@ -5,9 +5,7 @@ import { AciklamaMetni } from './AciklamaMetni';
 import { Tablolar } from './Tablolar';
 import { Imza } from './Imza';
 
-const BaseMalzemeHareketTutanagi = ({ selectedTutanak = null, className = '' }) => {
-  console.log('selectedTutanak:', selectedTutanak);
-
+const BaseMalzemeHareketTutanagi = ({ selectedTutanak = null, className = '',  }) => {
   const hareketTuru = selectedTutanak?.hareketTuru || 'Zimmet';
   const tutanakNo = selectedTutanak?.id || '';
   const tarih = selectedTutanak?.islemTarihi ? new Date(selectedTutanak.islemTarihi).toLocaleDateString('tr-TR') : new Date().toLocaleDateString('tr-TR');
@@ -20,6 +18,13 @@ const BaseMalzemeHareketTutanagi = ({ selectedTutanak = null, className = '' }) 
   const imzaAlanlari = getImzaAlanlari(hareketTuru, hedefPersonel, kaynakPersonel, islemYapan);
   const demirbasMalzemeler = malzemeler.filter(m => m.malzemeTipi === 'Demirbas');
   const sarfMalzemeler = malzemeler.filter(m => m.malzemeTipi === 'Sarf');
+
+  const handlePrint = () => {
+    // Mevcut sayfayı yazdır - BaseMalzemeHareketTutanagi zaten print CSS'leri içeriyor
+    window.print();
+  };
+
+
 
   return (
     <div className={`bg-white text-black h-[297mm] w-[210mm] mx-auto p-8 font-sans text-sm leading-relaxed print:m-0 print:p-6 ${className}`} style={{ fontFamily: 'Poppins, sans-serif' }}>
