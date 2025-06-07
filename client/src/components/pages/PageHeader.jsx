@@ -23,6 +23,7 @@ export const PageHeader = ({ useEntityStore, EntityHuman, center, right }) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pb-4 rounded-md ">
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{title}</h1>
+     
       <div className="">{center}</div>
       <div className="">{right}</div>
     </div>

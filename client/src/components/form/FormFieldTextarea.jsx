@@ -28,7 +28,7 @@ export const FormFieldTextarea = ({
           name={name}
           className={`${className} ${hasError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
           aria-invalid={hasError}
-          aria-describedby={hasError ? errorId : undefined}
+          aria-describedby={hasError ? errorId : ""}
           {...inputProps}
         />
         {hasError && (

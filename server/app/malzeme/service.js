@@ -127,18 +127,20 @@ const service = {
                   sicil: true,
                 },
               },
-              konumId: true,
-              konum: {
-                where: { status: AuditStatusEnum.Aktif },
+              kaynakKonumId: true,
+              kaynakKonum: {
                 select: {
                   id: true,
                   ad: true,
-                  depo: {
-                    select: {
-                      id: true,
-                      ad: true,
-                    },
-                  },
+                  depo: { select: { id: true, ad: true } },
+                },
+              },
+              hedefKonumId: true,
+              hedefKonum: {
+                select: {
+                  id: true,
+                  ad: true,
+                  depo: { select: { id: true, ad: true } },
                 },
               },
             },

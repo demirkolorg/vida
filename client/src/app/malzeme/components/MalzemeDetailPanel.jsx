@@ -119,7 +119,7 @@ const MalzemeDetailPanel = ({ selectedMalzeme, onClose }) => {
       case 'Iade':
       case 'DepoTransferi':
         return {
-          text: `Depoda (${sonHareket.konum.depo?.ad || 'Bilinmeyen depo'} - ${sonHareket.konum?.ad || 'Bilinmeyen konum'})`,
+          text: `Depoda (${sonHareket.hedefKonum.depo?.ad || 'Bilinmeyen depo'} - ${sonHareket.hedefKonum?.ad || 'Bilinmeyen konum'})`,
           color: 'blue',
           icon: MapPin,
         };

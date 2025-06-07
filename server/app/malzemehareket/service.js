@@ -18,7 +18,14 @@ const includeEntity = {
   },
   kaynakPersonel: { select: { id: true, ad: true, sicil: true, avatar: true } },
   hedefPersonel: { select: { id: true, ad: true, sicil: true, avatar: true } },
-  konum: {
+  kaynakKonum: {
+    select: {
+      id: true,
+      ad: true,
+      depo: { select: { id: true, ad: true } },
+    },
+  },
+  hedefKonum: {
     select: {
       id: true,
       ad: true,
@@ -147,6 +154,24 @@ const service = {
     };
   },
 
+  getAnlamliSonHareketByMalzemeId: async malzemeId => {
+    const hareketler = await prisma[PrismaName].findMany({
+      where: {
+        malzemeId,
+        status: AuditStatusEnum.Aktif,
+      },
+      orderBy: orderByEntity,
+      include: includeEntity,
+    });
+
+    if (!hareketler || hareketler.length === 0) return undefined;
+    for (const hareket of hareketler) {
+      if (hareket.hareketTuru !== 'KondisyonGuncelleme') {
+        return hareket;
+      }
+    }
+    return undefined;
+  },
   // BULK İŞLEMLERİ - YENİ METODLAR
 
   // Toplu malzeme kontrolü
@@ -210,7 +235,7 @@ const service = {
   },
 
   // İŞ SÜREÇLERİ
-
+  //!
   //zimmet
   zimmet: async data => {
     try {
@@ -219,6 +244,9 @@ const service = {
 
       if (!data.hedefPersonelId) throw new Error('Zimmet işlemi için hedef personel zorunludur.');
       await service.checkPersonelExists(data.hedefPersonelId);
+
+      const anlamliSonHareket = await service.getAnlamliSonHareketByMalzemeId(data.malzemeId);
+      const kaynakKonumId = anlamliSonHareket?.hedefKonumId ? anlamliSonHareket?.hedefKonumId : anlamliSonHareket?.kaynakKonumId;
 
       const malzemeDurum = await service.checkMalzemeZimmetDurumu(data.malzemeId);
 
@@ -247,7 +275,8 @@ const service = {
           malzemeId: data.malzemeId,
           hedefPersonelId: data.hedefPersonelId,
           kaynakPersonelId: null,
-          konumId: null,
+          hedefKonumId: null,
+          kaynakKonumId: kaynakKonumId,
           aciklama: data.aciklama,
           status: AuditStatusEnum.Aktif,
           createdById: data.islemYapanKullanici,
@@ -269,7 +298,6 @@ const service = {
             sube: true,
           },
         });
-
         const hedefPersonelBilgileri = await tx.personel.findUnique({
           where: { id: data.hedefPersonelId },
           include: {
@@ -280,6 +308,12 @@ const service = {
                 },
               },
             },
+          },
+        });
+        const konumBilgileri = await tx.konum.findUnique({
+          where: { id: anlamliSonHareket.konumId },
+          include: {
+            depo: true,
           },
         });
 
@@ -322,7 +356,13 @@ const service = {
             hareketId: yeniHareket.id,
             kondisyon: data.malzemeKondisyonu || 'Saglam',
           },
-          konumBilgileri: null, // Zimmet işleminde konum bilgisi yok
+          konumBilgileri: {
+            kaynakKonum: {
+              id: konumBilgileri.id,
+              ad: konumBilgileri.ad,
+              depo: konumBilgileri.depo?.ad,
+            },
+          }, // Zimmet işleminde konum bilgisi yok
           islemYapanKullanici: data.islemYapanKullanici,
         };
 
@@ -340,197 +380,170 @@ const service = {
     }
   },
   // Bulk zimmet
- bulkZimmet: async data => {
-  try {
-    const malzemeIdList = data.malzemeler.map(malzeme => {
-      if (!malzeme || typeof malzeme.id !== 'string' || malzeme.id.trim() === '') {
-        throw new Error('Malzemeler listesindeki her bir öğe geçerli bir "id" propertysine sahip olmalıdır.');
+  bulkZimmet: async data => {
+    try {
+      const malzemeIdList = data.malzemeler.map(malzeme => malzeme.id);
+
+      if (malzemeIdList.length === 0) {
+        throw new Error("Geçerli malzeme ID'si bulunamadı.");
       }
-      return malzeme.id;
-    });
 
-    if (malzemeIdList.length === 0) {
-      throw new Error("Geçerli malzeme ID'si bulunamadı.");
-    }
+      // Transaction ile tüm işlemleri atomik yap
+      const result = await prisma.$transaction(async tx => {
+        const results = [];
+        const errors = [];
+        const malzemeKonumBilgileri = {};
 
-    // Validasyonlar
-    await service.checkMultipleMalzemeExists(malzemeIdList);
-    
-    if (!data.hedefPersonelId) {
-      throw new Error('Toplu zimmet işlemi için hedef personel zorunludur.');
-    }
-    await service.checkPersonelExists(data.hedefPersonelId);
+        // Her malzeme için zimmet işlemi
+        for (const malzemeId of malzemeIdList) {
+          try {
+            // Son hareket ve konum bilgisini al
+            const anlamliSonHareket = await service.getAnlamliSonHareketByMalzemeId(malzemeId);
+            const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
 
-    const results = [];
-    const errors = [];
-    const tutanaklar = [];
+            // Validasyonlar...
+            if (malzemeDurum.malzemePersonelde) {
+              errors.push({ malzemeId, error: 'Malzeme zaten zimmetli durumda' });
+              continue;
+            }
 
-    // Her malzeme için zimmet kontrolü ve işlemi
-    for (const malzemeId of malzemeIdList) {
-      try {
-        const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
+            // Kaynak konum bilgisini al ve sakla
+            if (anlamliSonHareket?.konumId) {
+              const konumBilgileri = await tx.konum.findUnique({
+                where: { id: anlamliSonHareket.konumId },
+                include: { depo: true },
+              });
 
-        if (malzemeDurum.malzemePersonelde) {
-          errors.push({ malzemeId, error: 'Malzeme zaten zimmetli durumda' });
-          continue;
+              malzemeKonumBilgileri[malzemeId] = {
+                id: konumBilgileri?.id,
+                ad: konumBilgileri?.ad,
+                depo: konumBilgileri?.depo?.ad,
+              };
+            }
+
+            // Zimmet hareketini oluştur
+            const yeniId = helper.generateId(VarlıkKod);
+            const yeniHareket = await tx[PrismaName].create({
+              data: {
+                id: yeniId,
+                islemTarihi: new Date(data.islemTarihi || new Date()),
+                hareketTuru: HareketTuruEnum.Zimmet,
+                malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
+                malzemeId: malzemeId,
+                hedefPersonelId: data.hedefPersonelId,
+                kaynakPersonelId: null,
+                konumId: null,
+                aciklama: data.aciklama || `Toplu zimmet - ${malzemeId}`,
+                status: AuditStatusEnum.Aktif,
+                createdById: data.islemYapanKullanici,
+              },
+              include: includeEntity,
+            });
+
+            results.push(yeniHareket);
+          } catch (innerError) {
+            errors.push({
+              malzemeId,
+              error: innerError instanceof Error ? innerError.message : String(innerError),
+            });
+          }
         }
 
-        if (malzemeDurum.currentKondisyon !== MalzemeKondisyonuEnum.Saglam) {
-          errors.push({
-            malzemeId,
-            error: `Malzeme sağlam durumda değil (Mevcut Kondisyon: ${malzemeDurum.currentKondisyon}). Sadece sağlam malzemeler zimmetlenebilir.`,
+        // Başarılı işlemler varsa tutanak oluştur
+        let tutanak = null;
+        if (results.length > 0) {
+          // Malzeme ve personel bilgilerini al
+          const successfulMalzemeIds = results.map(h => h.malzemeId);
+
+          const malzemeBilgileri = await tx.malzeme.findMany({
+            where: { id: { in: successfulMalzemeIds } },
+            include: {
+              sabitKodu: true,
+              marka: true,
+              model: true,
+              birim: true,
+              sube: true,
+            },
           });
-          continue;
-        }
 
-        if (!malzemeDurum.malzemeDepoda && !malzemeDurum.malzemeKonumsuz) {
-          errors.push({ malzemeId, error: 'Malzeme depoda (veya zimmetlenebilir bir konumda) değil.' });
-          continue;
-        }
-
-        if (malzemeDurum.malzemeYok) {
-          errors.push({ malzemeId, error: 'Malzeme kayıp veya düşüm yapılmış.' });
-          continue;
-        }
-
-        // Zimmet hareketini oluştur
-        const yeniId = helper.generateId(VarlıkKod);
-        const createPayload = {
-          id: yeniId,
-          islemTarihi: new Date(data.islemTarihi || new Date()),
-          hareketTuru: HareketTuruEnum.Zimmet,
-          malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
-          malzemeId: malzemeId,
-          hedefPersonelId: data.hedefPersonelId,
-          kaynakPersonelId: null,
-          konumId: null,
-          aciklama: data.aciklama || `Toplu zimmet - ${malzemeId}`,
-          status: AuditStatusEnum.Aktif,
-          createdById: data.islemYapanKullanici,
-        };
-
-        const yeniHareket = await prisma[PrismaName].create({
-          data: createPayload,
-          include: includeEntity,
-        });
-
-        results.push(yeniHareket);
-
-      } catch (innerError) {
-        const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
-        errors.push({ malzemeId, error: errorMessage });
-      }
-    }
-
-    // Başarılı zimmet işlemleri varsa toplu tutanak oluştur
-    if (results.length > 0) {
-      try {
-        // Başarılı zimmet yapılan malzemelerin bilgilerini al
-        const successfulMalzemeIds = results.map(hareket => hareket.malzemeId);
-        
-        const malzemeBilgileri = await prisma.malzeme.findMany({
-          where: { id: { in: successfulMalzemeIds } },
-          include: {
-            sabitKodu: true,
-            marka: true,
-            model: true,
-            birim: true,
-            sube: true,
-          },
-        });
-
-        const hedefPersonelBilgileri = await prisma.personel.findUnique({
-          where: { id: data.hedefPersonelId },
-          include: {
-            buro: {
-              include: {
-                sube: {
-                  include: { birim: true },
+          const hedefPersonelBilgileri = await tx.personel.findUnique({
+            where: { id: data.hedefPersonelId },
+            include: {
+              buro: {
+                include: {
+                  sube: { include: { birim: true } },
                 },
               },
             },
-          },
-        });
+          });
 
-        // Tutanak için malzeme listesi hazırla
-        const tutanakMalzemeleri = malzemeBilgileri.map(malzeme => ({
-          id: malzeme.id,
-          vidaNo: malzeme.vidaNo,
-          sabitKodu: malzeme.sabitKodu?.ad,
-          marka: malzeme.marka?.ad,
-          model: malzeme.model?.ad,
-          bademSeriNo: malzeme.bademSeriNo,
-          etmysSeriNo: malzeme.etmysSeriNo,
-          stokDemirbasNo: malzeme.stokDemirbasNo,
-          malzemeTipi: malzeme.malzemeTipi,
-          kondisyon: data.malzemeKondisyonu || 'Saglam',
-          birim: malzeme.birim?.ad,
-          sube: malzeme.sube?.ad,
-        }));
-
-        // Toplu tutanak oluştur
-        const tutanakData = {
-          hareketTuru: 'Zimmet',
-          malzemeIds: successfulMalzemeIds,
-          malzemeler: tutanakMalzemeleri,
-          personelBilgileri: {
-            hedefPersonel: {
-              id: hedefPersonelBilgileri.id,
-              ad: hedefPersonelBilgileri.ad,
-              sicil: hedefPersonelBilgileri.sicil,
-              avatar: hedefPersonelBilgileri.avatar,
-              buro: hedefPersonelBilgileri.buro?.ad,
-              sube: hedefPersonelBilgileri.buro?.sube?.ad,
-              birim: hedefPersonelBilgileri.buro?.sube?.birim?.ad,
-            },
-            kaynakPersonel: null, // Zimmet işleminde kaynak depo
-          },
-          islemBilgileri: {
-            tarih: new Date(data.islemTarihi || new Date()),
-            hareketTuru: 'Zimmet',
-            aciklama: data.aciklama || `Toplu zimmet işlemi - ${successfulMalzemeIds.length} malzeme`,
-            hareketIds: results.map(h => h.id), // Tüm hareket ID'leri
+          // Tutanak verisini hazırla
+          const tutanakMalzemeleri = malzemeBilgileri.map(malzeme => ({
+            id: malzeme.id,
+            vidaNo: malzeme.vidaNo,
+            sabitKodu: malzeme.sabitKodu?.ad,
+            marka: malzeme.marka?.ad,
+            model: malzeme.model?.ad,
+            bademSeriNo: malzeme.bademSeriNo,
+            etmysSeriNo: malzeme.etmysSeriNo,
+            stokDemirbasNo: malzeme.stokDemirbasNo,
+            malzemeTipi: malzeme.malzemeTipi,
             kondisyon: data.malzemeKondisyonu || 'Saglam',
-          },
-          konumBilgileri: null, // Zimmet işleminde konum bilgisi yok
-          islemYapanKullanici: data.islemYapanKullanici,
+            birim: malzeme.birim?.ad,
+            sube: malzeme.sube?.ad,
+            kaynakKonum: malzemeKonumBilgileri[malzeme.id] || null,
+          }));
+
+          const tutanakData = {
+            hareketTuru: 'Zimmet',
+            malzemeIds: successfulMalzemeIds,
+            malzemeler: tutanakMalzemeleri,
+            personelBilgileri: {
+              hedefPersonel: {
+                id: hedefPersonelBilgileri.id,
+                ad: hedefPersonelBilgileri.ad,
+                sicil: hedefPersonelBilgileri.sicil,
+                avatar: hedefPersonelBilgileri.avatar,
+                buro: hedefPersonelBilgileri.buro?.ad,
+                sube: hedefPersonelBilgileri.buro?.sube?.ad,
+                birim: hedefPersonelBilgileri.buro?.sube?.birim?.ad,
+              },
+              kaynakPersonel: null,
+            },
+            islemBilgileri: {
+              tarih: new Date(data.islemTarihi || new Date()),
+              hareketTuru: 'Zimmet',
+              aciklama: data.aciklama || `Toplu zimmet - ${successfulMalzemeIds.length} malzeme`,
+              hareketIds: results.map(h => h.id),
+              kondisyon: data.malzemeKondisyonu || 'Saglam',
+            },
+            konumBilgileri: {
+              kaynakKonumlar: malzemeKonumBilgileri,
+            },
+            islemYapanKullanici: data.islemYapanKullanici,
+          };
+
+          tutanak = await TutanakService.create(tutanakData);
+        }
+
+        return {
+          success: results,
+          errors: errors,
+          tutanak: tutanak,
+          malzemeKonumBilgileri: malzemeKonumBilgileri,
+          successCount: results.length,
+          errorCount: errors.length,
+          totalCount: malzemeIdList.length,
         };
+      });
 
-        const tutanak = await TutanakService.create(tutanakData);
-        tutanaklar.push(tutanak);
-
-      } catch (tutanakError) {
-        console.error('Toplu tutanak oluşturulurken hata:', tutanakError);
-        // Tutanak hatası zimmet işlemlerini etkilemez, sadece log'larız
-      }
+      return result;
+    } catch (error) {
+      throw error;
     }
-
-    // Eğer hiç başarılı işlem yoksa ve sadece hatalar varsa
-    if (results.length === 0 && errors.length > 0) {
-      throw new Error(`Toplu zimmet işleminde hiçbir malzeme başarıyla zimmetlenemedi. Hatalar: ${errors.map(e => `${e.malzemeId}: ${e.error}`).join(', ')}`);
-    }
-
-    const finalResult = {
-      success: results,
-      errors: errors,
-      tutanaklar: tutanaklar,
-      successCount: results.length,
-      errorCount: errors.length,
-      totalCount: malzemeIdList.length,
-      summary: {
-        message: `${results.length}/${malzemeIdList.length} malzeme başarıyla zimmetlendi.`,
-        hasErrors: errors.length > 0,
-        tutanakCount: tutanaklar.length,
-      }
-    };
-
-    return finalResult;
-  } catch (error) {
-    throw error;
-  }
-},
-
-  // İADE SERVISI
+  },
+  //!
+  // İADE SERVISI - Tutanak entegrasyonlu
   iade: async data => {
     try {
       if (!data.malzemeId) throw new Error('İade işlemi için malzeme zorunludur.');
@@ -551,31 +564,325 @@ const service = {
         throw new Error(`Bu malzeme "${malzemeDurum.currentPersonel.ad}" adlı personelde zimmetli. İade işlemi sadece o personel tarafından yapılabilir.`);
       }
 
-      const yeniId = helper.generateId(VarlıkKod);
-      const createPayload = {
-        id: yeniId,
-        islemTarihi: new Date(data.islemTarihi || new Date()),
-        hareketTuru: 'Iade',
-        malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
-        malzemeId: data.malzemeId,
-        kaynakPersonelId: data.kaynakPersonelId,
-        konumId: data.konumId,
-        hedefPersonelId: null,
-        aciklama: data.aciklama,
-        status: AuditStatusEnum.Aktif,
-        createdById: data.islemYapanKullanici,
-      };
+      // Transaction ile iade + tutanak işlemini atomik yap
+      const result = await prisma.$transaction(async tx => {
+        // 1. İade hareketini oluştur
+        const yeniId = helper.generateId(VarlıkKod);
+        const createPayload = {
+          id: yeniId,
+          islemTarihi: new Date(data.islemTarihi || new Date()),
+          hareketTuru: 'Iade',
+          malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
+          malzemeId: data.malzemeId,
+          kaynakPersonelId: data.kaynakPersonelId,
+          konumId: data.konumId,
+          hedefPersonelId: null,
+          aciklama: data.aciklama,
+          status: AuditStatusEnum.Aktif,
+          createdById: data.islemYapanKullanici,
+        };
 
-      return await prisma[PrismaName].create({
-        data: createPayload,
-        include: includeEntity,
+        const yeniHareket = await tx[PrismaName].create({
+          data: createPayload,
+          include: includeEntity,
+        });
+
+        // 2. Tutanak için gerekli verileri hazırla
+        const malzemeBilgileri = await tx.malzeme.findUnique({
+          where: { id: data.malzemeId },
+          include: {
+            sabitKodu: true,
+            marka: true,
+            model: true,
+            birim: true,
+            sube: true,
+          },
+        });
+
+        const kaynakPersonelBilgileri = await tx.personel.findUnique({
+          where: { id: data.kaynakPersonelId },
+          include: {
+            buro: {
+              include: {
+                sube: {
+                  include: { birim: true },
+                },
+              },
+            },
+          },
+        });
+
+        const konumBilgileri = await tx.konum.findUnique({
+          where: { id: data.konumId },
+          include: {
+            depo: true,
+          },
+        });
+
+        // 3. Tutanak oluştur
+        const tutanakData = {
+          hareketTuru: 'Iade',
+          malzemeIds: [data.malzemeId],
+          malzemeler: [
+            {
+              id: malzemeBilgileri.id,
+              vidaNo: malzemeBilgileri.vidaNo,
+              sabitKodu: malzemeBilgileri.sabitKodu?.ad,
+              marka: malzemeBilgileri.marka?.ad,
+              model: malzemeBilgileri.model?.ad,
+              bademSeriNo: malzemeBilgileri.bademSeriNo,
+              etmysSeriNo: malzemeBilgileri.etmysSeriNo,
+              stokDemirbasNo: malzemeBilgileri.stokDemirbasNo,
+              malzemeTipi: malzemeBilgileri.malzemeTipi,
+              kondisyon: data.malzemeKondisyonu || 'Saglam',
+              birim: malzemeBilgileri.birim?.ad,
+              sube: malzemeBilgileri.sube?.ad,
+            },
+          ],
+          personelBilgileri: {
+            kaynakPersonel: {
+              id: kaynakPersonelBilgileri.id,
+              ad: kaynakPersonelBilgileri.ad,
+              avatar: kaynakPersonelBilgileri.avatar,
+              sicil: kaynakPersonelBilgileri.sicil,
+              buro: kaynakPersonelBilgileri.buro?.ad,
+              sube: kaynakPersonelBilgileri.buro?.sube?.ad,
+              birim: kaynakPersonelBilgileri.buro?.sube?.birim?.ad,
+            },
+            hedefPersonel: null, // İade işleminde hedef depo
+          },
+          islemBilgileri: {
+            tarih: yeniHareket.islemTarihi,
+            hareketTuru: 'Iade',
+            aciklama: data.aciklama || 'Malzeme iade işlemi',
+            hareketId: yeniHareket.id,
+            kondisyon: data.malzemeKondisyonu || 'Saglam',
+          },
+          konumBilgileri: {
+            hedefKonum: {
+              id: konumBilgileri.id,
+              ad: konumBilgileri.ad,
+              depo: konumBilgileri.depo?.ad,
+            },
+          },
+          islemYapanKullanici: data.islemYapanKullanici,
+        };
+
+        const tutanak = await TutanakService.create(tutanakData);
+
+        return {
+          hareket: yeniHareket,
+          tutanak: tutanak,
+        };
       });
+
+      return result.hareket; // Geriye uyumluluk için hareket döndür
     } catch (error) {
       throw error;
     }
   },
+  // Bulk iade işlemi - Tutanak entegrasyonlu
+  bulkIade: async data => {
+    try {
+      // Girdi olarak data.malzemeler (obje array'i) bekleniyor
+      if (!data.malzemeler || !Array.isArray(data.malzemeler) || data.malzemeler.length === 0) {
+        throw new Error('İade için malzeme listesi (data.malzemeler) zorunludur ve en az bir malzeme içermelidir.');
+      }
+      if (!data.konumId) {
+        throw new Error('İade için hedef konum zorunludur.');
+      }
 
-  // DEVİR SERVISI
+      // Malzeme ID'lerini data.malzemeler array'inden çıkar
+      const malzemeIdList = data.malzemeler.map(malzeme => {
+        if (!malzeme || typeof malzeme.id !== 'string' || malzeme.id.trim() === '') {
+          throw new Error('Malzemeler listesindeki her bir öğe geçerli bir "id" propertysine sahip olmalıdır.');
+        }
+        return malzeme.id;
+      });
+
+      if (malzemeIdList.length === 0) {
+        throw new Error("Geçerli malzeme ID'si bulunamadı.");
+      }
+
+      // Validasyonlar
+      await service.checkMultipleMalzemeExists(malzemeIdList);
+      await service.checkKonumExists(data.konumId);
+
+      const results = [];
+      const errors = [];
+      const tutanaklar = [];
+
+      // Her malzeme için iade kontrolü ve işlemi
+      for (const malzemeId of malzemeIdList) {
+        try {
+          const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
+
+          if (!malzemeDurum.malzemePersonelde) {
+            errors.push({ malzemeId, error: 'Malzeme zimmetli değil' });
+            continue;
+          }
+
+          // Kaynak personeli son hareketten al
+          const kaynakPersonelId = malzemeDurum.currentPersonel?.id;
+          if (!kaynakPersonelId) {
+            errors.push({ malzemeId, error: 'Zimmetli personel bulunamadı' });
+            continue;
+          }
+
+          const yeniId = helper.generateId(VarlıkKod);
+          const createPayload = {
+            id: yeniId,
+            islemTarihi: new Date(data.islemTarihi || new Date()),
+            hareketTuru: HareketTuruEnum.Iade,
+            malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
+            malzemeId: malzemeId,
+            kaynakPersonelId: kaynakPersonelId,
+            konumId: data.konumId,
+            hedefPersonelId: null,
+            aciklama: data.aciklama || `Toplu iade - ${malzemeId}`,
+            status: AuditStatusEnum.Aktif,
+            createdById: data.islemYapanKullanici,
+          };
+
+          const yeniHareket = await prisma[PrismaName].create({
+            data: createPayload,
+            include: includeEntity,
+          });
+
+          results.push(yeniHareket);
+        } catch (innerError) {
+          console.error(`Service - Error processing malzeme ${malzemeId}:`, innerError);
+          const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
+          errors.push({ malzemeId, error: errorMessage });
+        }
+      }
+
+      // Başarılı iade işlemleri varsa toplu tutanak oluştur
+      if (results.length > 0) {
+        try {
+          // Başarılı iade yapılan malzemelerin bilgilerini al
+          const successfulMalzemeIds = results.map(hareket => hareket.malzemeId);
+
+          const malzemeBilgileri = await prisma.malzeme.findMany({
+            where: { id: { in: successfulMalzemeIds } },
+            include: {
+              sabitKodu: true,
+              marka: true,
+              model: true,
+              birim: true,
+              sube: true,
+            },
+          });
+
+          // Kaynak personeller (iade eden personeller) - unique'ler
+          const kaynakPersonelIds = [...new Set(results.map(hareket => hareket.kaynakPersonelId))];
+          const kaynakPersonelBilgileri = await prisma.personel.findMany({
+            where: { id: { in: kaynakPersonelIds } },
+            include: {
+              buro: {
+                include: {
+                  sube: {
+                    include: { birim: true },
+                  },
+                },
+              },
+            },
+          });
+          const kaynakPersonel = kaynakPersonelBilgileri[0];
+
+          const konumBilgileri = await prisma.konum.findUnique({
+            where: { id: data.konumId },
+            include: {
+              depo: true,
+            },
+          });
+
+          // Tutanak için malzeme listesi hazırla
+          const tutanakMalzemeleri = malzemeBilgileri.map(malzeme => ({
+            id: malzeme.id,
+            vidaNo: malzeme.vidaNo,
+            sabitKodu: malzeme.sabitKodu?.ad,
+            marka: malzeme.marka?.ad,
+            model: malzeme.model?.ad,
+            bademSeriNo: malzeme.bademSeriNo,
+            etmysSeriNo: malzeme.etmysSeriNo,
+            stokDemirbasNo: malzeme.stokDemirbasNo,
+            malzemeTipi: malzeme.malzemeTipi,
+            kondisyon: data.malzemeKondisyonu || 'Saglam',
+            birim: malzeme.birim?.ad,
+            sube: malzeme.sube?.ad,
+            // İade eden personel bilgisini ekle
+            iadeEdenPersonel: results.find(h => h.malzemeId === malzeme.id)?.kaynakPersonelId,
+          }));
+
+          // Toplu tutanak oluştur
+          const tutanakData = {
+            hareketTuru: 'Iade',
+            malzemeIds: successfulMalzemeIds,
+            malzemeler: tutanakMalzemeleri,
+            personelBilgileri: {
+              kaynakPersonel: {
+                id: kaynakPersonel.id,
+                ad: kaynakPersonel.ad,
+                sicil: kaynakPersonel.sicil,
+                avatar: kaynakPersonel.avatar,
+                buro: kaynakPersonel.buro?.ad,
+                sube: kaynakPersonel.buro?.sube?.ad,
+                birim: kaynakPersonel.buro?.sube?.birim?.ad,
+              },
+              hedefPersonel: null, // İade işleminde hedef depo
+            },
+            islemBilgileri: {
+              tarih: new Date(data.islemTarihi || new Date()),
+              hareketTuru: 'Iade',
+              aciklama: data.aciklama || `Toplu iade işlemi - ${successfulMalzemeIds.length} malzeme`,
+              hareketIds: results.map(h => h.id), // Tüm hareket ID'leri
+              kondisyon: data.malzemeKondisyonu || 'Saglam',
+            },
+            konumBilgileri: {
+              hedefKonum: {
+                id: konumBilgileri.id,
+                ad: konumBilgileri.ad,
+                depo: konumBilgileri.depo?.ad,
+              },
+            },
+            islemYapanKullanici: data.islemYapanKullanici,
+          };
+
+          const tutanak = await TutanakService.create(tutanakData);
+          tutanaklar.push(tutanak);
+        } catch (tutanakError) {
+          console.error('Toplu iade tutanak oluşturulurken hata:', tutanakError);
+          // Tutanak hatası iade işlemlerini etkilemez, sadece log'larız
+        }
+      }
+
+      // Eğer hiç başarılı işlem yoksa ve sadece hatalar varsa
+      if (results.length === 0 && errors.length > 0) {
+        throw new Error(`Toplu iade işleminde hiçbir malzeme başarıyla iade edilemedi. Hatalar: ${errors.map(e => `${e.malzemeId}: ${e.error}`).join(', ')}`);
+      }
+
+      const finalResult = {
+        success: results,
+        errors: errors,
+        tutanaklar: tutanaklar,
+        successCount: results.length,
+        errorCount: errors.length,
+        totalCount: malzemeIdList.length,
+        summary: {
+          message: `${results.length}/${malzemeIdList.length} malzeme başarıyla iade edildi.`,
+          hasErrors: errors.length > 0,
+          tutanakCount: tutanaklar.length,
+        },
+      };
+
+      return finalResult;
+    } catch (error) {
+      throw error;
+    }
+  },
+  //!
+  // DEVİR SERVISI - Tutanak entegrasyonlu
   devir: async data => {
     try {
       await service.checkMalzemeExists(data.malzemeId);
@@ -597,30 +904,370 @@ const service = {
         throw new Error(`Bu malzeme "${malzemeDurum.currentPersonel.ad}" adlı personelde zimmetli. Devir işlemi sadece o personel tarafından yapılabilir.`);
       }
 
-      const yeniId = helper.generateId(VarlıkKod);
-      const createPayload = {
-        id: yeniId,
-        islemTarihi: new Date(data.islemTarihi || new Date()),
-        hareketTuru: 'Devir',
-        malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
-        malzemeId: data.malzemeId,
-        kaynakPersonelId: data.kaynakPersonelId,
-        hedefPersonelId: data.hedefPersonelId,
-        konumId: null,
-        aciklama: data.aciklama,
-        status: AuditStatusEnum.Aktif,
-        createdById: data.islemYapanKullanici,
-      };
+      // Transaction ile devir + tutanak işlemini atomik yap
+      const result = await prisma.$transaction(async tx => {
+        // 1. Devir hareketini oluştur
+        const yeniId = helper.generateId(VarlıkKod);
+        const createPayload = {
+          id: yeniId,
+          islemTarihi: new Date(data.islemTarihi || new Date()),
+          hareketTuru: 'Devir',
+          malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
+          malzemeId: data.malzemeId,
+          kaynakPersonelId: data.kaynakPersonelId,
+          hedefPersonelId: data.hedefPersonelId,
+          konumId: null,
+          aciklama: data.aciklama,
+          status: AuditStatusEnum.Aktif,
+          createdById: data.islemYapanKullanici,
+        };
 
-      return await prisma[PrismaName].create({
-        data: createPayload,
-        include: includeEntity,
+        const yeniHareket = await tx[PrismaName].create({
+          data: createPayload,
+          include: includeEntity,
+        });
+
+        // 2. Tutanak için gerekli verileri hazırla
+        const malzemeBilgileri = await tx.malzeme.findUnique({
+          where: { id: data.malzemeId },
+          include: {
+            sabitKodu: true,
+            marka: true,
+            model: true,
+            birim: true,
+            sube: true,
+          },
+        });
+
+        const kaynakPersonelBilgileri = await tx.personel.findUnique({
+          where: { id: data.kaynakPersonelId },
+          include: {
+            buro: {
+              include: {
+                sube: {
+                  include: { birim: true },
+                },
+              },
+            },
+          },
+        });
+
+        const hedefPersonelBilgileri = await tx.personel.findUnique({
+          where: { id: data.hedefPersonelId },
+          include: {
+            buro: {
+              include: {
+                sube: {
+                  include: { birim: true },
+                },
+              },
+            },
+          },
+        });
+
+        // 3. Tutanak oluştur
+        const tutanakData = {
+          hareketTuru: 'Devir',
+          malzemeIds: [data.malzemeId],
+          malzemeler: [
+            {
+              id: malzemeBilgileri.id,
+              vidaNo: malzemeBilgileri.vidaNo,
+              sabitKodu: malzemeBilgileri.sabitKodu?.ad,
+              marka: malzemeBilgileri.marka?.ad,
+              model: malzemeBilgileri.model?.ad,
+              bademSeriNo: malzemeBilgileri.bademSeriNo,
+              etmysSeriNo: malzemeBilgileri.etmysSeriNo,
+              stokDemirbasNo: malzemeBilgileri.stokDemirbasNo,
+              malzemeTipi: malzemeBilgileri.malzemeTipi,
+              kondisyon: data.malzemeKondisyonu || 'Saglam',
+              birim: malzemeBilgileri.birim?.ad,
+              sube: malzemeBilgileri.sube?.ad,
+            },
+          ],
+          personelBilgileri: {
+            kaynakPersonel: {
+              id: kaynakPersonelBilgileri.id,
+              ad: kaynakPersonelBilgileri.ad,
+              avatar: kaynakPersonelBilgileri.avatar,
+              sicil: kaynakPersonelBilgileri.sicil,
+              buro: kaynakPersonelBilgileri.buro?.ad,
+              sube: kaynakPersonelBilgileri.buro?.sube?.ad,
+              birim: kaynakPersonelBilgileri.buro?.sube?.birim?.ad,
+            },
+            hedefPersonel: {
+              id: hedefPersonelBilgileri.id,
+              ad: hedefPersonelBilgileri.ad,
+              avatar: hedefPersonelBilgileri.avatar,
+              sicil: hedefPersonelBilgileri.sicil,
+              buro: hedefPersonelBilgileri.buro?.ad,
+              sube: hedefPersonelBilgileri.buro?.sube?.ad,
+              birim: hedefPersonelBilgileri.buro?.sube?.birim?.ad,
+            },
+          },
+          islemBilgileri: {
+            tarih: yeniHareket.islemTarihi,
+            hareketTuru: 'Devir',
+            aciklama: data.aciklama || 'Malzeme devir işlemi',
+            hareketId: yeniHareket.id,
+            kondisyon: data.malzemeKondisyonu || 'Saglam',
+          },
+          konumBilgileri: null, // Devir işleminde konum bilgisi yok (personel arası transfer)
+          islemYapanKullanici: data.islemYapanKullanici,
+        };
+
+        const tutanak = await TutanakService.create(tutanakData);
+
+        return {
+          hareket: yeniHareket,
+          tutanak: tutanak,
+        };
       });
+
+      return result.hareket; // Geriye uyumluluk için hareket döndür
     } catch (error) {
       throw error;
     }
   },
+  // Bulk devir işlemi - Tutanak entegrasyonlu
+  bulkDevir: async data => {
+    try {
+      // Malzeme ID'lerini data.malzemeler array'inden çıkar
+      const malzemeIdList = data.malzemeler.map(malzeme => {
+        if (!malzeme || typeof malzeme.id !== 'string' || malzeme.id.trim() === '') {
+          throw new Error('Malzemeler listesindeki her bir öğe geçerli bir "id" propertysine sahip olmalıdır.');
+        }
+        return malzeme.id;
+      });
 
+      if (malzemeIdList.length === 0) {
+        throw new Error("Geçerli malzeme ID'si bulunamadı.");
+      }
+
+      // Kaynak personel ID'lerini data.malzemeler array'inden çıkar
+      const kaynakPersonelIdList = data.malzemeler.map(personel => {
+        if (!personel || typeof personel.kaynakPersonelId !== 'string' || personel.kaynakPersonelId.trim() === '') {
+          throw new Error('Malzemeler listesindeki her bir öğe geçerli bir "kaynakPersonelId" propertysine sahip olmalıdır.');
+        }
+        return personel.kaynakPersonelId;
+      });
+
+      if (kaynakPersonelIdList.length === 0) {
+        throw new Error("Geçerli kaynak personel ID'si bulunamadı.");
+      }
+
+      // Validasyonlar
+      await service.checkMultipleMalzemeExists(malzemeIdList);
+      await service.checkPersonelExists(data.hedefPersonelId);
+      await service.checkMultiplePersonelExists(kaynakPersonelIdList);
+
+      const results = [];
+      const errors = [];
+      const tutanaklar = [];
+
+      // Her malzeme için devir kontrolü ve işlemi
+      for (const malzemeId of malzemeIdList) {
+        try {
+          const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
+
+          if (malzemeDurum.currentKondisyon !== MalzemeKondisyonuEnum.Saglam) {
+            errors.push({
+              malzemeId,
+              error: `Malzeme sağlam durumda değil (Mevcut Kondisyon: ${malzemeDurum.currentKondisyon}). Sadece sağlam malzemeler devredillebilir.`,
+            });
+            continue;
+          }
+
+          if (!malzemeDurum.malzemePersonelde) {
+            errors.push({ malzemeId, error: 'Malzeme personelde (veya devredillebilir bir konumda) değil.' });
+            continue;
+          }
+
+          if (malzemeDurum.malzemeYok) {
+            errors.push({ malzemeId, error: 'Malzeme kayıp veya düşüm yapılmış.' });
+            continue;
+          }
+
+          // İlgili malzemeyi data içinden bul
+          const ilgiliMalzeme = data.malzemeler.find(m => m.id === malzemeId);
+          const kaynakPersonelId = ilgiliMalzeme?.kaynakPersonelId;
+
+          if (!kaynakPersonelId) {
+            errors.push({ malzemeId, error: 'Kaynak personel ID bulunamadı.' });
+            continue;
+          }
+
+          // Kaynak personel kontrolü
+          if (malzemeDurum.currentPersonel && kaynakPersonelId !== malzemeDurum.currentPersonel.id) {
+            errors.push({
+              malzemeId,
+              error: `Bu malzeme "${malzemeDurum.currentPersonel.ad}" adlı personelde zimmetli. Devir işlemi sadece o personel tarafından yapılabilir.`,
+            });
+            continue;
+          }
+
+          const yeniId = helper.generateId(VarlıkKod);
+          const createPayload = {
+            id: yeniId,
+            islemTarihi: new Date(data.islemTarihi || new Date()),
+            hareketTuru: HareketTuruEnum.Devir,
+            malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
+            malzemeId: malzemeId,
+            hedefPersonelId: data.hedefPersonelId,
+            kaynakPersonelId: kaynakPersonelId,
+            konumId: null,
+            aciklama: data.aciklama || `Toplu devir - ${malzemeId}`,
+            status: AuditStatusEnum.Aktif,
+            createdById: data.islemYapanKullanici,
+          };
+
+          const yeniHareket = await prisma[PrismaName].create({
+            data: createPayload,
+            include: includeEntity,
+          });
+
+          results.push(yeniHareket);
+        } catch (innerError) {
+          console.error(`Service - Error processing malzeme ${malzemeId}:`, innerError);
+          const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
+          errors.push({ malzemeId, error: errorMessage });
+        }
+      }
+
+      // Başarılı devir işlemleri varsa toplu tutanak oluştur
+      if (results.length > 0) {
+        try {
+          // Başarılı devir yapılan malzemelerin bilgilerini al
+          const successfulMalzemeIds = results.map(hareket => hareket.malzemeId);
+
+          const malzemeBilgileri = await prisma.malzeme.findMany({
+            where: { id: { in: successfulMalzemeIds } },
+            include: {
+              sabitKodu: true,
+              marka: true,
+              model: true,
+              birim: true,
+              sube: true,
+            },
+          });
+
+          // Kaynak personeller (devir veren personeller) - unique'ler
+          const kaynakPersonelIds = [...new Set(results.map(hareket => hareket.kaynakPersonelId))];
+          const kaynakPersonelBilgileri = await prisma.personel.findMany({
+            where: { id: { in: kaynakPersonelIds } },
+            include: {
+              buro: {
+                include: {
+                  sube: {
+                    include: { birim: true },
+                  },
+                },
+              },
+            },
+          });
+          const kaynakPersonel = kaynakPersonelBilgileri[0];
+
+          // Hedef personel bilgileri
+          const hedefPersonelBilgileri = await prisma.personel.findUnique({
+            where: { id: data.hedefPersonelId },
+            include: {
+              buro: {
+                include: {
+                  sube: {
+                    include: { birim: true },
+                  },
+                },
+              },
+            },
+          });
+
+          // Tutanak için malzeme listesi hazırla
+          const tutanakMalzemeleri = malzemeBilgileri.map(malzeme => ({
+            id: malzeme.id,
+            vidaNo: malzeme.vidaNo,
+            sabitKodu: malzeme.sabitKodu?.ad,
+            marka: malzeme.marka?.ad,
+            model: malzeme.model?.ad,
+            bademSeriNo: malzeme.bademSeriNo,
+            etmysSeriNo: malzeme.etmysSeriNo,
+            stokDemirbasNo: malzeme.stokDemirbasNo,
+            malzemeTipi: malzeme.malzemeTipi,
+            kondisyon: data.malzemeKondisyonu || 'Saglam',
+            birim: malzeme.birim?.ad,
+            sube: malzeme.sube?.ad,
+            // Devir veren personel bilgisini ekle
+            devirVerenPersonel: results.find(h => h.malzemeId === malzeme.id)?.kaynakPersonelId,
+          }));
+
+          // Toplu tutanak oluştur
+          const tutanakData = {
+            hareketTuru: 'Devir',
+            malzemeIds: successfulMalzemeIds,
+            malzemeler: tutanakMalzemeleri,
+            personelBilgileri: {
+              kaynakPersonel: {
+                id: kaynakPersonel.id,
+                ad: kaynakPersonel.ad,
+                sicil: kaynakPersonel.sicil,
+                avatar: kaynakPersonel.avatar,
+                buro: kaynakPersonel.buro?.ad,
+                sube: kaynakPersonel.buro?.sube?.ad,
+                birim: kaynakPersonel.buro?.sube?.birim?.ad,
+              },
+              hedefPersonel: {
+                id: hedefPersonelBilgileri.id,
+                ad: hedefPersonelBilgileri.ad,
+                sicil: hedefPersonelBilgileri.sicil,
+                avatar: hedefPersonelBilgileri.avatar,
+                buro: hedefPersonelBilgileri.buro?.ad,
+                sube: hedefPersonelBilgileri.buro?.sube?.ad,
+                birim: hedefPersonelBilgileri.buro?.sube?.birim?.ad,
+              },
+            },
+            islemBilgileri: {
+              tarih: new Date(data.islemTarihi || new Date()),
+              hareketTuru: 'Devir',
+              aciklama: data.aciklama || `Toplu devir işlemi - ${successfulMalzemeIds.length} malzeme`,
+              hareketIds: results.map(h => h.id), // Tüm hareket ID'leri
+              kondisyon: data.malzemeKondisyonu || 'Saglam',
+            },
+            konumBilgileri: null, // Devir işleminde konum bilgisi yok (personel arası transfer)
+            islemYapanKullanici: data.islemYapanKullanici,
+          };
+
+          const tutanak = await TutanakService.create(tutanakData);
+          tutanaklar.push(tutanak);
+        } catch (tutanakError) {
+          console.error('Toplu devir tutanak oluşturulurken hata:', tutanakError);
+          // Tutanak hatası devir işlemlerini etkilemez, sadece log'larız
+        }
+      }
+
+      // Eğer hiç başarılı işlem yoksa ve sadece hatalar varsa
+      if (results.length === 0 && errors.length > 0) {
+        throw new Error(`Toplu devir işleminde hiçbir malzeme başarıyla devredilmedi. Hatalar: ${errors.map(e => `${e.malzemeId}: ${e.error}`).join(', ')}`);
+      }
+
+      const finalResult = {
+        success: results,
+        errors: errors,
+        tutanaklar: tutanaklar,
+        successCount: results.length,
+        errorCount: errors.length,
+        totalCount: malzemeIdList.length,
+        summary: {
+          message: `${results.length}/${malzemeIdList.length} malzeme başarıyla devredildi.`,
+          hasErrors: errors.length > 0,
+          tutanakCount: tutanaklar.length,
+        },
+      };
+
+      return finalResult;
+    } catch (error) {
+      throw error;
+    }
+  },
+  //!
   // DEPO TRANSFER SERVISI
   depoTransfer: async data => {
     try {
@@ -816,7 +1463,8 @@ const service = {
         hareketTuru: 'Kayit',
         malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
         malzemeId: data.malzemeId,
-        konumId: data.konumId,
+        kaynakKonumId: null,
+        hedefKonumId: data.konumId,
         kaynakPersonelId: null,
         hedefPersonelId: null,
         aciklama: data.aciklama,
@@ -828,192 +1476,6 @@ const service = {
         data: createPayload,
         include: includeEntity,
       });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Bulk iade işlemi - Güncellendi
-  bulkIade: async data => {
-    try {
-      // Girdi olarak data.malzemeler (obje array'i) bekleniyor
-      if (!data.malzemeler || !Array.isArray(data.malzemeler) || data.malzemeler.length === 0) {
-        throw new Error('İade için malzeme listesi (data.malzemeler) zorunludur ve en az bir malzeme içermelidir.');
-      }
-      if (!data.konumId) {
-        throw new Error('İade için hedef konum zorunludur.');
-      }
-
-      // Malzeme ID'lerini data.malzemeler array'inden çıkar
-      const malzemeIdList = data.malzemeler.map(malzeme => {
-        if (!malzeme || typeof malzeme.id !== 'string' || malzeme.id.trim() === '') {
-          throw new Error('Malzemeler listesindeki her bir öğe geçerli bir "id" propertysine sahip olmalıdır.');
-        }
-        return malzeme.id;
-      });
-
-      if (malzemeIdList.length === 0) {
-        throw new Error("Geçerli malzeme ID'si bulunamadı.");
-      }
-
-      // Validasyonlar
-      await service.checkMultipleMalzemeExists(malzemeIdList);
-      await service.checkKonumExists(data.konumId);
-
-      const results = [];
-      const errors = [];
-
-      // Her malzeme için iade kontrolü ve işlemi
-      for (const malzemeId of malzemeIdList) {
-        try {
-          const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
-
-          if (!malzemeDurum.malzemePersonelde) {
-            errors.push({ malzemeId, error: 'Malzeme zimmetli değil' });
-            continue;
-          }
-
-          // Kaynak personeli son hareketten al
-          const kaynakPersonelId = malzemeDurum.currentPersonel?.id;
-          if (!kaynakPersonelId) {
-            errors.push({ malzemeId, error: 'Zimmetli personel bulunamadı' });
-            continue;
-          }
-
-          const yeniId = helper.generateId(VarlıkKod);
-          const createPayload = {
-            id: yeniId,
-            islemTarihi: new Date(data.islemTarihi || new Date()),
-            hareketTuru: HareketTuruEnum.Iade,
-            malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
-            malzemeId: malzemeId,
-            kaynakPersonelId: kaynakPersonelId,
-            konumId: data.konumId,
-            hedefPersonelId: null,
-            aciklama: data.aciklama || `Toplu iade - ${malzemeId}`,
-            status: AuditStatusEnum.Aktif,
-            createdById: data.islemYapanKullanici,
-          };
-
-          const result = await prisma[PrismaName].create({
-            data: createPayload,
-            include: includeEntity,
-          });
-
-          results.push(result);
-        } catch (innerError) {
-          console.error(`Service - Error processing malzeme ${malzemeId}:`, innerError);
-          const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
-          errors.push({ malzemeId, error: errorMessage });
-        }
-      }
-
-      const finalResult = {
-        success: results,
-        errors: errors,
-        successCount: results.length,
-        errorCount: errors.length,
-        totalCount: malzemeIdList.length,
-      };
-
-      return finalResult;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Bulk devir işlemi - Düzeltilmiş versiyon
-  bulkDevir: async data => {
-    try {
-      // Malzeme ID'lerini data.malzemeler array'inden çıkar
-      const malzemeIdList = data.malzemeler.map(malzeme => {
-        if (!malzeme || typeof malzeme.id !== 'string' || malzeme.id.trim() === '') {
-          throw new Error('Malzemeler listesindeki her bir öğe geçerli bir "id" propertysine sahip olmalıdır.');
-        }
-        return malzeme.id;
-      });
-
-      // Eğer malzemeIdList boşsa
-      if (malzemeIdList.length === 0) throw new Error("Geçerli malzeme ID'si bulunamadı.");
-
-      // Malzeme ID'lerini data.malzemeler array'inden çıkar
-      const kaynakPersonelIdList = data.malzemeler.map(personel => {
-        if (!personel || typeof personel.kaynakPersonelId !== 'string' || personel.kaynakPersonelId.trim() === '') {
-          throw new Error('Malzemeler listesindeki her bir öğe geçerli bir "kaynakPersonelId" propertysine sahip olmalıdır.');
-        }
-        return personel.kaynakPersonelId;
-      });
-
-      // Eğer malzemeIdList boşsa
-      if (kaynakPersonelIdList.length === 0) throw new Error("Geçerli personel ID'si bulunamadı.");
-
-      // Validasyonlar
-      await service.checkMultipleMalzemeExists(malzemeIdList);
-      await service.checkPersonelExists(data.hedefPersonelId);
-      await service.checkMultiplePersonelExists(kaynakPersonelIdList);
-
-      const results = [];
-      const errors = [];
-
-      for (const malzemeId of malzemeIdList) {
-        try {
-          const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
-
-          if (malzemeDurum.currentKondisyon !== MalzemeKondisyonuEnum.Saglam) {
-            errors.push({
-              malzemeId,
-              error: `Malzeme sağlam durumda değil (Mevcut Kondisyon: ${malzemeDurum.currentKondisyon}). Sadece sağlam malzemeler zimmetlenebilir.`,
-            });
-            continue;
-          }
-
-          if (!malzemeDurum.malzemePersonelde) {
-            errors.push({ malzemeId, error: 'Malzeme personelde  (veya zimmetlenebilir bir konumda) değil.' });
-            continue;
-          }
-
-          if (malzemeDurum.malzemeYok) {
-            errors.push({ malzemeId, error: 'Malzeme kayıp veya düşüm yapılmış.' });
-            continue;
-          }
-
-          // İlgili malzemeyi data içinden bul
-          const ilgiliMalzeme = data.malzemeler.find(m => m.id === malzemeId);
-          const kaynakPersonelId = ilgiliMalzeme?.kaynakPersonelId;
-
-          const yeniId = helper.generateId(VarlıkKod);
-          const createPayload = {
-            id: yeniId,
-            islemTarihi: new Date(data.islemTarihi || new Date()),
-            hareketTuru: HareketTuruEnum.Devir,
-            malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
-            malzemeId: malzemeId,
-            hedefPersonelId: data.hedefPersonelId,
-            kaynakPersonelId: kaynakPersonelId,
-            konumId: null,
-            aciklama: data.aciklama || `Toplu devir - ${malzemeId}`,
-            status: AuditStatusEnum.Aktif,
-            createdById: data.islemYapanKullanici,
-          };
-
-          const result = await prisma[PrismaName].create({ data: createPayload, include: includeEntity });
-          results.push(result);
-        } catch (innerError) {
-          console.error(`Service - Error processing malzeme ${malzemeId}:`, innerError);
-          const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
-          errors.push({ malzemeId, error: errorMessage });
-        }
-      }
-
-      const finalResult = {
-        success: results,
-        errors: errors,
-        successCount: results.length,
-        errorCount: errors.length,
-        totalCount: malzemeIdList.length,
-      };
-
-      return finalResult;
     } catch (error) {
       throw error;
     }

@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose } from '@/components/ui/sheet';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Calendar } from '@/components/ui/calendar';
@@ -36,9 +37,10 @@ import { MalzemeHareket_Store } from '@/app/malzemehareket/constants/store'; // 
 import { Personel_Store } from '@/app/personel/constants/store';
 import { MalzemeKondisyonuEnum, malzemeKondisyonuOptions } from '@/app/malzemehareket/constants/malzemeKondisyonuEnum';
 import { useMalzemeHareketStore } from '@/stores/useMalzemeHareketStore';
-import {anlamliSonHareketi } from '@/app/malzeme/helpers/hareketKarar';
+import { anlamliSonHareketi } from '@/app/malzeme/helpers/hareketKarar';
+import { useNavigate } from 'react-router-dom'; // Navigate hook'u eklendi
 
-// Devir formu için Zod şeması
+// Devir formu için Zod şeması - tutanakYazdir eklendi
 const devirFormSchema = z
   .object({
     hedefPersonelId: z.string({
@@ -51,6 +53,7 @@ const devirFormSchema = z
       required_error: 'Lütfen malzeme kondisyonunu seçin.',
     }),
     aciklama: z.string().max(500, 'Açıklama en fazla 500 karakter olabilir.').optional(),
+    tutanakYazdir: z.boolean().default(true), // Tutanak yazdır seçeneği eklendi
   })
   .refine(data => data.hedefPersonelId !== useMalzemeHareketStore.getState().currentDevirMalzeme?.kaynakPersonelId, {
     // Kendine devir engellemesi
@@ -78,6 +81,7 @@ export function DevirSheet() {
   const [personelPopoverOpen, setPersonelPopoverOpen] = useState(false);
   const [tarihPopoverOpen, setTarihPopoverOpen] = useState(false);
   const [kondisyonPopoverOpen, setKondisyonPopoverOpen] = useState(false);
+  const navigate = useNavigate(); // Navigate hook'u eklendi
 
   const form = useForm({
     resolver: zodResolver(devirFormSchema),
@@ -86,10 +90,9 @@ export function DevirSheet() {
       malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
       aciklama: '',
       hedefPersonelId: undefined,
+      tutanakYazdir: true, // Varsayılan olarak tutanak yazdır aktif
     },
   });
-
-
 
   // Hedef personel listesi (kaynak personel hariç)
   const hedefPersonelListesi = tumPersonelList.filter(p => p.id !== currentDevirMalzeme?.kaynakPersonelId);
@@ -107,6 +110,7 @@ export function DevirSheet() {
         malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
         aciklama: '',
         hedefPersonelId: undefined,
+        tutanakYazdir: true,
       });
       setPersonelPopoverOpen(false);
       setTarihPopoverOpen(false);
@@ -122,14 +126,14 @@ export function DevirSheet() {
         malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
         aciklama: '',
         hedefPersonelId: undefined,
+        tutanakYazdir: true,
       });
     }
   }, [isSheetOpen, currentDevirMalzeme, form]); // currentDevirMalzeme değiştiğinde de resetle
 
   async function onSubmit(data) {
-    if (!currentDevirMalzeme || !currentDevirMalzeme.id ) {
+    if (!currentDevirMalzeme || !currentDevirMalzeme.id) {
       console.error('Devredilecek malzeme bilgileri eksik!');
-      // toast.error("Hata: Devredilecek malzeme bilgileri eksik!");
       return;
     }
     if (data.hedefPersonelId === currentDevirMalzeme.kaynakPersonelId) {
@@ -138,7 +142,6 @@ export function DevirSheet() {
     }
     try {
       const hareketVerisi = {
-        // islemTarihi: data.islemTarihi,
         hareketTuru: 'Devir', // Sabit değer
         malzemeKondisyonu: data.malzemeKondisyonu,
         malzemeId: currentDevirMalzeme.id,
@@ -147,19 +150,28 @@ export function DevirSheet() {
         konumId: null, // Devir işleminde konumId null olacak
         aciklama: data.aciklama || null,
       };
-      // console.log("Devir verisi:", hareketVerisi);
-      await devirAction(hareketVerisi, { showToast: true }); // MalzemeHareket_Store'daki devir fonksiyonu
-      closeSheet();
+      
+      const result = await devirAction(hareketVerisi, { showToast: true }); // MalzemeHareket_Store'daki devir fonksiyonu
+      if (result) {
+        closeSheet();
+
+        // Tutanak yazdır seçeneği işaretliyse tutanak sayfasına yönlendir
+        if (data.tutanakYazdir) {
+          navigate('/tutanak', {
+            state: {
+              showPrint: data.tutanakYazdir,
+            },
+          });
+        }
+      }
     } catch (error) {
       console.error('Devir işlemi hatası:', error);
-      // Hata mesajı gösterilebilir.
     }
   }
 
   if (!isSheetOpen || !currentDevirMalzeme) {
     return null;
   }
-
 
   const BilgiSatiri = ({ label, value, icon, isBadge }) => {
     if (value === null || typeof value === 'undefined' || value === '') return null;
@@ -179,11 +191,9 @@ export function DevirSheet() {
     );
   };
 
-
-    const anlamliSonHareketKaydi=anlamliSonHareketi(currentDevirMalzeme);
-
-    const kaynakPersonel=anlamliSonHareketKaydi.hedefPersonel
-    const hedefPersonel=anlamliSonHareketKaydi.hedefPersonel
+  const anlamliSonHareketKaydi = anlamliSonHareketi(currentDevirMalzeme);
+  const kaynakPersonel = anlamliSonHareketKaydi.hedefPersonel;
+  const hedefPersonel = anlamliSonHareketKaydi.hedefPersonel;
 
   return (
     <Sheet
@@ -218,7 +228,7 @@ export function DevirSheet() {
                 <BilgiSatiri label="Badem Seri No" value={currentDevirMalzeme.bademSeriNo} icon={Barcode} />
                 <hr className="my-2" />
                 <BilgiSatiri label="Mevcut Sahibi" value={kaynakPersonel.ad} icon={User} />
-                {currentDevirMalzeme.aciklama && ( // Malzemenin kendi açıklaması
+                {currentDevirMalzeme.aciklama && (
                   <>
                     <hr className="my-2" />
                     <div className="flex items-start text-sm py-2">
@@ -239,41 +249,6 @@ export function DevirSheet() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 p-4">
-            {/* İşlem Tarihi */}
-            {/* <FormField
-              control={form.control}
-              name="islemTarihi"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>İşlem Tarihi*</FormLabel>
-                  <Popover open={tarihPopoverOpen} onOpenChange={setTarihPopoverOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
-                          {field.value ? format(field.value, 'PPP', { locale: tr }) : <span>Tarih seçin</span>}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={date => {
-                          field.onChange(date);
-                          setTarihPopoverOpen(false);
-                        }}
-                        initialFocus
-                        locale={tr}
-                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
-
             {/* Malzeme Kondisyonu */}
             <FormField
               control={form.control}
@@ -382,6 +357,23 @@ export function DevirSheet() {
                     <Textarea placeholder="Devir ile ilgili ek bilgiler (isteğe bağlı)..." className="resize-none" rows={3} {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Tutanak Yazdır Checkbox - YENİ EKLENEN */}
+            <FormField
+              control={form.control}
+              name="tutanakYazdir"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} className="cursor-pointer" />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="cursor-pointer">Tutanak yazdır</FormLabel>
+                    <p className="text-sm text-muted-foreground">İşlem tamamlandıktan sonra otomatik olarak tutanak sayfasını açar</p>
+                  </div>
                 </FormItem>
               )}
             />

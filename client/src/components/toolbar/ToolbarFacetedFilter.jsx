@@ -89,7 +89,7 @@ export const ToolbarFacetedFilter = props => {
   }, [data, facetedFilterSetup, table, columnFilters]);
 
   return (
-    <div className="relative flex items-center flex-wrap flex-grow sm:flex-grow-0 gap-2">
+    <div className="relative flex items-center flex-wrap flex-grow sm:flex-grow-0 gap-1">
       {facetedFilterComponents}
       {isFiltered && (
         <Button variant="destructive" onClick={onClearAllFilters} className="h-8 ml-2" aria-label="Filtreleri Temizle">

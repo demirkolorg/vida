@@ -13,9 +13,10 @@ const sorting = [{ id: 'createdAt', desc: true }]; // En yeni tutanaklar önce
 const facesFilterData = [
   { columnId: 'hareketTuru', title: 'Hareket Türü' },
   { columnId: 'createdBy', title: 'Oluşturan' },
-  { columnId: 'kaynak', title: 'kaynak' },
-  { columnId: 'hedef', title: 'hedef' },
-  { columnId: 'konum', title: 'Konum' },
+  { columnId: 'kaynakKonum', title: 'Kaynak Konum' },
+  { columnId: 'kaynakPersonel', title: 'Kaynak Personel' },
+  { columnId: 'hedefKonum', title: 'Hedef Konum' },
+  { columnId: 'hedefPersonel', title: 'Hedef Personel' },
 ];
 
 export function Tutanak_DataTable({ onRowClick }) {

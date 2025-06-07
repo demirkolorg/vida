@@ -14,7 +14,7 @@ export const ToolbarFacetedFilterComp = ({ column, title, options }) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 border-dashed  ml-2">
+        <Button variant="outline" size="sm" className="h-8 border-dashed ">
           <PlusCircledIcon className="mr-2 h-4 w-4" />
           {title}
           {selectedValues?.size > 0 && (

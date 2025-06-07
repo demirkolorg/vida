@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose } from '@/components/ui/sheet';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Calendar } from '@/components/ui/calendar';
@@ -27,8 +28,9 @@ import { Depo_Store } from '@/app/depo/constants/store';
 import { Konum_Store } from '@/app/konum/constants/store';
 import { Personel_Store } from '@/app/personel/constants/store';
 import { useMalzemeHareketStore } from '@/stores/useMalzemeHareketStore';
+import { useNavigate } from 'react-router-dom'; // Bu import'u ekleyin
 
-// İade formu için Zod şeması
+// İade formu için Zod şeması - tutanakYazdir eklendi
 const iadeFormSchema = z.object({
   depoId: z.string({
     required_error: 'Lütfen bir depo seçin.',
@@ -43,6 +45,7 @@ const iadeFormSchema = z.object({
     required_error: 'Lütfen malzeme kondisyonunu seçin.',
   }),
   aciklama: z.string().max(500, 'Açıklama en fazla 500 karakter olabilir.').optional(),
+  tutanakYazdir: z.boolean().default(true), // Tutanak yazdır seçeneği eklendi
 });
 
 export function IadeSheet() {
@@ -69,6 +72,7 @@ export function IadeSheet() {
   const [konumPopoverOpen, setKonumPopoverOpen] = useState(false);
   const [tarihPopoverOpen, setTarihPopoverOpen] = useState(false);
   const [kondisyonPopoverOpen, setKondisyonPopoverOpen] = useState(false);
+  const navigate = useNavigate(); // Navigate hook'u eklendi
 
   const form = useForm({
     resolver: zodResolver(iadeFormSchema),
@@ -78,6 +82,7 @@ export function IadeSheet() {
       aciklama: '',
       depoId: undefined,
       konumId: undefined,
+      tutanakYazdir: true, // Varsayılan olarak tutanak yazdır aktif
     },
   });
 
@@ -100,6 +105,7 @@ export function IadeSheet() {
         aciklama: '',
         depoId: undefined,
         konumId: undefined,
+        tutanakYazdir: true,
       });
       setDepoPopoverOpen(false);
       setKonumPopoverOpen(false);
@@ -130,6 +136,7 @@ export function IadeSheet() {
         aciklama: '',
         depoId: undefined,
         konumId: undefined,
+        tutanakYazdir: true,
       });
     }
   }, [isSheetOpen, form]);
@@ -142,18 +149,28 @@ export function IadeSheet() {
 
     try {
       const hareketVerisi = {
-        // islemTarihi: data.islemTarihi,
         hareketTuru: 'Iade',
         malzemeKondisyonu: data.malzemeKondisyonu,
         malzemeId: currentIadeMalzeme.id,
         kaynakPersonelId: currentIadeMalzeme.malzemeHareketleri[0].hedefPersonel?.id,
         hedefPersonelId: null,
-        // depoId: data.depoId, // Modelinize göre bu gereksiz olabilir, konumId yeterli olabilir.
         konumId: data.konumId,
         aciklama: data.aciklama || null,
       };
-      await iadeAction(hareketVerisi, { showToast: true });
-      closeSheet();
+      
+      const result = await iadeAction(hareketVerisi, { showToast: true });
+      if (result) {
+        closeSheet();
+
+        // Tutanak yazdır seçeneği işaretliyse tutanak sayfasına yönlendir
+        if (data.tutanakYazdir) {
+          navigate('/tutanak', {
+            state: {
+              showPrint: data.tutanakYazdir,
+            },
+          });
+        }
+      }
     } catch (error) {
       console.error('İade işlemi hatası:', error);
     }
@@ -240,41 +257,7 @@ export function IadeSheet() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 p-4">
-            {/* işlem tarihi */}
-            {/* <FormField
-              control={form.control}
-              name="islemTarihi"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>İşlem Tarihi*</FormLabel>
-                  <Popover open={tarihPopoverOpen} onOpenChange={setTarihPopoverOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
-                          {field.value ? format(field.value, 'PPP', { locale: tr }) : <span>Tarih seçin</span>}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={date => {
-                          field.onChange(date);
-                          setTarihPopoverOpen(false);
-                        }}
-                        initialFocus
-                        locale={tr}
-                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
-
+            {/* Malzeme Kondisyonu */}
             <FormField
               control={form.control}
               name="malzemeKondisyonu"
@@ -319,6 +302,7 @@ export function IadeSheet() {
               )}
             />
 
+            {/* Depo Seçimi */}
             <FormField
               control={form.control}
               name="depoId"
@@ -373,6 +357,7 @@ export function IadeSheet() {
               )}
             />
 
+            {/* Konum Seçimi */}
             <FormField
               control={form.control}
               name="konumId"
@@ -426,6 +411,7 @@ export function IadeSheet() {
               )}
             />
 
+            {/* Açıklama */}
             <FormField
               control={form.control}
               name="aciklama"
@@ -436,6 +422,23 @@ export function IadeSheet() {
                     <Textarea placeholder="İade ile ilgili ek bilgiler (isteğe bağlı)..." className="resize-none" rows={3} {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Tutanak Yazdır Checkbox - YENİ EKLENEN */}
+            <FormField
+              control={form.control}
+              name="tutanakYazdir"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} className="cursor-pointer" />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="cursor-pointer">Tutanak yazdır</FormLabel>
+                    <p className="text-sm text-muted-foreground">İşlem tamamlandıktan sonra otomatik olarak tutanak sayfasını açar</p>
+                  </div>
                 </FormItem>
               )}
             />

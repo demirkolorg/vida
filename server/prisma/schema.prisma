@@ -169,12 +169,14 @@ model Depo {
 }
 
 model Konum {
-  id                 String           @id
-  ad                 String
-  aciklama           String?
-  depoId             String
-  depo               Depo             @relation(fields: [depoId], references: [id])
-  malzemeHareketleri MalzemeHareket[]
+  id       String  @id
+  ad       String
+  aciklama String?
+  depoId   String
+  depo     Depo    @relation(fields: [depoId], references: [id])
+
+  malzemeHareketleriKaynak MalzemeHareket[] @relation("HareketKaynakKonum")
+  malzemeHareketleriHedef  MalzemeHareket[] @relation("HareketHedefKonum")
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
@@ -223,13 +225,18 @@ model MalzemeHareket {
   malzemeKondisyonu MalzemeKondisyonuEnum
   malzemeId         String
   malzeme           Malzeme               @relation(fields: [malzemeId], references: [id])
-  kaynakPersonelId  String?
-  kaynakPersonel    Personel?             @relation("HareketKaynakPersonel", fields: [kaynakPersonelId], references: [id])
-  hedefPersonelId   String?
-  hedefPersonel     Personel?             @relation("HareketHedefPersonel", fields: [hedefPersonelId], references: [id])
-  konumId           String?
-  konum             Konum?                @relation(fields: [konumId], references: [id])
-  aciklama          String?
+
+  kaynakPersonelId String?
+  kaynakPersonel   Personel? @relation("HareketKaynakPersonel", fields: [kaynakPersonelId], references: [id])
+  hedefPersonelId  String?
+  hedefPersonel    Personel? @relation("HareketHedefPersonel", fields: [hedefPersonelId], references: [id])
+
+  kaynakKonumId String?
+  kaynakKonum   Konum?  @relation("HareketKaynakKonum", fields: [kaynakKonumId], references: [id])
+  hedefKonumId  String?
+  hedefKonum    Konum?  @relation("HareketHedefKonum", fields: [hedefKonumId], references: [id])
+
+  aciklama String?
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())

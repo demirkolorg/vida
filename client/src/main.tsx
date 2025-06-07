@@ -10,6 +10,6 @@ createRoot(document.getElementById("root")).render(
     <LayoutProvider>
       <AppRouter />
     </LayoutProvider>
-    <Toaster position="top-center" richColors />
+    <Toaster position="bottom-right" richColors />
   </ThemeProvider>
 );

@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose } from '@/components/ui/sheet';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Calendar } from '@/components/ui/calendar';
@@ -38,8 +39,9 @@ import { Depo_Store } from '@/app/depo/constants/store';
 import { Konum_Store } from '@/app/konum/constants/store';
 import { MalzemeKondisyonuEnum, malzemeKondisyonuOptions } from '@/app/malzemehareket/constants/malzemeKondisyonuEnum';
 import { useMalzemeHareketStore } from '@/stores/useMalzemeHareketStore';
+import { useNavigate } from 'react-router-dom'; // Navigate hook'u eklendi
 
-// Depo Transferi formu için Zod şeması
+// Depo Transferi formu için Zod şeması - tutanakYazdir eklendi
 const depoTransferiFormSchema = z.object({
   depoId: z.string({
     required_error: 'Lütfen bir hedef depo seçin.',
@@ -54,11 +56,11 @@ const depoTransferiFormSchema = z.object({
     required_error: 'Lütfen malzeme kondisyonunu seçin.',
   }),
   aciklama: z.string().max(500, 'Açıklama en fazla 500 karakter olabilir.').optional(),
+  tutanakYazdir: z.boolean().default(true), // Tutanak yazdır seçeneği eklendi
 }).refine(data => data.konumId !== useMalzemeHareketStore.getState().currentDepoTransferiMalzeme?.mevcutKonumId, {
     message: "Malzeme zaten bu konumda. Farklı bir konum seçmelisiniz.",
     path: ["konumId"], // Hata mesajını konumId alanına bağla
 });
-
 
 export function DepoTransferiSheet() {
   const depoTransferiAction = MalzemeHareket_Store(state => state.depoTransfer); // Bu fonksiyonun store'da tanımlı olması lazım
@@ -80,6 +82,7 @@ export function DepoTransferiSheet() {
   const [konumPopoverOpen, setKonumPopoverOpen] = useState(false);
   const [tarihPopoverOpen, setTarihPopoverOpen] = useState(false);
   const [kondisyonPopoverOpen, setKondisyonPopoverOpen] = useState(false);
+  const navigate = useNavigate(); // Navigate hook'u eklendi
 
   const form = useForm({
     resolver: zodResolver(depoTransferiFormSchema),
@@ -89,6 +92,7 @@ export function DepoTransferiSheet() {
       aciklama: '',
       depoId: undefined,
       konumId: undefined,
+      tutanakYazdir: true, // Varsayılan olarak tutanak yazdır aktif
     },
   });
 
@@ -101,6 +105,7 @@ export function DepoTransferiSheet() {
         aciklama: '',
         depoId: undefined,
         konumId: undefined,
+        tutanakYazdir: true,
       });
       if (!depoFetched && loadDepoList) {
         loadDepoList({ page: 1, pageSize: 1000, filter: {} });
@@ -117,7 +122,6 @@ export function DepoTransferiSheet() {
     }
   }, [isSheetOpen, currentMalzeme, form, loadDepoList, depoFetched]);
 
-
   // Seçilen depoya göre konumları yükle
   const selectedDepoId = form.watch('depoId');
   useEffect(() => {
@@ -132,22 +136,14 @@ export function DepoTransferiSheet() {
     }
   }, [selectedDepoId, loadKonumList, form]);
 
-
   async function onSubmit(data) {
     if (!currentMalzeme || !currentMalzeme.id) {
       console.error('Transfer edilecek malzeme bilgileri eksik!');
-      // toast.error("Hata: Transfer edilecek malzeme bilgileri eksik!");
       return;
     }
-    // Zod refine zaten bu kontrolü yapıyor ama manuel olarak da eklenebilir:
-    // if (data.konumId === currentMalzeme.mevcutKonumId) {
-    //   form.setError("konumId", { type: "manual", message: "Malzeme zaten bu konumda. Farklı bir konum seçmelisiniz."});
-    //   return;
-    // }
 
     try {
       const hareketVerisi = {
-        // islemTarihi: data.islemTarihi,
         hareketTuru: 'DepoTransferi',
         malzemeKondisyonu: data.malzemeKondisyonu,
         malzemeId: currentMalzeme.id,
@@ -156,12 +152,22 @@ export function DepoTransferiSheet() {
         konumId: data.konumId,   // Yeni konum
         aciklama: data.aciklama || null,
       };
-      // console.log("Depo Transferi verisi:", hareketVerisi);
-      await depoTransferiAction(hareketVerisi, { showToast: true });
-      closeSheet();
+      
+      const result = await depoTransferiAction(hareketVerisi, { showToast: true });
+      if (result) {
+        closeSheet();
+
+        // Tutanak yazdır seçeneği işaretliyse tutanak sayfasına yönlendir
+        if (data.tutanakYazdir) {
+          navigate('/tutanak', {
+            state: {
+              showPrint: data.tutanakYazdir,
+            },
+          });
+        }
+      }
     } catch (error) {
       console.error('Depo Transferi işlemi hatası:', error);
-      // Hata mesajı gösterilebilir.
     }
   }
 
@@ -252,41 +258,7 @@ export function DepoTransferiSheet() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 p-4">
-          {/* işlem tarihi */}
-            {/* <FormField
-              control={form.control}
-              name="islemTarihi"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>İşlem Tarihi*</FormLabel>
-                  <Popover open={tarihPopoverOpen} onOpenChange={setTarihPopoverOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
-                          {field.value ? format(field.value, 'PPP', { locale: tr }) : <span>Tarih seçin</span>}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={date => {
-                          field.onChange(date);
-                          setTarihPopoverOpen(false);
-                        }}
-                        initialFocus
-                        locale={tr}
-                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
-
+            {/* Malzeme Kondisyonu */}
             <FormField
               control={form.control}
               name="malzemeKondisyonu"
@@ -331,6 +303,7 @@ export function DepoTransferiSheet() {
               )}
             />
 
+            {/* Hedef Depo Seçimi */}
             <FormField
               control={form.control}
               name="depoId"
@@ -358,8 +331,6 @@ export function DepoTransferiSheet() {
                                 key={depo.id}
                                 onSelect={() => {
                                   form.setValue('depoId', depo.id);
-                                  // Depo değiştiğinde konum seçimini sıfırla (useEffect zaten yapıyor ama burada da explicit olabilir)
-                                  // form.setValue('konumId', undefined);
                                   setDepoPopoverOpen(false);
                                 }}
                               >
@@ -377,6 +348,7 @@ export function DepoTransferiSheet() {
               )}
             />
 
+            {/* Hedef Konum Seçimi */}
             <FormField
               control={form.control}
               name="konumId"
@@ -411,9 +383,6 @@ export function DepoTransferiSheet() {
                                   form.setValue('konumId', konum.id);
                                   setKonumPopoverOpen(false);
                                 }}
-                                // Aynı konuma transferi engellemek için seçilemez yap (isteğe bağlı, Zod refine ile de yönetiliyor)
-                                // disabled={konum.id === currentMalzeme?.mevcutKonumId}
-                                // className={cn(konum.id === currentMalzeme?.mevcutKonumId && "opacity-50 cursor-not-allowed")}
                               >
                                 <Check className={cn('mr-2 h-4 w-4', konum.id === field.value ? 'opacity-100' : 'opacity-0')} />
                                 {konum.ad}
@@ -430,6 +399,7 @@ export function DepoTransferiSheet() {
               )}
             />
 
+            {/* Açıklama */}
             <FormField
               control={form.control}
               name="aciklama"
@@ -440,6 +410,23 @@ export function DepoTransferiSheet() {
                     <Textarea placeholder="Depo transferi ile ilgili ek bilgiler..." className="resize-none" rows={3} {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Tutanak Yazdır Checkbox - YENİ EKLENEN */}
+            <FormField
+              control={form.control}
+              name="tutanakYazdir"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} className="cursor-pointer" />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="cursor-pointer">Tutanak yazdır</FormLabel>
+                    <p className="text-sm text-muted-foreground">İşlem tamamlandıktan sonra otomatik olarak tutanak sayfasını açar</p>
+                  </div>
                 </FormItem>
               )}
             />

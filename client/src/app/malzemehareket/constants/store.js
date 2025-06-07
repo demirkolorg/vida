@@ -122,6 +122,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
         }
 
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.message || error.message || 'Bulk iade işlemi başarısız.';
@@ -174,6 +175,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
 
         // Malzeme listesini yenile
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
 
         return result;
       } catch (error) {
@@ -223,6 +225,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
         }
 
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.message || error.message || 'Bulk depo transfer işlemi başarısız.';
@@ -271,6 +274,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
         }
 
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.message || error.message || 'Bulk kondisyon güncelleme işlemi başarısız.';
@@ -319,6 +323,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
         }
 
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.message || error.message || 'Bulk kayıp bildirimi başarısız.';
@@ -366,6 +371,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
         }
 
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.message || error.message || 'Bulk düşüm işlemi başarısız.';
@@ -432,6 +438,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
           toast.success(`Malzeme başarıyla iade alındı.`);
         }
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
 
         return result;
       } catch (error) {
@@ -464,6 +471,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
           toast.success(`Malzeme başarıyla transfer edildi.`);
         }
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.errors || error.message || 'Depo transfer işlemi başarısız.';
@@ -493,6 +501,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
           toast.success(`Malzeme başarıyla devredildi.`);
         }
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.message || error.message || 'Devir işlemi başarısız.';
@@ -523,6 +532,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
           toast.success(`Malzeme başarıyla transfer edildi.`);
         }
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.errors || error.message || 'Depo transfer işlemi başarısız.';
@@ -554,6 +564,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
           toast.success(`Malzeme kondisyonu başarıyla güncellendi.`);
         }
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.message || error.message || 'Kondisyon güncelleme işlemi başarısız.';
@@ -584,6 +595,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
           toast.success(`Malzeme kayıp olarak işaretlendi.`);
         }
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.message || error.message || 'Kayıp bildirimi başarısız.';
@@ -614,6 +626,7 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
           toast.success(`Malzeme başarıyla düşürüldü.`);
         }
         await Malzeme_Store.getState().GetByQuery({ showToast: false });
+        await Tutanak_Store.getState().GetByQuery({ showToast: false });
         return result;
       } catch (error) {
         const message = error?.response?.data?.message || error.message || 'Düşüm işlemi başarısız.';

@@ -54,6 +54,7 @@ async function main() {
       isUser: true,
       isAmir: false,
       status: AuditStatusEnum.Aktif,
+       avatar:"https://avatar.iran.liara.run/public/35",
       createdById: yeniAdminId,
     };
 
@@ -174,13 +175,15 @@ async function main() {
   // --- 4. Personeller Oluştur ---
   console.log('\n--- Personeller oluşturuluyor ---');
   const personelVerileri = [
-    { ad: 'Ahmet Yılmaz', sicil: '100001', role: RoleEnum.Admin, buroIndex: 0 },
-    { ad: 'Ayşe Demir', sicil: '100002', role: RoleEnum.Personel, buroIndex: 1 },
-    { ad: 'Mehmet Kaya', sicil: '100003', role: RoleEnum.Personel, buroIndex: 2 },
-    { ad: 'Fatma Özkan', sicil: '100004', role: RoleEnum.Personel, buroIndex: 3 },
-    { ad: 'Ali Çelik', sicil: '100005', role: RoleEnum.Personel, buroIndex: 4 },
-    { ad: 'Zeynep Arslan', sicil: '100006', role: RoleEnum.User, buroIndex: 0 },
-    { ad: 'Mustafa Yıldız', sicil: '100007', role: RoleEnum.User, buroIndex: 1 },
+    { ad: 'Ahmet Yılmaz', sicil: '100001', avatar:"https://avatar.iran.liara.run/public/38", role: RoleEnum.Admin, buroIndex: 0 },
+    { ad: 'Ayşe Demir', sicil: '100002',  avatar:"https://avatar.iran.liara.run/public/51",role: RoleEnum.Personel, buroIndex: 1 },
+    { ad: 'Mehmet Kaya', sicil: '100003', avatar:"https://avatar.iran.liara.run/public/26", role: RoleEnum.Personel, buroIndex: 2 },
+    { ad: 'Fatma Özkan', sicil: '100004',  avatar:"https://avatar.iran.liara.run/public/66",role: RoleEnum.Personel, buroIndex: 3 },
+    { ad: 'Ali Çelik', sicil: '100005', avatar:"https://avatar.iran.liara.run/public/11", role: RoleEnum.Personel, buroIndex: 4 },
+    { ad: 'Zeynep Arslan', sicil: '100006',  avatar:"https://avatar.iran.liara.run/public/81",role: RoleEnum.User, buroIndex: 0 },
+    { ad: 'Mustafa Yıldız', sicil: '100007', avatar:"https://avatar.iran.liara.run/public/44", role: RoleEnum.User, buroIndex: 1 },
+    { ad: 'Asya Hilal DEMİRKOL', sicil: '100008', avatar:"https://avatar.iran.liara.run/public/75", role: RoleEnum.User, buroIndex: 1 },
+    { ad: 'Ayşenur DEMİRKOL', sicil: '100009', avatar:"https://avatar.iran.liara.run/public/92", role: RoleEnum.User, buroIndex: 1 },
   ];
 
   const personeller = [];
@@ -418,346 +421,355 @@ async function main() {
     }
   }
 
-// Assume helper, prisma, ENTITY_ID_PREFIXES, Enums, and other arrays (birimler, subeler, etc.) are defined elsewhere as in the original context.
+  // Assume helper, prisma, ENTITY_ID_PREFIXES, Enums, and other arrays (birimler, subeler, etc.) are defined elsewhere as in the original context.
 
-// --- 10. Malzemeler Oluştur ---
-console.log('\n--- Malzemeler oluşturuluyor ---');
-const originalMalzemeVerileri = [
-  // Bilgisayarlar
-  {
-    vidaNo: 'BLG-2024-001',
-    malzemeTipi: MalzemeTipiEnum.Demirbas,
-    birimIndex: 0,
-    subeIndex: 0,
-    sabitKoduIndex: 0,
-    markaIndex: 0,
-    modelIndex: 0,
-    kod: 'PC-001',
-    bademSeriNo: 'BDEM2024001',
-    stokDemirbasNo: 'DMR-2024-001',
-    aciklama: 'Bilgi İşlem için masaüstü bilgisayar',
-  },
-  {
-    vidaNo: 'BLG-2024-002',
-    malzemeTipi: MalzemeTipiEnum.Demirbas,
-    birimIndex: 0,
-    subeIndex: 0,
-    sabitKoduIndex: 0,
-    markaIndex: 1,
-    modelIndex: 3,
-    kod: 'PC-002',
-    bademSeriNo: 'BDEM2024002',
-    stokDemirbasNo: 'DMR-2024-002',
-    aciklama: 'HP masaüstü bilgisayar',
-  },
-  // Laptoplar
-  {
-    vidaNo: 'BLG-2024-003',
-    malzemeTipi: MalzemeTipiEnum.Demirbas,
-    birimIndex: 1,
-    subeIndex: 1,
-    sabitKoduIndex: 0,
-    markaIndex: 0,
-    modelIndex: 1,
-    kod: 'LPT-001',
-    bademSeriNo: 'BDEM2024003',
-    stokDemirbasNo: 'DMR-2024-003',
-    aciklama: 'Dell Latitude laptop',
-  },
-  // Yazıcılar
-  {
-    vidaNo: 'BLG-2024-004',
-    malzemeTipi: MalzemeTipiEnum.Demirbas,
-    birimIndex: 2,
-    subeIndex: 2,
-    sabitKoduIndex: 1,
-    markaIndex: 1,
-    modelIndex: 4,
-    kod: 'PRN-001',
-    bademSeriNo: 'BDEM2024004',
-    stokDemirbasNo: 'DMR-2024-004',
-    aciklama: 'HP LaserJet yazıcı',
-  },
-  // Ağ ekipmanları
-  {
-    vidaNo: 'BLG-2024-005',
-    malzemeTipi: MalzemeTipiEnum.Demirbas,
-    birimIndex: 0,
-    subeIndex: 0,
-    sabitKoduIndex: 2,
-    markaIndex: 5,
-    modelIndex: 12,
-    kod: 'NET-001',
-    bademSeriNo: 'BDEM2024005',
-    stokDemirbasNo: 'DMR-2024-005',
-    aciklama: 'Cisco Catalyst ağ anahtarı',
-  },
-  // Mobilyalar
-  {
-    vidaNo: 'MOB-2024-001',
-    malzemeTipi: MalzemeTipiEnum.Demirbas,
-    birimIndex: 1,
-    subeIndex: 1,
-    sabitKoduIndex: 3,
-    markaIndex: 6,
-    modelIndex: 14,
-    kod: 'DSK-001',
-    bademSeriNo: 'BDEM2024006',
-    stokDemirbasNo: 'DMR-2024-006',
-    aciklama: 'IKEA BEKANT ofis masası',
-  },
-  {
-    vidaNo: 'MOB-2024-002',
-    malzemeTipi: MalzemeTipiEnum.Demirbas,
-    birimIndex: 1,
-    subeIndex: 1,
-    sabitKoduIndex: 3,
-    markaIndex: 7,
-    modelIndex: 16,
-    kod: 'CHR-001',
-    bademSeriNo: 'BDEM2024007',
-    stokDemirbasNo: 'DMR-2024-007',
-    aciklama: 'Steelcase Think ofis koltuğu',
-  },
-  // Sarf malzemeler
-  {
-    vidaNo: null,
-    malzemeTipi: MalzemeTipiEnum.Sarf,
-    birimIndex: 0,
-    subeIndex: 0,
-    sabitKoduIndex: 6,
-    markaIndex: 1,
-    modelIndex: 4,
-    kod: 'TNR-001',
-    etmysSeriNo: 'ETM2024001',
-    aciklama: 'HP LaserJet toner kartuşu',
-  },
-];
+  // --- 10. Malzemeler Oluştur ---
+  console.log('\n--- Malzemeler oluşturuluyor ---');
+  const originalMalzemeVerileri = [
+    // Bilgisayarlar
+    {
+      vidaNo: 'BLG-2024-001',
+      malzemeTipi: MalzemeTipiEnum.Demirbas,
+      birimIndex: 0,
+      subeIndex: 0,
+      sabitKoduIndex: 0,
+      markaIndex: 0,
+      modelIndex: 0,
+      kod: 'PC-001',
+      bademSeriNo: 'BDEM2024001',
+      stokDemirbasNo: 'DMR-2024-001',
+      aciklama: 'Bilgi İşlem için masaüstü bilgisayar',
+    },
+    {
+      vidaNo: 'BLG-2024-002',
+      malzemeTipi: MalzemeTipiEnum.Demirbas,
+      birimIndex: 0,
+      subeIndex: 0,
+      sabitKoduIndex: 0,
+      markaIndex: 1,
+      modelIndex: 3,
+      kod: 'PC-002',
+      bademSeriNo: 'BDEM2024002',
+      stokDemirbasNo: 'DMR-2024-002',
+      aciklama: 'HP masaüstü bilgisayar',
+    },
+    // Laptoplar
+    {
+      vidaNo: 'BLG-2024-003',
+      malzemeTipi: MalzemeTipiEnum.Demirbas,
+      birimIndex: 1,
+      subeIndex: 1,
+      sabitKoduIndex: 0,
+      markaIndex: 0,
+      modelIndex: 1,
+      kod: 'LPT-001',
+      bademSeriNo: 'BDEM2024003',
+      stokDemirbasNo: 'DMR-2024-003',
+      aciklama: 'Dell Latitude laptop',
+    },
+    // Yazıcılar
+    {
+      vidaNo: 'BLG-2024-004',
+      malzemeTipi: MalzemeTipiEnum.Demirbas,
+      birimIndex: 2,
+      subeIndex: 2,
+      sabitKoduIndex: 1,
+      markaIndex: 1,
+      modelIndex: 4,
+      kod: 'PRN-001',
+      bademSeriNo: 'BDEM2024004',
+      stokDemirbasNo: 'DMR-2024-004',
+      aciklama: 'HP LaserJet yazıcı',
+    },
+    // Ağ ekipmanları
+    {
+      vidaNo: 'BLG-2024-005',
+      malzemeTipi: MalzemeTipiEnum.Demirbas,
+      birimIndex: 0,
+      subeIndex: 0,
+      sabitKoduIndex: 2,
+      markaIndex: 5,
+      modelIndex: 12,
+      kod: 'NET-001',
+      bademSeriNo: 'BDEM2024005',
+      stokDemirbasNo: 'DMR-2024-005',
+      aciklama: 'Cisco Catalyst ağ anahtarı',
+    },
+    // Mobilyalar
+    {
+      vidaNo: 'MOB-2024-001',
+      malzemeTipi: MalzemeTipiEnum.Demirbas,
+      birimIndex: 1,
+      subeIndex: 1,
+      sabitKoduIndex: 3,
+      markaIndex: 6,
+      modelIndex: 14,
+      kod: 'DSK-001',
+      bademSeriNo: 'BDEM2024006',
+      stokDemirbasNo: 'DMR-2024-006',
+      aciklama: 'IKEA BEKANT ofis masası',
+    },
+    {
+      vidaNo: 'MOB-2024-002',
+      malzemeTipi: MalzemeTipiEnum.Demirbas,
+      birimIndex: 1,
+      subeIndex: 1,
+      sabitKoduIndex: 3,
+      markaIndex: 7,
+      modelIndex: 16,
+      kod: 'CHR-001',
+      bademSeriNo: 'BDEM2024007',
+      stokDemirbasNo: 'DMR-2024-007',
+      aciklama: 'Steelcase Think ofis koltuğu',
+    },
+    // Sarf malzemeler
+    {
+      vidaNo: null,
+      malzemeTipi: MalzemeTipiEnum.Sarf,
+      birimIndex: 0,
+      subeIndex: 0,
+      sabitKoduIndex: 6,
+      markaIndex: 1,
+      modelIndex: 4,
+      kod: 'TNR-001',
+      etmysSeriNo: 'ETM2024001',
+      aciklama: 'HP LaserJet toner kartuşu',
+    },
+  ];
 
-const malzemeVerileri = [];
-originalMalzemeVerileri.forEach((data, originalIndex) => {
-  // Add original item
-  malzemeVerileri.push(JSON.parse(JSON.stringify(data))); // Add a deep copy of the original
+  const malzemeVerileri = [];
+  originalMalzemeVerileri.forEach((data, originalIndex) => {
+    // Add original item
+    malzemeVerileri.push(JSON.parse(JSON.stringify(data))); // Add a deep copy of the original
 
-  // Add 2 copies
-  for (let i = 1; i <= 2; i++) {
-    const copyData = JSON.parse(JSON.stringify(data)); // Deep copy
+    // Add 2 copies
+    for (let i = 1; i <= 2; i++) {
+      const copyData = JSON.parse(JSON.stringify(data)); // Deep copy
 
-    const suffix = `-C${i}`;
-    const copyNumText = ` (Kopya ${i})`;
+      const suffix = `-C${i}`;
+      const copyNumText = ` (Kopya ${i})`;
 
-    if (copyData.vidaNo) {
-      copyData.vidaNo = `${data.vidaNo}${suffix}`;
+      if (copyData.vidaNo) {
+        copyData.vidaNo = `${data.vidaNo}${suffix}`;
+      }
+      copyData.kod = `${data.kod}${suffix}`;
+      if (copyData.bademSeriNo) {
+        copyData.bademSeriNo = `${data.bademSeriNo}${suffix}`;
+      }
+      if (copyData.stokDemirbasNo) {
+        copyData.stokDemirbasNo = `${data.stokDemirbasNo}${suffix}`;
+      }
+      if (copyData.etmysSeriNo) {
+        copyData.etmysSeriNo = `${data.etmysSeriNo}${suffix}`;
+      }
+      copyData.aciklama = `${data.aciklama}${copyNumText}`;
+
+      // Optionally vary other indices for more diversity, or keep them same
+      // For simplicity, keeping other indices like birimIndex, subeIndex etc. same as original.
+      // copyData.birimIndex = (data.birimIndex + i) % birimler.length; // Example of varying
+
+      malzemeVerileri.push(copyData);
     }
-    copyData.kod = `${data.kod}${suffix}`;
-    if (copyData.bademSeriNo) {
-      copyData.bademSeriNo = `${data.bademSeriNo}${suffix}`;
-    }
-    if (copyData.stokDemirbasNo) {
-      copyData.stokDemirbasNo = `${data.stokDemirbasNo}${suffix}`;
-    }
-    if (copyData.etmysSeriNo) {
-      copyData.etmysSeriNo = `${data.etmysSeriNo}${suffix}`;
-    }
-    copyData.aciklama = `${data.aciklama}${copyNumText}`;
-    
-    // Optionally vary other indices for more diversity, or keep them same
-    // For simplicity, keeping other indices like birimIndex, subeIndex etc. same as original.
-    // copyData.birimIndex = (data.birimIndex + i) % birimler.length; // Example of varying
+  });
 
-    malzemeVerileri.push(copyData);
+  const malzemeler = [];
+  for (const malzemeData of malzemeVerileri) {
+    // Vida numarası varsa kontrol et
+    let existing = null;
+    if (malzemeData.vidaNo) {
+      existing = await prisma.malzeme.findUnique({ where: { vidaNo: malzemeData.vidaNo } });
+    } else {
+      // Sarf malzeme için kod ile kontrol et
+      existing = await prisma.malzeme.findFirst({
+        where: {
+          kod: malzemeData.kod,
+          malzemeTipi: malzemeData.malzemeTipi,
+        },
+      });
+    }
+
+    if (existing) {
+      console.log(`Malzeme '${malzemeData.vidaNo || malzemeData.kod}' zaten mevcut.`);
+      malzemeler.push(existing);
+    } else {
+      const malzeme = await prisma.malzeme.create({
+        data: {
+          id: helper.generateId(ENTITY_ID_PREFIXES.MALZEME),
+          vidaNo: malzemeData.vidaNo,
+          kayitTarihi: new Date(), // Kayıt tarihi o anki zaman
+          malzemeTipi: malzemeData.malzemeTipi,
+          birimId: birimler[malzemeData.birimIndex % birimler.length].id,
+          subeId: subeler[malzemeData.subeIndex % subeler.length].id,
+          sabitKoduId: sabitKodlar[malzemeData.sabitKoduIndex % sabitKodlar.length].id,
+          markaId: markalar[malzemeData.markaIndex % markalar.length].id,
+          modelId: modeller[malzemeData.modelIndex % modeller.length].id,
+          kod: malzemeData.kod,
+          bademSeriNo: malzemeData.bademSeriNo,
+          etmysSeriNo: malzemeData.etmysSeriNo,
+          stokDemirbasNo: malzemeData.stokDemirbasNo,
+          aciklama: malzemeData.aciklama,
+          status: AuditStatusEnum.Aktif,
+          createdById: adminUserId,
+        },
+      });
+      console.log(`Malzeme oluşturuldu: ${malzeme.vidaNo || malzeme.kod}`);
+      malzemeler.push(malzeme);
+    }
   }
-});
 
+  // --- 11. Malzeme Hareketleri Oluştur ---
+  console.log('\n--- Malzeme hareketleri oluşturuluyor ---');
 
-const malzemeler = [];
-for (const malzemeData of malzemeVerileri) {
-  // Vida numarası varsa kontrol et
-  let existing = null;
-  if (malzemeData.vidaNo) {
-    existing = await prisma.malzeme.findUnique({ where: { vidaNo: malzemeData.vidaNo } });
-  } else {
-    // Sarf malzeme için kod ile kontrol et
-    existing = await prisma.malzeme.findFirst({
-      where: {
-        kod: malzemeData.kod,
-        malzemeTipi: malzemeData.malzemeTipi,
-      },
-    });
-  }
+  const DAY_IN_MS = 24 * 60 * 60 * 1000;
+  const numOriginalMaterialTemplates = originalMalzemeVerileri.length;
 
-  if (existing) {
-    console.log(`Malzeme '${malzemeData.vidaNo || malzemeData.kod}' zaten mevcut.`);
-    malzemeler.push(existing);
-  } else {
-    const malzeme = await prisma.malzeme.create({
-      data: {
-        id: helper.generateId(ENTITY_ID_PREFIXES.MALZEME),
-        vidaNo: malzemeData.vidaNo,
-        kayitTarihi: new Date(), // Kayıt tarihi o anki zaman
-        malzemeTipi: malzemeData.malzemeTipi,
-        birimId: birimler[malzemeData.birimIndex % birimler.length].id,
-        subeId: subeler[malzemeData.subeIndex % subeler.length].id,
-        sabitKoduId: sabitKodlar[malzemeData.sabitKoduIndex % sabitKodlar.length].id,
-        markaId: markalar[malzemeData.markaIndex % markalar.length].id,
-        modelId: modeller[malzemeData.modelIndex % modeller.length].id,
-        kod: malzemeData.kod,
-        bademSeriNo: malzemeData.bademSeriNo,
-        etmysSeriNo: malzemeData.etmysSeriNo,
-        stokDemirbasNo: malzemeData.stokDemirbasNo,
-        aciklama: malzemeData.aciklama,
-        status: AuditStatusEnum.Aktif,
-        createdById: adminUserId,
-      },
-    });
-    console.log(`Malzeme oluşturuldu: ${malzeme.vidaNo || malzeme.kod}`);
-    malzemeler.push(malzeme);
-  }
-}
+  for (let j = 0; j < numOriginalMaterialTemplates; j++) {
+    // Iterate over original material "groups"
+    for (let k = 0; k < 3; k++) {
+      // Iterate over original and its 2 copies (k=0: original, k=1: copy1, k=2: copy2)
+      const materialGlobalIndex = j * 3 + k;
+      if (materialGlobalIndex >= malzemeler.length) continue;
 
-// --- 11. Malzeme Hareketleri Oluştur ---
-console.log('\n--- Malzeme hareketleri oluşturuluyor ---');
-
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
-const numOriginalMaterialTemplates = originalMalzemeVerileri.length;
-
-for (let j = 0; j < numOriginalMaterialTemplates; j++) { // Iterate over original material "groups"
-  for (let k = 0; k < 3; k++) { // Iterate over original and its 2 copies (k=0: original, k=1: copy1, k=2: copy2)
-    const materialGlobalIndex = j * 3 + k;
-    if (materialGlobalIndex >= malzemeler.length) continue;
-
-    const malzeme = malzemeler[materialGlobalIndex];
-    if (!malzeme) {
+      const malzeme = malzemeler[materialGlobalIndex];
+      if (!malzeme) {
         console.warn(`Uyarı: Malzeme bulunamadı index ${materialGlobalIndex}. Atlanıyor.`);
         continue;
-    }
+      }
 
-    // Her malzeme için ilk kayıt hareketi oluştur
-    // İşlem tarihleri geçmişe doğru, en yeni malzeme en yakın tarihli
-    const baseOffsetDaysForKayit = malzemeler.length - materialGlobalIndex;
-    const kayitIslemTarihi = new Date(Date.now() - baseOffsetDaysForKayit * DAY_IN_MS - k * 60 * 1000); // k adds minute offset for copies
-
-    await prisma.malzemeHareket.create({
-      data: {
-        id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
-        islemTarihi: kayitIslemTarihi,
-        hareketTuru: HareketTuruEnum.Kayit,
-        malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
-        malzemeId: malzeme.id,
-        konumId: konumlar[materialGlobalIndex % konumlar.length].id, // Konumları döngüsel olarak dağıt
-        aciklama: `${malzeme.vidaNo || malzeme.kod} malzemesi sisteme kaydedildi`,
-        status: AuditStatusEnum.Aktif,
-        createdById: adminUserId,
-      },
-    });
-    console.log(`Kayıt hareketi oluşturuldu: ${malzeme.vidaNo || malzeme.kod} (Tarih: ${kayitIslemTarihi.toISOString()})`);
-
-    // Bazı malzemeler için ek hareketler oluştur (original logic based on 'j')
-    
-    // İlk 4 *orijinal* malzeme şablonu için zimmet hareketi
-    if (j < 4) { 
-      await new Promise(resolve => setTimeout(resolve, 50)); // Biraz zaman farkı
-      const zimmetIslemTarihi = new Date(kayitIslemTarihi.getTime() + 1 * DAY_IN_MS + k * 10000); // 1 gün sonra + k*10s offset
+      // Her malzeme için ilk kayıt hareketi oluştur
+      // İşlem tarihleri geçmişe doğru, en yeni malzeme en yakın tarihli
+      const baseOffsetDaysForKayit = malzemeler.length - materialGlobalIndex;
+      const kayitIslemTarihi = new Date(Date.now() - baseOffsetDaysForKayit * DAY_IN_MS - k * 60 * 1000); // k adds minute offset for copies
 
       await prisma.malzemeHareket.create({
         data: {
           id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
-          islemTarihi: zimmetIslemTarihi,
-          hareketTuru: HareketTuruEnum.Zimmet,
+          islemTarihi: kayitIslemTarihi,
+          hareketTuru: HareketTuruEnum.Kayit,
           malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
           malzemeId: malzeme.id,
-          hedefPersonelId: personeller[materialGlobalIndex % personeller.length].id,
-          aciklama: `${malzeme.vidaNo || malzeme.kod} personele zimmetlendi`,
+          kaynakKonumId: null,
+          hedefKonumId: konumlar[materialGlobalIndex % konumlar.length].id, // Konumları döngüsel olarak dağıt
+          aciklama: `${malzeme.vidaNo || malzeme.kod} malzemesi sisteme kaydedildi`,
           status: AuditStatusEnum.Aktif,
           createdById: adminUserId,
         },
       });
-      console.log(`Zimmet hareketi oluşturuldu: ${malzeme.vidaNo || malzeme.kod} -> ${personeller[materialGlobalIndex % personeller.length].ad} (Tarih: ${zimmetIslemTarihi.toISOString()})`);
-    }
+      console.log(`Kayıt hareketi oluşturuldu: ${malzeme.vidaNo || malzeme.kod} (Tarih: ${kayitIslemTarihi.toISOString()})`);
 
-    // İkinci *orijinal* malzeme şablonu için iade hareketi de ekle
-    if (j === 1) { // This means original index 1 (PC-002) and its copies
-      await new Promise(resolve => setTimeout(resolve, 50));
-      // Iade, zimmetten sonra olmalı. Zimmet tarihi: kayitIslemTarihi + 1 gün
-      const iadeIslemTarihi = new Date(kayitIslemTarihi.getTime() + 2 * DAY_IN_MS + k * 10000); // Zimmetten 1 gün sonra
+      // Bazı malzemeler için ek hareketler oluştur (original logic based on 'j')
 
-      await prisma.malzemeHareket.create({
-        data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
-          islemTarihi: iadeIslemTarihi,
-          hareketTuru: HareketTuruEnum.Iade,
-          malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam, // Kondisyon iade sırasında belirlenir
-          malzemeId: malzeme.id,
-          kaynakPersonelId: personeller[materialGlobalIndex % personeller.length].id, // Zimmetlenen personel iade ediyor
-          konumId: konumlar[(materialGlobalIndex + 1) % konumlar.length].id, // Farklı bir konuma iade (veya sabit bir depo konumu)
-          aciklama: `${malzeme.vidaNo || malzeme.kod} personelden iade alındı`,
-          status: AuditStatusEnum.Aktif,
-          createdById: adminUserId,
-        },
-      });
-      console.log(`İade hareketi oluşturuldu: ${malzeme.vidaNo || malzeme.kod} (Tarih: ${iadeIslemTarihi.toISOString()})`);
-    }
+      // İlk 4 *orijinal* malzeme şablonu için zimmet hareketi
+      if (j < 4) {
+        await new Promise(resolve => setTimeout(resolve, 50)); // Biraz zaman farkı
+        const zimmetIslemTarihi = new Date(kayitIslemTarihi.getTime() + 1 * DAY_IN_MS + k * 10000); // 1 gün sonra + k*10s offset
 
-    // Üçüncü *orijinal* malzeme şablonu için devir hareketi
-    if (j === 2 && personeller.length > 1) { // This means original index 2 (LPT-001) and its copies
-      await new Promise(resolve => setTimeout(resolve, 50));
-      // Devir, zimmetten sonra olmalı. Zimmet tarihi: kayitIslemTarihi + 1 gün
-      const devirIslemTarihi = new Date(kayitIslemTarihi.getTime() + 2 * DAY_IN_MS + k * 10000); // Zimmetten 1 gün sonra (Iade ile aynı seviyede olabilir farklı malzeme için)
-
-      const kaynakPersonelIndex = materialGlobalIndex % personeller.length;
-      const hedefPersonelIndex = (materialGlobalIndex + 1) % personeller.length;
-
-      // Eğer kaynak ve hedef aynı ise ve tek personel varsa devir yapma mantığı.
-      // Ancak personeller.length > 1 kontrolü zaten var. 
-      // Yine de küçük personel listelerinde aynı personele devir olmaması için ek kontrol eklenebilir.
-      if (kaynakPersonelIndex === hedefPersonelIndex && personeller.length > 1) {
-         // Bu durumda devir anlamsız olur, atla veya farklı bir hedef seç
-         console.log(`Devir atlandı: ${malzeme.vidaNo || malzeme.kod} - kaynak ve hedef personel aynı olamazdı, personel sayısı: ${personeller.length}`);
-      } else {
         await prisma.malzemeHareket.create({
-            data: {
+          data: {
             id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
-            islemTarihi: devirIslemTarihi,
-            hareketTuru: HareketTuruEnum.Devir,
+            islemTarihi: zimmetIslemTarihi,
+            hareketTuru: HareketTuruEnum.Zimmet,
             malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
             malzemeId: malzeme.id,
-            kaynakPersonelId: personeller[kaynakPersonelIndex].id,
-            hedefPersonelId: personeller[hedefPersonelIndex].id,
-            aciklama: `${malzeme.vidaNo || malzeme.kod} personelden personele devredildi`,
+            hedefKonumId: null,
+            kaynakKonumId: malzeme.hedefKonumId,
+            hedefPersonelId: personeller[materialGlobalIndex % personeller.length].id,
+            aciklama: `${malzeme.vidaNo || malzeme.kod} personele zimmetlendi`,
             status: AuditStatusEnum.Aktif,
             createdById: adminUserId,
-            },
+          },
         });
-        console.log(`Devir hareketi oluşturuldu: ${malzeme.vidaNo || malzeme.kod} (Tarih: ${devirIslemTarihi.toISOString()})`);
+        console.log(`Zimmet hareketi oluşturuldu: ${malzeme.vidaNo || malzeme.kod} -> ${personeller[materialGlobalIndex % personeller.length].ad} (Tarih: ${zimmetIslemTarihi.toISOString()})`);
+      }
+
+      // İkinci *orijinal* malzeme şablonu için iade hareketi de ekle
+      if (j === 1) {
+        // This means original index 1 (PC-002) and its copies
+        await new Promise(resolve => setTimeout(resolve, 50));
+        // Iade, zimmetten sonra olmalı. Zimmet tarihi: kayitIslemTarihi + 1 gün
+        const iadeIslemTarihi = new Date(kayitIslemTarihi.getTime() + 2 * DAY_IN_MS + k * 10000); // Zimmetten 1 gün sonra
+
+        await prisma.malzemeHareket.create({
+          data: {
+            id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
+            islemTarihi: iadeIslemTarihi,
+            hareketTuru: HareketTuruEnum.Iade,
+            malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam, // Kondisyon iade sırasında belirlenir
+            malzemeId: malzeme.id,
+            kaynakPersonelId: personeller[materialGlobalIndex % personeller.length].id, // Zimmetlenen personel iade ediyor
+            kaynakKonumId: null,
+            hedefKonumId: konumlar[(materialGlobalIndex + 1) % konumlar.length].id, // Farklı bir konuma iade (veya sabit bir depo konumu)
+            aciklama: `${malzeme.vidaNo || malzeme.kod} personelden iade alındı`,
+            status: AuditStatusEnum.Aktif,
+            createdById: adminUserId,
+          },
+        });
+        console.log(`İade hareketi oluşturuldu: ${malzeme.vidaNo || malzeme.kod} (Tarih: ${iadeIslemTarihi.toISOString()})`);
+      }
+
+      // Üçüncü *orijinal* malzeme şablonu için devir hareketi
+      if (j === 2 && personeller.length > 1) {
+        // This means original index 2 (LPT-001) and its copies
+        await new Promise(resolve => setTimeout(resolve, 50));
+        // Devir, zimmetten sonra olmalı. Zimmet tarihi: kayitIslemTarihi + 1 gün
+        const devirIslemTarihi = new Date(kayitIslemTarihi.getTime() + 2 * DAY_IN_MS + k * 10000); // Zimmetten 1 gün sonra (Iade ile aynı seviyede olabilir farklı malzeme için)
+
+        const kaynakPersonelIndex = materialGlobalIndex % personeller.length;
+        const hedefPersonelIndex = (materialGlobalIndex + 1) % personeller.length;
+
+        // Eğer kaynak ve hedef aynı ise ve tek personel varsa devir yapma mantığı.
+        // Ancak personeller.length > 1 kontrolü zaten var.
+        // Yine de küçük personel listelerinde aynı personele devir olmaması için ek kontrol eklenebilir.
+        if (kaynakPersonelIndex === hedefPersonelIndex && personeller.length > 1) {
+          // Bu durumda devir anlamsız olur, atla veya farklı bir hedef seç
+          console.log(`Devir atlandı: ${malzeme.vidaNo || malzeme.kod} - kaynak ve hedef personel aynı olamazdı, personel sayısı: ${personeller.length}`);
+        } else {
+          await prisma.malzemeHareket.create({
+            data: {
+              id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
+              islemTarihi: devirIslemTarihi,
+              hareketTuru: HareketTuruEnum.Devir,
+              malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
+              malzemeId: malzeme.id,
+              kaynakKonumId: null,
+              hedefKonumId: null,
+              kaynakPersonelId: personeller[kaynakPersonelIndex].id,
+              hedefPersonelId: personeller[hedefPersonelIndex].id,
+              aciklama: `${malzeme.vidaNo || malzeme.kod} personelden personele devredildi`,
+              status: AuditStatusEnum.Aktif,
+              createdById: adminUserId,
+            },
+          });
+          console.log(`Devir hareketi oluşturuldu: ${malzeme.vidaNo || malzeme.kod} (Tarih: ${devirIslemTarihi.toISOString()})`);
+        }
+      }
+
+      // Sondan ikinci *orijinal* malzeme şablonu için kondisyon güncelleme
+      // numOriginalMaterialTemplates = 8 ise, j = 6 (MOB-2024-002)
+      if (j === numOriginalMaterialTemplates - 2) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        // Kondisyon güncelleme tarihi, kayıttan sonra herhangi bir zaman olabilir. Orijinali gibi yakın bir tarih seçelim.
+        const kondisyonIslemTarihi = new Date(Date.now() - (k + 1) * (12 * 60 * 60 * 1000)); // 12s, 24s, 36s saat önce gibi
+
+        await prisma.malzemeHareket.create({
+          data: {
+            id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
+            islemTarihi: kondisyonIslemTarihi,
+            hareketTuru: HareketTuruEnum.KondisyonGuncelleme,
+            malzemeKondisyonu: MalzemeKondisyonuEnum.Arizali,
+            malzemeId: malzeme.id,
+            // Kondisyon güncellemede kaynak/hedef personel veya konum genellikle olmaz, direkt malzeme etkilenir.
+            // Eğer bir lokasyonda veya personeldeyken durumu güncelleniyorsa, o anki konum/personel bilgisi de eklenebilir.
+            // Şimdilik orijinaldeki gibi sadece malzeme ve kondisyonu ile bırakıyoruz.
+            aciklama: `${malzeme.vidaNo || malzeme.kod} kondisyonu arızalı olarak güncellendi`,
+            status: AuditStatusEnum.Aktif,
+            createdById: adminUserId,
+          },
+        });
+        console.log(`Kondisyon güncelleme hareketi oluşturuldu: ${malzeme.vidaNo || malzeme.kod} (Tarih: ${kondisyonIslemTarihi.toISOString()})`);
       }
     }
-
-    // Sondan ikinci *orijinal* malzeme şablonu için kondisyon güncelleme
-    // numOriginalMaterialTemplates = 8 ise, j = 6 (MOB-2024-002)
-    if (j === numOriginalMaterialTemplates - 2) { 
-      await new Promise(resolve => setTimeout(resolve, 50));
-      // Kondisyon güncelleme tarihi, kayıttan sonra herhangi bir zaman olabilir. Orijinali gibi yakın bir tarih seçelim.
-      const kondisyonIslemTarihi = new Date(Date.now() - (k + 1) * (12 * 60 * 60 * 1000)); // 12s, 24s, 36s saat önce gibi
-
-      await prisma.malzemeHareket.create({
-        data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
-          islemTarihi: kondisyonIslemTarihi,
-          hareketTuru: HareketTuruEnum.KondisyonGuncelleme,
-          malzemeKondisyonu: MalzemeKondisyonuEnum.Arizali,
-          malzemeId: malzeme.id,
-          // Kondisyon güncellemede kaynak/hedef personel veya konum genellikle olmaz, direkt malzeme etkilenir.
-          // Eğer bir lokasyonda veya personeldeyken durumu güncelleniyorsa, o anki konum/personel bilgisi de eklenebilir.
-          // Şimdilik orijinaldeki gibi sadece malzeme ve kondisyonu ile bırakıyoruz.
-          aciklama: `${malzeme.vidaNo || malzeme.kod} kondisyonu arızalı olarak güncellendi`,
-          status: AuditStatusEnum.Aktif,
-          createdById: adminUserId,
-        },
-      });
-      console.log(`Kondisyon güncelleme hareketi oluşturuldu: ${malzeme.vidaNo || malzeme.kod} (Tarih: ${kondisyonIslemTarihi.toISOString()})`);
-    }
   }
-}
 
   // --- 12. Kullanıcı Ayarları Oluştur ---
   console.log('\n--- Kullanıcı ayarları oluşturuluyor ---');
