@@ -18,6 +18,7 @@ const includeEntity = {
   },
   kaynakPersonel: { select: { id: true, ad: true, sicil: true, avatar: true } },
   hedefPersonel: { select: { id: true, ad: true, sicil: true, avatar: true } },
+  
   kaynakKonum: {
     select: {
       id: true,
@@ -311,7 +312,7 @@ const service = {
           },
         });
         const konumBilgileri = await tx.konum.findUnique({
-          where: { id: anlamliSonHareket.konumId },
+          where: { id: anlamliSonHareket.hedefKonumId },
           include: {
             depo: true,
           },
