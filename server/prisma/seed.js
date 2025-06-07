@@ -54,7 +54,7 @@ async function main() {
       isUser: true,
       isAmir: false,
       status: AuditStatusEnum.Aktif,
-       avatar:"https://avatar.iran.liara.run/public/35",
+      avatar: 'https://avatar.iran.liara.run/public/35',
       createdById: yeniAdminId,
     };
 
@@ -175,15 +175,15 @@ async function main() {
   // --- 4. Personeller Oluştur ---
   console.log('\n--- Personeller oluşturuluyor ---');
   const personelVerileri = [
-    { ad: 'Ahmet Yılmaz', sicil: '100001', avatar:"https://avatar.iran.liara.run/public/38", role: RoleEnum.Admin, buroIndex: 0 },
-    { ad: 'Ayşe Demir', sicil: '100002',  avatar:"https://avatar.iran.liara.run/public/51",role: RoleEnum.Personel, buroIndex: 1 },
-    { ad: 'Mehmet Kaya', sicil: '100003', avatar:"https://avatar.iran.liara.run/public/26", role: RoleEnum.Personel, buroIndex: 2 },
-    { ad: 'Fatma Özkan', sicil: '100004',  avatar:"https://avatar.iran.liara.run/public/66",role: RoleEnum.Personel, buroIndex: 3 },
-    { ad: 'Ali Çelik', sicil: '100005', avatar:"https://avatar.iran.liara.run/public/11", role: RoleEnum.Personel, buroIndex: 4 },
-    { ad: 'Zeynep Arslan', sicil: '100006',  avatar:"https://avatar.iran.liara.run/public/81",role: RoleEnum.User, buroIndex: 0 },
-    { ad: 'Mustafa Yıldız', sicil: '100007', avatar:"https://avatar.iran.liara.run/public/44", role: RoleEnum.User, buroIndex: 1 },
-    { ad: 'Asya Hilal DEMİRKOL', sicil: '100008', avatar:"https://avatar.iran.liara.run/public/75", role: RoleEnum.User, buroIndex: 1 },
-    { ad: 'Ayşenur DEMİRKOL', sicil: '100009', avatar:"https://avatar.iran.liara.run/public/92", role: RoleEnum.User, buroIndex: 1 },
+    { ad: 'Ahmet Yılmaz', sicil: '100001', avatar: 'https://avatar.iran.liara.run/public/38', role: RoleEnum.Admin, buroIndex: 0 },
+    { ad: 'Ayşe Demir', sicil: '100002', avatar: 'https://avatar.iran.liara.run/public/51', role: RoleEnum.Personel, buroIndex: 1 },
+    { ad: 'Mehmet Kaya', sicil: '100003', avatar: 'https://avatar.iran.liara.run/public/26', role: RoleEnum.Personel, buroIndex: 2 },
+    { ad: 'Fatma Özkan', sicil: '100004', avatar: 'https://avatar.iran.liara.run/public/66', role: RoleEnum.Personel, buroIndex: 3 },
+    { ad: 'Ali Çelik', sicil: '100005', avatar: 'https://avatar.iran.liara.run/public/11', role: RoleEnum.Personel, buroIndex: 4 },
+    { ad: 'Zeynep Arslan', sicil: '100006', avatar: 'https://avatar.iran.liara.run/public/81', role: RoleEnum.User, buroIndex: 0 },
+    { ad: 'Mustafa Yıldız', sicil: '100007', avatar: 'https://avatar.iran.liara.run/public/44', role: RoleEnum.User, buroIndex: 1 },
+    { ad: 'Asya Hilal DEMİRKOL', sicil: '100008', avatar: 'https://avatar.iran.liara.run/public/75', role: RoleEnum.User, buroIndex: 1 },
+    { ad: 'Ayşenur DEMİRKOL', sicil: '100009', avatar: 'https://avatar.iran.liara.run/public/92', role: RoleEnum.User, buroIndex: 1 },
   ];
 
   const personeller = [];
@@ -201,6 +201,7 @@ async function main() {
           id: helper.generateId(ENTITY_ID_PREFIXES.PERSONEL),
           ad: personelData.ad,
           sicil: personelData.sicil,
+          avatar: personelData.avatar,
           parola: hashedPassword,
           role: personelData.role,
           buroId: burolar[personelData.buroIndex].id,
