@@ -41,6 +41,10 @@ export const MalzemeHareket_Columns = () => {
         return 'warning';
       case 'Hurda':
         return 'destructive';
+      case 'Kayip':
+        return 'destructive';
+      case 'Dusum':
+        return 'destructive';
       default:
         return 'outline';
     }
@@ -54,7 +58,7 @@ export const MalzemeHareket_Columns = () => {
         const tarih = row.getValue('islemTarihi');
         return <div className="text-sm">{tarih ? format(new Date(tarih), 'dd.MM.yyyy HH:mm', { locale: tr }) : '-'}</div>;
       },
-      // size: 140,
+      size: 140,
       meta: {
         exportHeader: 'İşlem Tarihi',
         filterVariant: 'date',
@@ -62,7 +66,21 @@ export const MalzemeHareket_Columns = () => {
     },
     {
       accessorKey: 'malzeme',
-      accessorFn: row => row.malzeme?.vidaNo && row.malzeme?.sabitKodu?.ad && row?.malzeme.marka.ad && row.malzeme.model.ad,
+      accessorFn: row => {
+        const malzeme = row.malzeme;
+        if (!malzeme) return '';
+        const searchTerms = [
+          malzeme.vidaNo,
+          malzeme.sabitKodu?.ad,
+          malzeme.marka?.ad,
+          malzeme.model?.ad,
+          malzeme.kod,
+          malzeme.bademSeriNo,
+          malzeme.etmysSeriNo,
+          malzeme.stokDemirbasNo
+        ].filter(Boolean);
+        return searchTerms.join(' ');
+      },
       header: ({ column }) => <HeaderButton column={column} title="Malzeme" />,
       cell: ({ row }) => {
         const malzeme = row.original.malzeme;
@@ -78,7 +96,7 @@ export const MalzemeHareket_Columns = () => {
           </div>
         );
       },
-      // size: 200,
+      size: 200,
       meta: {
         exportHeader: 'Malzeme',
         filterVariant: 'text',
@@ -96,7 +114,7 @@ export const MalzemeHareket_Columns = () => {
           </Badge>
         );
       },
-      // size: 120,
+      size: 120,
       meta: {
         exportHeader: 'Hareket Türü',
         filterVariant: 'select',
@@ -115,7 +133,7 @@ export const MalzemeHareket_Columns = () => {
           </Badge>
         );
       },
-      // size: 100,
+      size: 100,
       meta: {
         exportHeader: 'Kondisyon',
         filterVariant: 'select',
@@ -124,13 +142,22 @@ export const MalzemeHareket_Columns = () => {
     },
     {
       accessorKey: 'kaynakPersonel',
-      accessorFn: row => row.kaynakPersonel?.ad || '',
+      accessorFn: row => {
+        const personel = row.kaynakPersonel;
+        if (!personel) return '';
+        const searchTerms = [
+          personel.ad,
+          personel.soyad,
+          personel.sicil
+        ].filter(Boolean);
+        return searchTerms.join(' ');
+      },
       header: ({ column }) => <HeaderButton column={column} title="Kaynak Personel" />,
       cell: ({ row }) => {
         const kaynak = row.original.kaynakPersonel;
-        return kaynak ? <AvatarWithName user={kaynak}  /> : <div className="text-sm text-muted-foreground">-</div>;
+        return kaynak ? <AvatarWithName user={kaynak} /> : <div className="text-sm text-muted-foreground">-</div>;
       },
-      // size: 150,
+      size: 150,
       meta: {
         exportHeader: 'Kaynak Personel',
         filterVariant: 'text',
@@ -138,36 +165,82 @@ export const MalzemeHareket_Columns = () => {
     },
     {
       accessorKey: 'hedefPersonel',
-      accessorFn: row => row.hedefPersonel?.ad || '',
+      accessorFn: row => {
+        const personel = row.hedefPersonel;
+        if (!personel) return '';
+        const searchTerms = [
+          personel.ad,
+          personel.soyad,
+          personel.sicil
+        ].filter(Boolean);
+        return searchTerms.join(' ');
+      },
       header: ({ column }) => <HeaderButton column={column} title="Hedef Personel" />,
       cell: ({ row }) => {
         const hedef = row.original.hedefPersonel;
-        return hedef ? <AvatarWithName user={hedef}/> : <div className="text-sm text-muted-foreground">-</div>;
+        return hedef ? <AvatarWithName user={hedef} /> : <div className="text-sm text-muted-foreground">-</div>;
       },
-      // size: 150,
+      size: 150,
       meta: {
         exportHeader: 'Hedef Personel',
         filterVariant: 'text',
       },
     },
     {
-      accessorKey: 'konum',
-      accessorFn: row => row.konum?.ad || '',
-      header: ({ column }) => <HeaderButton column={column} title="Konum" />,
+      accessorKey: 'kaynakKonum',
+      accessorFn: row => {
+        const konum = row.kaynakKonum;
+        if (!konum) return '';
+        const searchTerms = [
+          konum.ad,
+          konum.depo?.ad
+        ].filter(Boolean);
+        return searchTerms.join(' - ');
+      },
+      header: ({ column }) => <HeaderButton column={column} title="Kaynak Konum" />,
       cell: ({ row }) => {
-        const konum = row.original.konum;
-        return konum ? (
+        const kaynakKonum = row.original.kaynakKonum;
+        return kaynakKonum ? (
           <div className="space-y-1">
-            <div className="text-sm font-medium">{konum.ad}</div>
-            {konum.depo?.ad && <div className="text-xs text-muted-foreground">{konum.depo.ad}</div>}
+            <div className="text-sm font-medium">{kaynakKonum.ad}</div>
+            {kaynakKonum.depo?.ad && <div className="text-xs text-muted-foreground">{kaynakKonum.depo.ad}</div>}
           </div>
         ) : (
           <div className="text-sm text-muted-foreground">-</div>
         );
       },
-      // size: 150,
+      size: 150,
       meta: {
-        exportHeader: 'Konum',
+        exportHeader: 'Kaynak Konum',
+        filterVariant: 'text',
+      },
+    },
+    {
+      accessorKey: 'hedefKonum',
+      accessorFn: row => {
+        const konum = row.hedefKonum;
+        if (!konum) return '';
+        const searchTerms = [
+          konum.ad,
+          konum.depo?.ad
+        ].filter(Boolean);
+        return searchTerms.join(' - ');
+      },
+      header: ({ column }) => <HeaderButton column={column} title="Hedef Konum" />,
+      cell: ({ row }) => {
+        const hedefKonum = row.original.hedefKonum;
+        return hedefKonum ? (
+          <div className="space-y-1">
+            <div className="text-sm font-medium">{hedefKonum.ad}</div>
+            {hedefKonum.depo?.ad && <div className="text-xs text-muted-foreground">{hedefKonum.depo.ad}</div>}
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">-</div>
+        );
+      },
+      size: 150,
+      meta: {
+        exportHeader: 'Hedef Konum',
         filterVariant: 'text',
       },
     },
@@ -182,11 +255,12 @@ export const MalzemeHareket_Columns = () => {
           </div>
         );
       },
-      // size: 200,
+      size: 200,
       meta: {
         exportHeader: 'Açıklama',
         filterVariant: 'text',
       },
     },
+   
   ];
 };

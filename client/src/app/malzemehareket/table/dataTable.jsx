@@ -16,7 +16,8 @@ const facesFilterData = [
   { columnId: 'malzemeKondisyonu', title: 'Kondisyon' },
   { columnId: 'kaynakPersonel', title: 'kaynakPersonel' },
   { columnId: 'hedefPersonel', title: 'hedefPersonel' },
-  { columnId: 'konum', title: 'konum' },
+  { columnId: 'kaynakKonum', title: 'Kaynak Konum' },
+  { columnId: 'hedefKonum', title: 'Hedef Konum' },
   { columnId: 'createdBy', title: 'İşlem Yapan' },
 ];
 

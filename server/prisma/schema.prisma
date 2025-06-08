@@ -42,10 +42,43 @@ enum AuditStatusEnum {
 }
 
 enum RoleEnum {
-  User
   Personel
+  User
   Admin
   Superadmin
+}
+
+enum RutbeEnum {
+  EmniyetGenelMuduru
+  BirinciSinifEmniyetMuduru
+  IkinciSinifEmniyetMuduru
+  UcuncuSinifEmniyetMuduru
+  DorduncuSinifEmniyetMuduru
+  EmniyetAmiri
+  Baskomiser
+  Komiser
+  KomiserYardimcisi
+  KidemliBaspolisMemuru
+  BaspolisMemuru
+  PolisMemuru
+  CarsiVeMahalleBekcisi
+}
+
+enum GorevEnum {
+  IlEmniyetMuduru
+  IlEmniyetMudurYardimcisi
+  SubeMuduru
+  SubeMudurVekili
+  SubeMudurYardimcisi
+  BuroAmiri
+  BuroAmirVekili
+  BuroAmirYardimcisi
+  MasaAmiri
+  GrupAmiri
+  EkipAmiri
+  BuroSefi
+  BuroMemuru
+  EkipMemuru
 }
 
 // ----- Models -----

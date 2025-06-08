@@ -41,7 +41,14 @@ export const AuditColumns = () => [
       if (!createdByPersonel) return '-';
       return <AvatarWithName user={createdByPersonel} />;
     },
-    accessorFn: row => row.createdBy?.ad, // Tip ataması kaldırıldı, opsiyonel zincirleme korundu
+
+    accessorFn: row => {
+      const personel = row.createdBy;
+      if (!personel) return '';
+      const searchTerms = [personel.ad, personel.soyad, personel.sicil].filter(Boolean);
+      return searchTerms.join(' ');
+    },
+
     filterFn: turkishCaseInsensitiveFilterFn,
     size: 200,
     enableHiding: true,
@@ -78,7 +85,14 @@ export const AuditColumns = () => [
       if (!updatedByPersonel) return '-';
       return <AvatarWithName user={updatedByPersonel} />;
     },
-    accessorFn: row => row.updatedBy?.ad, // Tip ataması kaldırıldı, opsiyonel zincirleme korundu
+
+    accessorFn: row => {
+      const personel = row.updatedBy;
+      if (!personel) return '';
+      const searchTerms = [personel.ad, personel.soyad, personel.sicil].filter(Boolean);
+      return searchTerms.join(' ');
+    },
+
     filterFn: turkishCaseInsensitiveFilterFn,
     size: 200,
     enableHiding: true,
