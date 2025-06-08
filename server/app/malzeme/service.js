@@ -73,8 +73,8 @@ const service = {
             orderBy: { createdAt: 'desc' },
             take: 1,
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -116,7 +116,9 @@ const service = {
                 select: {
                   id: true,
                   ad: true,
+                  soyad: true,
                   sicil: true,
+
                 },
               },
               kaynakPersonel: {
@@ -124,6 +126,7 @@ const service = {
                 select: {
                   id: true,
                   ad: true,
+                  soyad: true,
                   sicil: true,
                 },
               },
@@ -145,8 +148,8 @@ const service = {
               },
             },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -173,15 +176,15 @@ const service = {
               hareketTuru: true,
               islemTarihi: true,
               malzemeKondisyonu: true,
-              kaynakPersonel: { select: { ad: true, sicil: true } },
-              hedefPersonel: { select: { ad: true, sicil: true } },
+              kaynakPersonel: { select: { ad: true,soyad:true, sicil: true } },
+              hedefPersonel: { select: { ad: true, soyad:true,sicil: true } },
               konum: { select: { ad: true, depo: { select: { ad: true } } } },
               aciklama: true,
             },
             orderBy: { islemTarihi: 'desc' },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -274,8 +277,8 @@ const service = {
           sabitKodu: { select: { id: true, ad: true } },
           marka: { select: { id: true, ad: true } },
           model: { select: { id: true, ad: true } },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
           malzemeHareketleri: {
             where: { status: AuditStatusEnum.Aktif },
             select: {
@@ -349,8 +352,8 @@ const service = {
           sabitKodu: { select: { id: true, ad: true } },
           marka: { select: { id: true, ad: true } },
           model: { select: { id: true, ad: true } },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -376,8 +379,8 @@ const service = {
           sabitKodu: { select: { id: true, ad: true } },
           marka: { select: { id: true, ad: true } },
           model: { select: { id: true, ad: true } },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -425,8 +428,8 @@ const service = {
           sabitKodu: { select: { id: true, ad: true } },
           marka: { select: { id: true, ad: true } },
           model: { select: { id: true, ad: true } },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {

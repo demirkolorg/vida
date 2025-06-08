@@ -46,6 +46,20 @@ export const Personel_Columns = () => {
         exportHeader: `${EntityHuman} Adı`,
         filterVariant: 'text',
       },
+    }, {
+      accessorKey: 'soyad',
+      header: ({ column }) => <HeaderButton column={column} title={`${EntityHuman} Soyadı`} />,
+      cell: ({ row }) => {
+        const soyad = row.getValue('soyad');
+        return <div className="font-medium">{soyad || '-'}</div>;
+      },
+      enableHiding: false,
+      size: 200,
+      filterFn: inArrayFilterFn,
+      meta: {
+        exportHeader: `${EntityHuman} Soyadı`,
+        filterVariant: 'text',
+      },
     },
     {
       accessorKey: 'sicil',

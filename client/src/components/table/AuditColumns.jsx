@@ -39,7 +39,7 @@ export const AuditColumns = () => [
     cell: ({ row }) => {
       const createdByPersonel = row.original.createdBy; // Tip ataması kaldırıldı
       if (!createdByPersonel) return '-';
-      return <AvatarWithName name={createdByPersonel.ad || createdByPersonel.sicil || 'Bilinmiyor'} sicil={createdByPersonel.sicil || 'Bilinmiyor'} avatar={createdByPersonel.avatar} subText={createdByPersonel.sicil} />;
+      return <AvatarWithName user={createdByPersonel} />;
     },
     accessorFn: row => row.createdBy?.ad, // Tip ataması kaldırıldı, opsiyonel zincirleme korundu
     filterFn: turkishCaseInsensitiveFilterFn,
@@ -76,7 +76,7 @@ export const AuditColumns = () => [
     cell: ({ row }) => {
       const updatedByPersonel = row.original.updatedBy; // Tip ataması kaldırıldı
       if (!updatedByPersonel) return '-';
-      return <AvatarWithName name={createdByPersonel.ad || createdByPersonel.sicil || 'Bilinmiyor'} sicil={createdByPersonel.sicil || 'Bilinmiyor'} avatar={createdByPersonel.avatar} subText={createdByPersonel.sicil} />;
+      return <AvatarWithName user={updatedByPersonel} />;
     },
     accessorFn: row => row.updatedBy?.ad, // Tip ataması kaldırıldı, opsiyonel zincirleme korundu
     filterFn: turkishCaseInsensitiveFilterFn,

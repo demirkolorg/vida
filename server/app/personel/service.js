@@ -37,8 +37,8 @@ const service = {
               }
             } 
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -70,8 +70,8 @@ const service = {
               }
             } 
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -95,8 +95,8 @@ const service = {
               }
             } 
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -142,8 +142,8 @@ const service = {
               }
             } 
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -190,8 +190,8 @@ update: async data => {
             }
           } 
         },
-        createdBy: { select: { id: true, ad: true, avatar: true } },
-        updatedBy: { select: { id: true, ad: true, avatar: true } },
+        createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+        updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
       },
     });
   } catch (error) {
@@ -224,8 +224,8 @@ update: async data => {
               }
             } 
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -271,8 +271,8 @@ update: async data => {
               }
             } 
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {

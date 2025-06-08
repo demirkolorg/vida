@@ -247,6 +247,7 @@ model MalzemeHareket {
 model Personel {
   id         String    @id
   ad         String
+  soyad      String
   sicil      String    @unique
   parola     String
   role       RoleEnum  @default(Personel)

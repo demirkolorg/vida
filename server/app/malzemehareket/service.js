@@ -16,8 +16,8 @@ const includeEntity = {
       model: { select: { id: true, ad: true } },
     },
   },
-  kaynakPersonel: { select: { id: true, ad: true, sicil: true, avatar: true } },
-  hedefPersonel: { select: { id: true, ad: true, sicil: true, avatar: true } },
+  kaynakPersonel: { select: { id: true, ad: true, soyad: true, sicil: true, avatar: true } },
+  hedefPersonel: { select: { id: true, ad: true, soyad: true, sicil: true, avatar: true } },
 
   kaynakKonum: {
     select: {
@@ -33,7 +33,7 @@ const includeEntity = {
       depo: { select: { id: true, ad: true } },
     },
   },
-  createdBy: { select: { id: true, ad: true, sicil: true, avatar: true } },
+  createdBy: { select: { id: true, ad: true, soyad: true, sicil: true, avatar: true } },
 };
 
 const orderByEntity = { createdAt: 'desc' };
@@ -218,7 +218,7 @@ const service = {
         id: { in: personelIds },
         status: AuditStatusEnum.Aktif,
       },
-      select: { id: true, ad: true, sicil: true },
+      select: { id: true, ad: true, soyad: true, sicil: true },
     });
 
     const existingIds = existingPersoneller.map(p => p.id);
@@ -358,6 +358,8 @@ const service = {
             hedefPersonel: {
               id: hedefPersonelBilgileri.id,
               ad: hedefPersonelBilgileri.ad,
+              soyad: hedefPersonelBilgileri.soyad,
+
               avatar: hedefPersonelBilgileri.avatar,
               sicil: hedefPersonelBilgileri.sicil,
               buro: hedefPersonelBilgileri.buro?.ad,
@@ -520,6 +522,8 @@ const service = {
               hedefPersonel: {
                 id: hedefPersonelBilgileri.id,
                 ad: hedefPersonelBilgileri.ad,
+                soyad: hedefPersonelBilgileri.soyad,
+
                 sicil: hedefPersonelBilgileri.sicil,
                 avatar: hedefPersonelBilgileri.avatar,
                 buro: hedefPersonelBilgileri.buro?.ad,
@@ -662,6 +666,8 @@ const service = {
             kaynakPersonel: {
               id: kaynakPersonelBilgileri.id,
               ad: kaynakPersonelBilgileri.ad,
+              soyad: kaynakPersonelBilgileri.soyad,
+
               avatar: kaynakPersonelBilgileri.avatar,
               sicil: kaynakPersonelBilgileri.sicil,
               buro: kaynakPersonelBilgileri.buro?.ad,
@@ -844,6 +850,7 @@ const service = {
               kaynakPersonel: {
                 id: kaynakPersonel.id,
                 ad: kaynakPersonel.ad,
+                soyad: kaynakPersonel.soyad,
                 sicil: kaynakPersonel.sicil,
                 avatar: kaynakPersonel.avatar,
                 buro: kaynakPersonel.buro?.ad,
@@ -1010,6 +1017,8 @@ const service = {
             kaynakPersonel: {
               id: kaynakPersonelBilgileri.id,
               ad: kaynakPersonelBilgileri.ad,
+              soyad: kaynakPersonelBilgileri.soyad,
+
               avatar: kaynakPersonelBilgileri.avatar,
               sicil: kaynakPersonelBilgileri.sicil,
               buro: kaynakPersonelBilgileri.buro?.ad,
@@ -1019,6 +1028,8 @@ const service = {
             hedefPersonel: {
               id: hedefPersonelBilgileri.id,
               ad: hedefPersonelBilgileri.ad,
+              soyad: hedefPersonelBilgileri.soyad,
+
               avatar: hedefPersonelBilgileri.avatar,
               sicil: hedefPersonelBilgileri.sicil,
               buro: hedefPersonelBilgileri.buro?.ad,
@@ -1230,6 +1241,7 @@ const service = {
               kaynakPersonel: {
                 id: kaynakPersonel.id,
                 ad: kaynakPersonel.ad,
+                soyad: kaynakPersonel.soyad,
                 sicil: kaynakPersonel.sicil,
                 avatar: kaynakPersonel.avatar,
                 buro: kaynakPersonel.buro?.ad,
@@ -1239,6 +1251,8 @@ const service = {
               hedefPersonel: {
                 id: hedefPersonelBilgileri.id,
                 ad: hedefPersonelBilgileri.ad,
+                soyad: hedefPersonelBilgileri.soyad,
+
                 sicil: hedefPersonelBilgileri.sicil,
                 avatar: hedefPersonelBilgileri.avatar,
                 buro: hedefPersonelBilgileri.buro?.ad,
@@ -1297,7 +1311,7 @@ const service = {
       if (!data.konumId) throw new Error('Depo transferi için hedef konum zorunludur.');
       await service.checkKonumExists(data.konumId);
 
-      const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(data.malzemeId)
+      const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(data.malzemeId);
       const malzemeDurum = await service.checkMalzemeZimmetDurumu(data.malzemeId);
 
       if (malzemeDurum.malzemePersonelde) {
@@ -1345,7 +1359,7 @@ const service = {
       if (!data.malzemeKondisyonu) {
         throw new Error('Kondisyon güncelleme için yeni kondisyon zorunludur.');
       }
-      const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(data.malzemeId)
+      const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(data.malzemeId);
 
       const malzemeDurum = await service.checkMalzemeZimmetDurumu(data.malzemeId);
       if (malzemeDurum.currentKondisyon === data.malzemeKondisyonu) {
@@ -1364,9 +1378,6 @@ const service = {
         createdById: data.islemYapanKullanici,
       };
 
-
-
-
       return await prisma[PrismaName].create({
         data: createPayload,
         include: includeEntity,
@@ -1381,7 +1392,7 @@ const service = {
     try {
       await service.checkMalzemeExists(data.malzemeId);
       if (!data.aciklama) throw new Error('Kayıp bildirimi için açıklama zorunludur.');
-      const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(data.malzemeId)
+      const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(data.malzemeId);
 
       const malzemeDurum = await service.checkMalzemeZimmetDurumu(data.malzemeId);
       if (malzemeDurum.malzemeYok) {
@@ -1546,7 +1557,7 @@ const service = {
           console.log(`Service - Processing malzeme ${malzemeId}`);
 
           const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
-          const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(malzemeId)
+          const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(malzemeId);
 
           if (malzemeDurum.malzemePersonelde) {
             errors.push({ malzemeId, error: 'Zimmetli malzemeler transfer edilemez' });
@@ -1681,7 +1692,6 @@ const service = {
             createPayload.hedefPersonelId = malzemeDurum.currentPersonel.id;
           }
 
-
           console.log(`Service - Creating kondisyon guncelleme record for ${malzemeId}:`, createPayload);
 
           const result = await prisma[PrismaName].create({
@@ -1757,7 +1767,7 @@ const service = {
           console.log(`Service - Processing malzeme ${malzemeId}`);
 
           const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
-          const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(malzemeId)
+          const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(malzemeId);
 
           if (malzemeDurum.malzemeYok) {
             errors.push({ malzemeId, error: 'Zaten kayıp veya düşüm yapılmış' });
@@ -2203,8 +2213,6 @@ const service = {
       throw error;
     }
   },
-
-  
 
   delete: async data => {
     try {

@@ -28,14 +28,14 @@ const service = {
             },
           },
           amir: { 
-            select: { id: true, ad: true, sicil: true, avatar: true } 
+            select: { id: true, ad: true,soyad:true, sicil: true, avatar: true } 
           },
           personeller: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { id: true, ad: true, sicil: true, avatar: true },
+            select: { id: true, ad: true,soyad:true, sicil: true, avatar: true },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true,soyad:true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad:true,soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -64,14 +64,14 @@ const service = {
             },
           },
           amir: { 
-            select: { id: true, ad: true, sicil: true, avatar: true } 
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true } 
           },
           personeller: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { id: true, ad: true, sicil: true, avatar: true },
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -94,14 +94,14 @@ const service = {
             },
           },
           amir: { 
-            select: { id: true, ad: true, sicil: true, avatar: true } 
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true } 
           },
           personeller: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { id: true, ad: true, sicil: true, avatar: true },
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -125,14 +125,14 @@ const service = {
             },
           },
           amir: { 
-            select: { id: true, ad: true, sicil: true, avatar: true } 
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true } 
           },
           personeller: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { id: true, ad: true, sicil: true, avatar: true },
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -168,14 +168,14 @@ const service = {
             },
           },
           amir: { 
-            select: { id: true, ad: true, sicil: true, avatar: true } 
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true } 
           },
           personeller: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { id: true, ad: true, sicil: true, avatar: true },
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -217,14 +217,14 @@ const service = {
             },
           },
           amir: { 
-            select: { id: true, ad: true, sicil: true, avatar: true } 
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true } 
           },
           personeller: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { id: true, ad: true, sicil: true, avatar: true },
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -253,14 +253,14 @@ const service = {
             },
           },
           amir: { 
-            select: { id: true, ad: true, sicil: true, avatar: true } 
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true } 
           },
           personeller: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { id: true, ad: true, sicil: true, avatar: true },
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -308,14 +308,14 @@ const service = {
             },
           },
           amir: { 
-            select: { id: true, ad: true, sicil: true, avatar: true } 
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true } 
           },
           personeller: {
             where: { status: AuditStatusEnum.Aktif },
-            select: { id: true, ad: true, sicil: true, avatar: true },
+            select: { id: true, ad: true,soyad: true, sicil: true, avatar: true },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {

@@ -88,9 +88,9 @@ export const getTutanakBilgileri = (hareketTuru, mockMalzemeler) => {
 // Personel bilgilerini formatla
 export const formatPersonel = personel => {
   if (!personel) return '';
-  const ad = personel.ad.split(" ")[0]
-  const soyad = personel.ad.split(" ")[1].toLocaleUpperCase('tr-TR')
-  const adSoyad = `${ad} ${soyad}`
+  const ad = personel.ad;
+  const soyad = personel.soyad;
+  const adSoyad = `${ad} ${soyad}`;
   const sicil = personel.sicil || '';
 
   return (

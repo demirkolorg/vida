@@ -250,7 +250,7 @@ export const Tutanak_Columns = () => [
       // Tek personel durumu (kaynakPersonel)
       if (parsedPersonelBilgileri.kaynakPersonel) {
         const personel = parsedPersonelBilgileri.kaynakPersonel;
-        return <AvatarWithName name={personel?.ad} sicil={personel?.sicil} avatar={personel?.avatar} subText={personel?.sicil} />;
+        return <AvatarWithName user={personel} />;
       }
 
       // Çoklu personel durumu (kaynakPersoneller object)
@@ -265,7 +265,7 @@ export const Tutanak_Columns = () => [
         // Tek personel (object içinde tek entry)
         if (personeller.length === 1) {
           const personel = personeller[0];
-          return <AvatarWithName name={personel?.ad} sicil={personel?.sicil} avatar={personel?.avatar} subText={personel?.sicil} />;
+          return <AvatarWithName user={personel} />;
         }
 
         // Benzersiz personelleri bul (aynı id'liler tek gösterilsin)
@@ -274,7 +274,7 @@ export const Tutanak_Columns = () => [
         // Tek benzersiz personel varsa
         if (benzersizPersoneller.length === 1) {
           const personel = benzersizPersoneller[0];
-          return <AvatarWithName name={personel?.ad} sicil={personel?.sicil} avatar={personel?.avatar} subText={personel?.sicil} />;
+          return <AvatarWithName user={personel} />;
         }
 
         // Birden fazla benzersiz personel - hepsini göster
@@ -282,13 +282,7 @@ export const Tutanak_Columns = () => [
           <div className="space-y-2">
             {benzersizPersoneller.map((personel, index) => (
               <div key={personel.id || index} className="">
-                <AvatarWithName
-                  name={personel?.ad}
-                  sicil={personel?.sicil}
-                  avatar={personel?.avatar}
-                  subText={personel?.sicil}
-                  size="sm" // Küçük avatar için
-                />
+                <AvatarWithName user={personel} />
               </div>
             ))}
           </div>
@@ -530,7 +524,7 @@ export const Tutanak_Columns = () => [
       // Tek personel durumu (hedefPersonel)
       if (parsedPersonelBilgileri.hedefPersonel) {
         const personel = parsedPersonelBilgileri.hedefPersonel;
-        return <AvatarWithName name={personel?.ad} sicil={personel?.sicil} avatar={personel?.avatar} subText={personel?.sicil} />;
+        return <AvatarWithName user={personel} />;
       }
 
       // Çoklu personel durumu (hedefPersoneller object)
@@ -545,7 +539,7 @@ export const Tutanak_Columns = () => [
         // Tek personel (object içinde tek entry)
         if (personeller.length === 1) {
           const personel = personeller[0];
-          return <AvatarWithName name={personel?.ad} sicil={personel?.sicil} avatar={personel?.avatar} subText={personel?.sicil} />;
+          return <AvatarWithName user={personel} />;
         }
 
         // Benzersiz personelleri bul
@@ -554,7 +548,7 @@ export const Tutanak_Columns = () => [
         // Tek benzersiz personel varsa
         if (benzersizPersoneller.length === 1) {
           const personel = benzersizPersoneller[0];
-          return <AvatarWithName name={personel?.ad} sicil={personel?.sicil} avatar={personel?.avatar} subText={personel?.sicil} />;
+          return <AvatarWithName user={personel} />;
         }
 
         // Birden fazla benzersiz personel - hepsini göster
@@ -562,13 +556,7 @@ export const Tutanak_Columns = () => [
           <div className="space-y-2">
             {benzersizPersoneller.map((personel, index) => (
               <div key={personel.id || index} className="">
-                <AvatarWithName
-                  name={personel?.ad}
-                  sicil={personel?.sicil}
-                  avatar={personel?.avatar}
-                  subText={personel?.sicil}
-                  size="sm" // Küçük avatar için
-                />
+                <AvatarWithName user={personel} />
               </div>
             ))}
           </div>

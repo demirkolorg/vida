@@ -126,7 +126,7 @@ const MalzemeDetailPanel = ({ selectedMalzeme, onClose }) => {
       case 'Zimmet':
       case 'Devir':
         return {
-          text: `Zimmetli - ${sonHareket.hedefPersonel?.ad || 'Bilinmeyen personel'}`,
+          text: `Zimmetli - ${sonHareket.hedefPersonel?.ad} ${sonHareket.hedefPersonel?.soyad}`,
           color: 'orange',
           icon: User,
         };
@@ -289,13 +289,13 @@ const MalzemeDetailPanel = ({ selectedMalzeme, onClose }) => {
                                 {hareket.kaynakPersonel && (
                                   <div className="flex items-center gap-2">
                                     <span className="text-muted-foreground">Kaynak:</span>
-                                    <span className="font-medium">{hareket.kaynakPersonel.ad}</span>
+                                    <span className="font-medium">{hareket.kaynakPersonel.ad} {hareket.kaynakPersonel.soyad}</span>
                                   </div>
                                 )}
                                 {hareket.hedefPersonel && (
                                   <div className="flex items-center gap-2">
                                     <span className="text-muted-foreground">Hedef:</span>
-                                    <span className="font-medium">{hareket.hedefPersonel.ad}</span>
+                                    <span className="font-medium">{hareket.hedefPersonel.ad} {hareket.hedefPersonel.soyad}</span>
                                   </div>
                                 )}
                                 {hareket.konum && (

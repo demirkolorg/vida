@@ -131,7 +131,7 @@ const service = {
         where: whereClause,
         orderBy: { createdAt: 'desc' },
         include: {
-  createdBy: { select: { id: true, ad: true,sicil: true, avatar: true } },
+  createdBy: { select: { id: true, ad: true,soyad:true,sicil: true, avatar: true } },
         },
       });
     } catch (error) {

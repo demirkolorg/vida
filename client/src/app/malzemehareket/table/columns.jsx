@@ -128,7 +128,7 @@ export const MalzemeHareket_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Kaynak Personel" />,
       cell: ({ row }) => {
         const kaynak = row.original.kaynakPersonel;
-        return kaynak ? <AvatarWithName name={kaynak.ad ||'Bilinmiyor'} sicil={kaynak.sicil || 'Bilinmiyor'} avatar={kaynak.avatar} subText={kaynak.sicil} /> : <div className="text-sm text-muted-foreground">-</div>;
+        return kaynak ? <AvatarWithName user={kaynak}  /> : <div className="text-sm text-muted-foreground">-</div>;
       },
       // size: 150,
       meta: {
@@ -142,7 +142,7 @@ export const MalzemeHareket_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Hedef Personel" />,
       cell: ({ row }) => {
         const hedef = row.original.hedefPersonel;
-        return hedef ? <AvatarWithName name={hedef.ad || hedef.sicil || 'Bilinmiyor'} sicil={hedef.sicil || 'Bilinmiyor'} avatar={hedef.avatar} subText={hedef.sicil} /> : <div className="text-sm text-muted-foreground">-</div>;
+        return hedef ? <AvatarWithName user={hedef}/> : <div className="text-sm text-muted-foreground">-</div>;
       },
       // size: 150,
       meta: {

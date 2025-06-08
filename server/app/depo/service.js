@@ -20,8 +20,8 @@ const service = {
         orderBy: { ad: 'asc' },
         include: {
           konumlar: { select: { id: true, ad: true, }, },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -41,8 +41,8 @@ const service = {
         orderBy: { ad: 'asc' },
         include: {
           konumlar: { select: { id: true, ad: true, }, },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -58,8 +58,8 @@ const service = {
         orderBy: { ad: 'asc' },
         include: {
           konumlar: { select: { id: true, ad: true, }, },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -82,8 +82,8 @@ const service = {
         data: createPayload,
         include: {
           konumlar: { select: { id: true, ad: true, }, },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -103,8 +103,8 @@ const service = {
         where: { id: data.id }, data: updatePayload,
         include: {
           konumlar: { select: { id: true, ad: true, }, },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -125,8 +125,8 @@ const service = {
         where: { id: data.id }, data: updatePayload,
         include: {
           konumlar: { select: { id: true, ad: true, }, },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -164,8 +164,8 @@ const service = {
         orderBy: { ad: 'asc' },
         include: {
           konumlar: { select: { id: true, ad: true, }, },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {

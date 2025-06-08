@@ -20,8 +20,8 @@ const service = {
         where: { status: AuditStatusEnum.Aktif },
         orderBy: { createdAt: 'desc' },
         include: {
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -47,8 +47,8 @@ const service = {
         where: whereClause,
         orderBy: { createdAt: 'desc' },
         include: {
-          createdBy: { select: { id: true, ad: true, avatar: true, sicil: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true, sicil: true } },
+          createdBy: { select: { id: true, ad: true, avatar: true,soyad:true, sicil: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true, soyad:true,sicil: true } },
         },
       });
     } catch (error) {
@@ -63,8 +63,8 @@ const service = {
       return await prisma[PrismaName].findFirst({
         where: { id: data.id, status: AuditStatusEnum.Aktif },
         include: {
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -101,8 +101,8 @@ const service = {
       return await prisma[PrismaName].create({
         data: createPayload,
         include: {
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -134,8 +134,8 @@ const service = {
         where: { id: data.id },
         data: updatePayload,
         include: {
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -160,8 +160,8 @@ const service = {
         where: { id: data.id },
         data: updatePayload,
         include: {
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -197,8 +197,8 @@ const service = {
         where: whereClause,
         orderBy: { createdAt: 'desc' },
         include: {
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -390,8 +390,8 @@ const service = {
         },
         orderBy: { createdAt: 'desc' },
         include: {
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {

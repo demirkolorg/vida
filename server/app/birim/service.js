@@ -26,8 +26,8 @@ const service = {
             where: { status: AuditStatusEnum.Aktif },
             select: { id: true, vidaNo: true, sabitKodu: { select: { ad: true } } },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -54,8 +54,8 @@ const service = {
             where: { status: AuditStatusEnum.Aktif },
             select: { id: true, vidaNo: true, sabitKodu: { select: { ad: true } } },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -79,8 +79,8 @@ const service = {
             where: { status: AuditStatusEnum.Aktif },
             select: { id: true, vidaNo: true, sabitKodu: { select: { ad: true } } },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -110,8 +110,8 @@ const service = {
             where: { status: AuditStatusEnum.Aktif },
             select: { id: true, vidaNo: true, sabitKodu: { select: { ad: true } } },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -139,8 +139,8 @@ const service = {
             where: { status: AuditStatusEnum.Aktif },
             select: { id: true, vidaNo: true, sabitKodu: { select: { ad: true } } },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -169,8 +169,8 @@ const service = {
             where: { status: AuditStatusEnum.Aktif },
             select: { id: true, vidaNo: true, sabitKodu: { select: { ad: true } } },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
@@ -212,8 +212,8 @@ const service = {
             where: { status: AuditStatusEnum.Aktif },
             select: { id: true, vidaNo: true, sabitKodu: { select: { ad: true } } },
           },
-          createdBy: { select: { id: true, ad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
     } catch (error) {
