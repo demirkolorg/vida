@@ -46,7 +46,11 @@ const service = {
         orderBy: { ad: 'asc' },
         include: {
           depo: { select: { id: true, ad: true } },
-          malzemeHareketleri: {
+          malzemeHareketleriKaynak: {
+            where: { status: AuditStatusEnum.Aktif },
+            select: { id: true, hareketTuru: true, malzeme: { select: { vidaNo: true } } },
+          },
+           malzemeHareketleriHedef: {
             where: { status: AuditStatusEnum.Aktif },
             select: { id: true, hareketTuru: true, malzeme: { select: { vidaNo: true } } },
           },

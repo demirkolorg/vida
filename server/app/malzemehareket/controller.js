@@ -39,41 +39,7 @@ const controller = {
     }
   },
 
-  create: async (req, res) => {
-    const rota = 'create';
-    try {
-      const data = req.body;
-      data.islemYapanKullanici = req.user.id;
 
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.add.error, message.required.islemYapanKullanici);
-      if (!data.malzemeId) return response.error(req, res, HizmetName, rota, message.add.error, message.special.error.malzemeGerekli);
-      if (!data.hareketTuru) return response.error(req, res, HizmetName, rota, message.add.error, message.special.error.hareketTuruGerekli);
-      if (!data.malzemeKondisyonu) return response.error(req, res, HizmetName, rota, message.add.error, message.special.error.malzemeKondisyonuGerekli);
-
-      const result = await service[rota](data);
-
-      const successMessage = message.special.success[data.hareketTuru.toLowerCase()] || message.add.ok;
-      response.success(req, res, HizmetName, rota, successMessage, result);
-    } catch (error) {
-      response.error(req, res, HizmetName, rota, message.add.error, error.message);
-    }
-  },
-
-  update: async (req, res) => {
-    const rota = 'update';
-    try {
-      const data = req.body;
-      data.islemYapanKullanici = req.user.id;
-
-      if (!data.islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.update.error, message.required.islemYapanKullanici);
-      if (!data.id) return response.error(req, res, HizmetName, rota, message.update.error, message.required.id);
-
-      const result = await service[rota](data);
-      response.success(req, res, HizmetName, rota, message.update.ok, result);
-    } catch (error) {
-      response.error(req, res, HizmetName, rota, message.update.error, error.message);
-    }
-  },
 
   delete: async (req, res) => {
     const rota = 'delete';

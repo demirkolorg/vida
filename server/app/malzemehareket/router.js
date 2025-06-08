@@ -16,8 +16,6 @@ r.get('/health', c.health);
 r.get('/getAll', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getAll);
 r.post('/getByQuery', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getByQuery);
 r.post('/getById', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getById);
-r.post('/create', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.create);
-r.post('/update', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.update);
 r.post('/delete', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.delete);
 r.post('/search', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.search);
 

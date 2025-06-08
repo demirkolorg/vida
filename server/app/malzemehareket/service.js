@@ -18,7 +18,7 @@ const includeEntity = {
   },
   kaynakPersonel: { select: { id: true, ad: true, sicil: true, avatar: true } },
   hedefPersonel: { select: { id: true, ad: true, sicil: true, avatar: true } },
-  
+
   kaynakKonum: {
     select: {
       id: true,
@@ -170,6 +170,22 @@ const service = {
       if (hareket.hareketTuru !== 'KondisyonGuncelleme') {
         return hareket;
       }
+    }
+    return undefined;
+  },
+  getKonumluSonHareketByMalzemeId: async malzemeId => {
+    const hareketler = await prisma[PrismaName].findMany({
+      where: {
+        malzemeId,
+        status: AuditStatusEnum.Aktif,
+      },
+      orderBy: orderByEntity,
+      include: includeEntity,
+    });
+
+    if (!hareketler || hareketler.length === 0) return undefined;
+    for (const hareket of hareketler) {
+      if (hareket.hedefKonumId || hareket.kaynakKonumId) return hareket;
     }
     return undefined;
   },
@@ -409,9 +425,9 @@ const service = {
             }
 
             // Kaynak konum bilgisini al ve sakla
-            if (anlamliSonHareket?.konumId) {
+            if (anlamliSonHareket?.hedefKonumId) {
               const konumBilgileri = await tx.konum.findUnique({
-                where: { id: anlamliSonHareket.konumId },
+                where: { id: anlamliSonHareket.hedefKonumId },
                 include: { depo: true },
               });
 
@@ -433,7 +449,8 @@ const service = {
                 malzemeId: malzemeId,
                 hedefPersonelId: data.hedefPersonelId,
                 kaynakPersonelId: null,
-                konumId: null,
+                kaynakKonumId: anlamliSonHareket?.hedefKonumId,
+                hedefKonumId: null,
                 aciklama: data.aciklama || `Toplu zimmet - ${malzemeId}`,
                 status: AuditStatusEnum.Aktif,
                 createdById: data.islemYapanKullanici,
@@ -576,7 +593,8 @@ const service = {
           malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
           malzemeId: data.malzemeId,
           kaynakPersonelId: data.kaynakPersonelId,
-          konumId: data.konumId,
+          hedefKonumId: data.konumId,
+          kaynakKonumId: null,
           hedefPersonelId: null,
           aciklama: data.aciklama,
           status: AuditStatusEnum.Aktif,
@@ -738,8 +756,9 @@ const service = {
             malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
             malzemeId: malzemeId,
             kaynakPersonelId: kaynakPersonelId,
-            konumId: data.konumId,
+            hedefKonumId: data.konumId,
             hedefPersonelId: null,
+            kaynakKonumId: null,
             aciklama: data.aciklama || `Toplu iade - ${malzemeId}`,
             status: AuditStatusEnum.Aktif,
             createdById: data.islemYapanKullanici,
@@ -917,7 +936,8 @@ const service = {
           malzemeId: data.malzemeId,
           kaynakPersonelId: data.kaynakPersonelId,
           hedefPersonelId: data.hedefPersonelId,
-          konumId: null,
+          kaynakKonumId: null,
+          hedefKonumId: null,
           aciklama: data.aciklama,
           status: AuditStatusEnum.Aktif,
           createdById: data.islemYapanKullanici,
@@ -1116,7 +1136,8 @@ const service = {
             malzemeId: malzemeId,
             hedefPersonelId: data.hedefPersonelId,
             kaynakPersonelId: kaynakPersonelId,
-            konumId: null,
+            kaynakKonumId: null,
+            hedefKonumId: null,
             aciklama: data.aciklama || `Toplu devir - ${malzemeId}`,
             status: AuditStatusEnum.Aktif,
             createdById: data.islemYapanKullanici,
@@ -1276,6 +1297,7 @@ const service = {
       if (!data.konumId) throw new Error('Depo transferi için hedef konum zorunludur.');
       await service.checkKonumExists(data.konumId);
 
+      const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(data.malzemeId)
       const malzemeDurum = await service.checkMalzemeZimmetDurumu(data.malzemeId);
 
       if (malzemeDurum.malzemePersonelde) {
@@ -1298,7 +1320,8 @@ const service = {
         hareketTuru: 'DepoTransferi',
         malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
         malzemeId: data.malzemeId,
-        konumId: data.konumId,
+        kaynakKonumId: sonKonumluHareket.hedefKonumId || sonKonumluHareket.kaynakKonumId,
+        hedefKonumId: data.konumId,
         kaynakPersonelId: null,
         hedefPersonelId: null,
         aciklama: data.aciklama,
@@ -1322,6 +1345,7 @@ const service = {
       if (!data.malzemeKondisyonu) {
         throw new Error('Kondisyon güncelleme için yeni kondisyon zorunludur.');
       }
+      const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(data.malzemeId)
 
       const malzemeDurum = await service.checkMalzemeZimmetDurumu(data.malzemeId);
       if (malzemeDurum.currentKondisyon === data.malzemeKondisyonu) {
@@ -1340,14 +1364,8 @@ const service = {
         createdById: data.islemYapanKullanici,
       };
 
-      // Mevcut durumu koru
-      if (malzemeDurum.currentPersonel) {
-        createPayload.kaynakPersonelId = malzemeDurum.currentPersonel.id;
-        createPayload.hedefPersonelId = malzemeDurum.currentPersonel.id;
-      }
-      if (malzemeDurum.currentKonum) {
-        createPayload.konumId = malzemeDurum.currentKonum.id;
-      }
+
+
 
       return await prisma[PrismaName].create({
         data: createPayload,
@@ -1363,6 +1381,7 @@ const service = {
     try {
       await service.checkMalzemeExists(data.malzemeId);
       if (!data.aciklama) throw new Error('Kayıp bildirimi için açıklama zorunludur.');
+      const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(data.malzemeId)
 
       const malzemeDurum = await service.checkMalzemeZimmetDurumu(data.malzemeId);
       if (malzemeDurum.malzemeYok) {
@@ -1378,7 +1397,8 @@ const service = {
         malzemeId: data.malzemeId,
         kaynakPersonelId: null,
         hedefPersonelId: null,
-        konumId: null,
+        kaynakKonumId: sonKonumluHareket.hedefKonumId || sonKonumluHareket.kaynakKonumId,
+        hedefKonumId: null,
         aciklama: data.aciklama,
         status: AuditStatusEnum.Aktif,
         createdById: data.islemYapanKullanici,
@@ -1420,7 +1440,8 @@ const service = {
         malzemeId: data.malzemeId,
         kaynakPersonelId: null,
         hedefPersonelId: null,
-        konumId: null,
+        kaynakKonumId: null,
+        hedefKonumId: null,
         aciklama: data.aciklama,
         status: AuditStatusEnum.Aktif,
         createdById: data.islemYapanKullanici,
@@ -1525,6 +1546,7 @@ const service = {
           console.log(`Service - Processing malzeme ${malzemeId}`);
 
           const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
+          const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(malzemeId)
 
           if (malzemeDurum.malzemePersonelde) {
             errors.push({ malzemeId, error: 'Zimmetli malzemeler transfer edilemez' });
@@ -1550,7 +1572,9 @@ const service = {
             hareketTuru: HareketTuruEnum.DepoTransferi,
             malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
             malzemeId: malzemeId,
-            konumId: data.konumId,
+
+            kaynakKonumId: sonKonumluHareket.hedefKonumId || sonKonumluHareket.kaynakKonumId,
+            hedefKonumId: data.konumId,
             kaynakPersonelId: null,
             hedefPersonelId: null,
             aciklama: data.aciklama || `Toplu depo transferi - ${malzemeId}`,
@@ -1656,9 +1680,7 @@ const service = {
             createPayload.kaynakPersonelId = malzemeDurum.currentPersonel.id;
             createPayload.hedefPersonelId = malzemeDurum.currentPersonel.id;
           }
-          if (malzemeDurum.currentKonum) {
-            createPayload.konumId = malzemeDurum.currentKonum.id;
-          }
+
 
           console.log(`Service - Creating kondisyon guncelleme record for ${malzemeId}:`, createPayload);
 
@@ -1735,6 +1757,7 @@ const service = {
           console.log(`Service - Processing malzeme ${malzemeId}`);
 
           const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
+          const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(malzemeId)
 
           if (malzemeDurum.malzemeYok) {
             errors.push({ malzemeId, error: 'Zaten kayıp veya düşüm yapılmış' });
@@ -1750,7 +1773,8 @@ const service = {
             malzemeId: malzemeId,
             kaynakPersonelId: null,
             hedefPersonelId: null,
-            konumId: null,
+            kaynakKonumId: sonKonumluHareket.hedefKonumId || sonKonumluHareket.kaynakKonumId,
+            hedefKonumId: null,
             aciklama: data.aciklama,
             status: AuditStatusEnum.Aktif,
             createdById: data.islemYapanKullanici,
@@ -1855,7 +1879,8 @@ const service = {
             malzemeId: malzemeId,
             kaynakPersonelId: null,
             hedefPersonelId: null,
-            konumId: null,
+            kaynakKonumId: null,
+            hedefKonumId: null,
             aciklama: data.aciklama,
             status: AuditStatusEnum.Aktif,
             createdById: data.islemYapanKullanici,
@@ -1967,7 +1992,9 @@ const service = {
             hareketTuru: HareketTuruEnum.Kayit,
             malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
             malzemeId: malzemeId,
-            konumId: data.konumId,
+
+            kaynakKonumId: null,
+            hedefKonumId: data.konumId,
             kaynakPersonelId: null,
             hedefPersonelId: null,
             aciklama: data.aciklama || `Toplu kayıt - ${malzemeId}`,
@@ -2151,7 +2178,8 @@ const service = {
       if (data.malzemeKondisyonu) whereClause.malzemeKondisyonu = data.malzemeKondisyonu;
       if (data.kaynakPersonelId) whereClause.kaynakPersonelId = data.kaynakPersonelId;
       if (data.hedefPersonelId) whereClause.hedefPersonelId = data.hedefPersonelId;
-      if (data.konumId) whereClause.konumId = data.konumId;
+      if (data.hedefKonumId) whereClause.hedefKonumId = data.hedefKonumId;
+      if (data.kaynakKonumId) whereClause.kaynakKonumId = data.kaynakKonumId;
 
       return await prisma[PrismaName].findMany({
         where: whereClause,
@@ -2176,64 +2204,7 @@ const service = {
     }
   },
 
-  create: async data => {
-    try {
-      await service.checkMalzemeExists(data.malzemeId);
-
-      const yeniId = helper.generateId(VarlıkKod);
-      const createPayload = {
-        id: yeniId,
-        islemTarihi: new Date(data.islemTarihi || new Date()),
-        hareketTuru: data.hareketTuru,
-        malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
-        malzemeId: data.malzemeId,
-        status: AuditStatusEnum.Aktif,
-        createdById: data.islemYapanKullanici,
-      };
-
-      // Opsiyonel alanlar
-      if (data.kaynakPersonelId) {
-        await service.checkPersonelExists(data.kaynakPersonelId);
-        createPayload.kaynakPersonelId = data.kaynakPersonelId;
-      }
-      if (data.hedefPersonelId) {
-        await service.checkPersonelExists(data.hedefPersonelId);
-        createPayload.hedefPersonelId = data.hedefPersonelId;
-      }
-      if (data.konumId) {
-        await service.checkKonumExists(data.konumId);
-        createPayload.konumId = data.konumId;
-      }
-      if (data.aciklama !== undefined) createPayload.aciklama = data.aciklama;
-
-      return await prisma[PrismaName].create({
-        data: createPayload,
-        include: includeEntity,
-      });
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  update: async data => {
-    try {
-      await service.checkExistsById(data.id);
-
-      const updatePayload = {
-        updatedById: data.islemYapanKullanici,
-      };
-
-      if (data.aciklama !== undefined) updatePayload.aciklama = data.aciklama;
-
-      return await prisma[PrismaName].update({
-        where: { id: data.id },
-        data: updatePayload,
-        include: includeEntity,
-      });
-    } catch (error) {
-      throw error;
-    }
-  },
+  
 
   delete: async data => {
     try {
