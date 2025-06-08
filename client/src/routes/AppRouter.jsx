@@ -25,6 +25,8 @@ import { Malzeme_ListPage } from '@/app/malzeme/pages/ListPage';
 import { MalzemeHareket_ListPage } from '@/app/malzemeHareket/pages/ListPage';
 import { Tutanak_ListPage } from '@/app/tutanak/pages/ListPage';
 
+import TutanakBuilder from "../pages/other/TutanakBuilder"
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -113,6 +115,10 @@ const router = createBrowserRouter([
               {
                 path: '/tutanak',
                 element: <Tutanak_ListPage />,
+              },
+              {
+                path: '/builder',
+                element: <TutanakBuilder />,
               },
             ],
           },

@@ -777,7 +777,6 @@ const service = {
 
           results.push(yeniHareket);
         } catch (innerError) {
-          console.error(`Service - Error processing malzeme ${malzemeId}:`, innerError);
           const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
           errors.push({ malzemeId, error: errorMessage });
         }
@@ -879,7 +878,6 @@ const service = {
           const tutanak = await TutanakService.create(tutanakData);
           tutanaklar.push(tutanak);
         } catch (tutanakError) {
-          console.error('Toplu iade tutanak oluşturulurken hata:', tutanakError);
           // Tutanak hatası iade işlemlerini etkilemez, sadece log'larız
         }
       }
@@ -1161,7 +1159,6 @@ const service = {
 
           results.push(yeniHareket);
         } catch (innerError) {
-          console.error(`Service - Error processing malzeme ${malzemeId}:`, innerError);
           const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
           errors.push({ malzemeId, error: errorMessage });
         }
@@ -1274,7 +1271,6 @@ const service = {
           const tutanak = await TutanakService.create(tutanakData);
           tutanaklar.push(tutanak);
         } catch (tutanakError) {
-          console.error('Toplu devir tutanak oluşturulurken hata:', tutanakError);
           // Tutanak hatası devir işlemlerini etkilemez, sadece log'larız
         }
       }
@@ -1363,7 +1359,7 @@ const service = {
 
       const malzemeDurum = await service.checkMalzemeZimmetDurumu(data.malzemeId);
       if (malzemeDurum.currentKondisyon === data.malzemeKondisyonu) {
-        console.warn('Kondisyon güncelleme: Yeni kondisyon mevcut kondisyon ile aynı.');
+        throw new Error('Kondisyon güncelleme: Yeni kondisyon mevcut kondisyon ile aynı.');
       }
 
       const yeniId = helper.generateId(VarlıkKod);
@@ -1517,8 +1513,6 @@ const service = {
   // Bulk depo transferi - Güncellendi
   bulkDepoTransfer: async data => {
     try {
-      console.log('Service - bulkDepoTransfer called with data:', data);
-
       // Girdi olarak data.malzemeler (obje array'i) bekleniyor
       if (!data.malzemeler || !Array.isArray(data.malzemeler) || data.malzemeler.length === 0) {
         throw new Error('Depo transferi için malzeme listesi (data.malzemeler) zorunludur ve en az bir malzeme içermelidir.');
@@ -1535,27 +1529,20 @@ const service = {
         return malzeme.id;
       });
 
-      console.log('Service - Extracted malzeme IDs:', malzemeIdList);
-
       if (malzemeIdList.length === 0) {
         throw new Error("Geçerli malzeme ID'si bulunamadı.");
       }
 
       // Validasyonlar
-      console.log('Service - Starting validations...');
       await service.checkMultipleMalzemeExists(malzemeIdList);
       await service.checkKonumExists(data.konumId);
 
       const results = [];
       const errors = [];
 
-      console.log('Service - Processing malzemeler...');
-
       // Her malzeme için transfer kontrolü ve işlemi
       for (const malzemeId of malzemeIdList) {
         try {
-          console.log(`Service - Processing malzeme ${malzemeId}`);
-
           const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
           const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(malzemeId);
 
@@ -1593,17 +1580,13 @@ const service = {
             createdById: data.islemYapanKullanici,
           };
 
-          console.log(`Service - Creating depo transfer record for ${malzemeId}:`, createPayload);
-
           const result = await prisma[PrismaName].create({
             data: createPayload,
             include: includeEntity,
           });
 
-          console.log(`Service - Successfully created depo transfer for ${malzemeId}`);
           results.push(result);
         } catch (innerError) {
-          console.error(`Service - Error processing malzeme ${malzemeId}:`, innerError);
           const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
           errors.push({ malzemeId, error: errorMessage });
         }
@@ -1617,11 +1600,8 @@ const service = {
         totalCount: malzemeIdList.length,
       };
 
-      console.log('Service - Final bulk depo transfer result:', finalResult);
-
       return finalResult;
     } catch (error) {
-      console.error('Service - Bulk depo transfer general error:', error);
       throw error;
     }
   },
@@ -1629,8 +1609,6 @@ const service = {
   // Bulk kondisyon güncelleme - Güncellendi
   bulkKondisyonGuncelleme: async data => {
     try {
-      console.log('Service - bulkKondisyonGuncelleme called with data:', data);
-
       // Girdi olarak data.malzemeler (obje array'i) bekleniyor
       if (!data.malzemeler || !Array.isArray(data.malzemeler) || data.malzemeler.length === 0) {
         throw new Error('Kondisyon güncelleme için malzeme listesi (data.malzemeler) zorunludur ve en az bir malzeme içermelidir.');
@@ -1647,26 +1625,19 @@ const service = {
         return malzeme.id;
       });
 
-      console.log('Service - Extracted malzeme IDs:', malzemeIdList);
-
       if (malzemeIdList.length === 0) {
         throw new Error("Geçerli malzeme ID'si bulunamadı.");
       }
 
       // Validasyonlar
-      console.log('Service - Starting validations...');
       await service.checkMultipleMalzemeExists(malzemeIdList);
 
       const results = [];
       const errors = [];
 
-      console.log('Service - Processing malzemeler...');
-
       // Her malzeme için kondisyon güncelleme
       for (const malzemeId of malzemeIdList) {
         try {
-          console.log(`Service - Processing malzeme ${malzemeId}`);
-
           const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
 
           if (malzemeDurum.currentKondisyon === data.malzemeKondisyonu) {
@@ -1692,17 +1663,13 @@ const service = {
             createPayload.hedefPersonelId = malzemeDurum.currentPersonel.id;
           }
 
-          console.log(`Service - Creating kondisyon guncelleme record for ${malzemeId}:`, createPayload);
-
           const result = await prisma[PrismaName].create({
             data: createPayload,
             include: includeEntity,
           });
 
-          console.log(`Service - Successfully created kondisyon guncelleme for ${malzemeId}`);
           results.push(result);
         } catch (innerError) {
-          console.error(`Service - Error processing malzeme ${malzemeId}:`, innerError);
           const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
           errors.push({ malzemeId, error: errorMessage });
         }
@@ -1716,11 +1683,8 @@ const service = {
         totalCount: malzemeIdList.length,
       };
 
-      console.log('Service - Final bulk kondisyon guncelleme result:', finalResult);
-
       return finalResult;
     } catch (error) {
-      console.error('Service - Bulk kondisyon guncelleme general error:', error);
       throw error;
     }
   },
@@ -1728,8 +1692,6 @@ const service = {
   // Bulk kayıp bildirimi - Güncellendi
   bulkKayip: async data => {
     try {
-      console.log('Service - bulkKayip called with data:', data);
-
       // Girdi olarak data.malzemeler (obje array'i) bekleniyor
       if (!data.malzemeler || !Array.isArray(data.malzemeler) || data.malzemeler.length === 0) {
         throw new Error('Kayıp bildirimi için malzeme listesi (data.malzemeler) zorunludur ve en az bir malzeme içermelidir.');
@@ -1746,26 +1708,19 @@ const service = {
         return malzeme.id;
       });
 
-      console.log('Service - Extracted malzeme IDs:', malzemeIdList);
-
       if (malzemeIdList.length === 0) {
         throw new Error("Geçerli malzeme ID'si bulunamadı.");
       }
 
       // Validasyonlar
-      console.log('Service - Starting validations...');
       await service.checkMultipleMalzemeExists(malzemeIdList);
 
       const results = [];
       const errors = [];
 
-      console.log('Service - Processing malzemeler...');
-
       // Her malzeme için kayıp bildirimi
       for (const malzemeId of malzemeIdList) {
         try {
-          console.log(`Service - Processing malzeme ${malzemeId}`);
-
           const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
           const sonKonumluHareket = await service.getKonumluSonHareketByMalzemeId(malzemeId);
 
@@ -1790,17 +1745,13 @@ const service = {
             createdById: data.islemYapanKullanici,
           };
 
-          console.log(`Service - Creating kayip record for ${malzemeId}:`, createPayload);
-
           const result = await prisma[PrismaName].create({
             data: createPayload,
             include: includeEntity,
           });
 
-          console.log(`Service - Successfully created kayip for ${malzemeId}`);
           results.push(result);
         } catch (innerError) {
-          console.error(`Service - Error processing malzeme ${malzemeId}:`, innerError);
           const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
           errors.push({ malzemeId, error: errorMessage });
         }
@@ -1814,11 +1765,8 @@ const service = {
         totalCount: malzemeIdList.length,
       };
 
-      console.log('Service - Final bulk kayip result:', finalResult);
-
       return finalResult;
     } catch (error) {
-      console.error('Service - Bulk kayip general error:', error);
       throw error;
     }
   },
@@ -1826,8 +1774,6 @@ const service = {
   // Bulk düşüm işlemi - Güncellendi
   bulkDusum: async data => {
     try {
-      console.log('Service - bulkDusum called with data:', data);
-
       // Girdi olarak data.malzemeler (obje array'i) bekleniyor
       if (!data.malzemeler || !Array.isArray(data.malzemeler) || data.malzemeler.length === 0) {
         throw new Error('Düşüm için malzeme listesi (data.malzemeler) zorunludur ve en az bir malzeme içermelidir.');
@@ -1844,27 +1790,20 @@ const service = {
         return malzeme.id;
       });
 
-      console.log('Service - Extracted malzeme IDs:', malzemeIdList);
-
       if (malzemeIdList.length === 0) {
         throw new Error("Geçerli malzeme ID'si bulunamadı.");
       }
 
       // Validasyonlar
-      console.log('Service - Starting validations...');
       await service.checkMultipleMalzemeExists(malzemeIdList);
 
       const results = [];
       const errors = [];
       const updatedMalzemeler = [];
 
-      console.log('Service - Processing malzemeler...');
-
       // Her malzeme için düşüm işlemi
       for (const malzemeId of malzemeIdList) {
         try {
-          console.log(`Service - Processing malzeme ${malzemeId}`);
-
           const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
 
           if (malzemeDurum.malzemePersonelde) {
@@ -1896,18 +1835,14 @@ const service = {
             createdById: data.islemYapanKullanici,
           };
 
-          console.log(`Service - Creating dusum record for ${malzemeId}:`, createPayload);
-
           const result = await prisma[PrismaName].create({
             data: createPayload,
             include: includeEntity,
           });
 
-          console.log(`Service - Successfully created dusum for ${malzemeId}`);
           results.push(result);
           updatedMalzemeler.push(malzemeId);
         } catch (innerError) {
-          console.error(`Service - Error processing malzeme ${malzemeId}:`, innerError);
           const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
           errors.push({ malzemeId, error: errorMessage });
         }
@@ -1915,7 +1850,6 @@ const service = {
 
       // Başarılı düşüm yapılan malzemeleri pasif yap
       if (updatedMalzemeler.length > 0) {
-        console.log('Service - Setting malzemeler to pasif:', updatedMalzemeler);
         await prisma.malzeme.updateMany({
           where: { id: { in: updatedMalzemeler } },
           data: { status: AuditStatusEnum.Pasif },
@@ -1931,11 +1865,8 @@ const service = {
         updatedMalzemeCount: updatedMalzemeler.length,
       };
 
-      console.log('Service - Final bulk dusum result:', finalResult);
-
       return finalResult;
     } catch (error) {
-      console.error('Service - Bulk dusum general error:', error);
       throw error;
     }
   },
@@ -1943,8 +1874,6 @@ const service = {
   // Bulk kayıt işlemi - Yeni eklendi
   bulkKayit: async data => {
     try {
-      console.log('Service - bulkKayit called with data:', data);
-
       // Girdi olarak data.malzemeler (obje array'i) bekleniyor
       if (!data.malzemeler || !Array.isArray(data.malzemeler) || data.malzemeler.length === 0) {
         throw new Error('Kayıt için malzeme listesi (data.malzemeler) zorunludur ve en az bir malzeme içermelidir.');
@@ -1961,27 +1890,20 @@ const service = {
         return malzeme.id;
       });
 
-      console.log('Service - Extracted malzeme IDs:', malzemeIdList);
-
       if (malzemeIdList.length === 0) {
         throw new Error("Geçerli malzeme ID'si bulunamadı.");
       }
 
       // Validasyonlar
-      console.log('Service - Starting validations...');
       await service.checkMultipleMalzemeExists(malzemeIdList);
       await service.checkKonumExists(data.konumId);
 
       const results = [];
       const errors = [];
 
-      console.log('Service - Processing malzemeler...');
-
       // Her malzeme için kayıt işlemi
       for (const malzemeId of malzemeIdList) {
         try {
-          console.log(`Service - Processing malzeme ${malzemeId}`);
-
           const malzemeDurum = await service.checkMalzemeZimmetDurumu(malzemeId);
 
           // Zaten kayıtlı malzemeler için kontrol
@@ -2012,17 +1934,13 @@ const service = {
             createdById: data.islemYapanKullanici,
           };
 
-          console.log(`Service - Creating kayit record for ${malzemeId}:`, createPayload);
-
           const result = await prisma[PrismaName].create({
             data: createPayload,
             include: includeEntity,
           });
 
-          console.log(`Service - Successfully created kayit for ${malzemeId}`);
           results.push(result);
         } catch (innerError) {
-          console.error(`Service - Error processing malzeme ${malzemeId}:`, innerError);
           const errorMessage = innerError instanceof Error ? innerError.message : String(innerError);
           errors.push({ malzemeId, error: errorMessage });
         }
@@ -2036,11 +1954,8 @@ const service = {
         totalCount: malzemeIdList.length,
       };
 
-      console.log('Service - Final bulk kayit result:', finalResult);
-
       return finalResult;
     } catch (error) {
-      console.error('Service - Bulk kayit general error:', error);
       throw error;
     }
   },
