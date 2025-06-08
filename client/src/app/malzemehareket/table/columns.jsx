@@ -5,7 +5,7 @@ import { EntityHuman } from '../constants/api';
 import { HareketTuruOptions, KondisyonOptions } from '../constants/schema';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { AvatarWithName } from "@/components/table/AvatarWithName";
+import { AvatarWithName } from '@/components/table/AvatarWithName';
 
 export const MalzemeHareket_Columns = () => {
   // Hareket türü renk kodları
@@ -69,16 +69,7 @@ export const MalzemeHareket_Columns = () => {
       accessorFn: row => {
         const malzeme = row.malzeme;
         if (!malzeme) return '';
-        const searchTerms = [
-          malzeme.vidaNo,
-          malzeme.sabitKodu?.ad,
-          malzeme.marka?.ad,
-          malzeme.model?.ad,
-          malzeme.kod,
-          malzeme.bademSeriNo,
-          malzeme.etmysSeriNo,
-          malzeme.stokDemirbasNo
-        ].filter(Boolean);
+        const searchTerms = [malzeme.vidaNo, malzeme.sabitKodu?.ad, malzeme.marka?.ad, malzeme.model?.ad, malzeme.kod, malzeme.bademSeriNo, malzeme.etmysSeriNo, malzeme.stokDemirbasNo].filter(Boolean);
         return searchTerms.join(' ');
       },
       header: ({ column }) => <HeaderButton column={column} title="Malzeme" />,
@@ -141,60 +132,11 @@ export const MalzemeHareket_Columns = () => {
       },
     },
     {
-      accessorKey: 'kaynakPersonel',
-      accessorFn: row => {
-        const personel = row.kaynakPersonel;
-        if (!personel) return '';
-        const searchTerms = [
-          personel.ad,
-          personel.soyad,
-          personel.sicil
-        ].filter(Boolean);
-        return searchTerms.join(' ');
-      },
-      header: ({ column }) => <HeaderButton column={column} title="Kaynak Personel" />,
-      cell: ({ row }) => {
-        const kaynak = row.original.kaynakPersonel;
-        return kaynak ? <AvatarWithName user={kaynak} /> : <div className="text-sm text-muted-foreground">-</div>;
-      },
-      size: 150,
-      meta: {
-        exportHeader: 'Kaynak Personel',
-        filterVariant: 'text',
-      },
-    },
-    {
-      accessorKey: 'hedefPersonel',
-      accessorFn: row => {
-        const personel = row.hedefPersonel;
-        if (!personel) return '';
-        const searchTerms = [
-          personel.ad,
-          personel.soyad,
-          personel.sicil
-        ].filter(Boolean);
-        return searchTerms.join(' ');
-      },
-      header: ({ column }) => <HeaderButton column={column} title="Hedef Personel" />,
-      cell: ({ row }) => {
-        const hedef = row.original.hedefPersonel;
-        return hedef ? <AvatarWithName user={hedef} /> : <div className="text-sm text-muted-foreground">-</div>;
-      },
-      size: 150,
-      meta: {
-        exportHeader: 'Hedef Personel',
-        filterVariant: 'text',
-      },
-    },
-    {
       accessorKey: 'kaynakKonum',
       accessorFn: row => {
         const konum = row.kaynakKonum;
         if (!konum) return '';
-        const searchTerms = [
-          konum.ad,
-          konum.depo?.ad
-        ].filter(Boolean);
+        const searchTerms = [konum.ad, konum.depo?.ad].filter(Boolean);
         return searchTerms.join(' - ');
       },
       header: ({ column }) => <HeaderButton column={column} title="Kaynak Konum" />,
@@ -216,14 +158,31 @@ export const MalzemeHareket_Columns = () => {
       },
     },
     {
+      accessorKey: 'kaynakPersonel',
+      accessorFn: row => {
+        const personel = row.kaynakPersonel;
+        if (!personel) return '';
+        const searchTerms = [personel.ad, personel.soyad, personel.sicil].filter(Boolean);
+        return searchTerms.join(' ');
+      },
+      header: ({ column }) => <HeaderButton column={column} title="Kaynak Personel" />,
+      cell: ({ row }) => {
+        const kaynak = row.original.kaynakPersonel;
+        return kaynak ? <AvatarWithName user={kaynak} /> : <div className="text-sm text-muted-foreground">-</div>;
+      },
+      size: 150,
+      meta: {
+        exportHeader: 'Kaynak Personel',
+        filterVariant: 'text',
+      },
+    },
+
+    {
       accessorKey: 'hedefKonum',
       accessorFn: row => {
         const konum = row.hedefKonum;
         if (!konum) return '';
-        const searchTerms = [
-          konum.ad,
-          konum.depo?.ad
-        ].filter(Boolean);
+        const searchTerms = [konum.ad, konum.depo?.ad].filter(Boolean);
         return searchTerms.join(' - ');
       },
       header: ({ column }) => <HeaderButton column={column} title="Hedef Konum" />,
@@ -245,6 +204,26 @@ export const MalzemeHareket_Columns = () => {
       },
     },
     {
+      accessorKey: 'hedefPersonel',
+      accessorFn: row => {
+        const personel = row.hedefPersonel;
+        if (!personel) return '';
+        const searchTerms = [personel.ad, personel.soyad, personel.sicil].filter(Boolean);
+        return searchTerms.join(' ');
+      },
+      header: ({ column }) => <HeaderButton column={column} title="Hedef Personel" />,
+      cell: ({ row }) => {
+        const hedef = row.original.hedefPersonel;
+        return hedef ? <AvatarWithName user={hedef} /> : <div className="text-sm text-muted-foreground">-</div>;
+      },
+      size: 150,
+      meta: {
+        exportHeader: 'Hedef Personel',
+        filterVariant: 'text',
+      },
+    },
+
+    {
       accessorKey: 'aciklama',
       header: ({ column }) => <HeaderButton column={column} title="Açıklama" />,
       cell: ({ row }) => {
@@ -261,6 +240,5 @@ export const MalzemeHareket_Columns = () => {
         filterVariant: 'text',
       },
     },
-   
   ];
 };
