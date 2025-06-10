@@ -238,7 +238,7 @@ model Malzeme {
   kod                String?
   bademSeriNo        String?
   etmysSeriNo        String?
-  stokDemirbasNo     String?          @unique
+  stokDemirbasNo     String?
   aciklama           String?
   malzemeHareketleri MalzemeHareket[]
 
@@ -338,6 +338,7 @@ model UserSettings {
   id                String   @id @default(uuid()) @db.Uuid
   themeName         String?  @default("violet")
   isDarkMode        Boolean? @default(true)
+  fonstSize         String?  @default("16")
   dataTableSettings Json?
   language          String?  @default("tr")
   personelId        String   @unique @db.Uuid

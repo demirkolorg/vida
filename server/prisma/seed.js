@@ -169,49 +169,81 @@ async function main() {
     }
   }
 
-  // --- 4. Personeller Oluştur ---
-  console.log('\n--- Personeller oluşturuluyor ---');
-  const personelVerileri = [
-    { ad: 'Ahmet', soyad: 'YILMAZ', sicil: '100001', avatar: 'https://avatar.iran.liara.run/public/38', role: RoleEnum.Admin, buroIndex: 0 },
-    { ad: 'Ayşe', soyad: 'DEMİR', sicil: '100002', avatar: 'https://avatar.iran.liara.run/public/51', role: RoleEnum.Personel, buroIndex: 1 },
-    { ad: 'Mehmet', soyad: 'KAYA', sicil: '100003', avatar: 'https://avatar.iran.liara.run/public/26', role: RoleEnum.Personel, buroIndex: 2 },
-    { ad: 'Fatma', soyad: 'ÖZKAN', sicil: '100004', avatar: 'https://avatar.iran.liara.run/public/66', role: RoleEnum.Personel, buroIndex: 3 },
-    { ad: 'Ali', soyad: 'ÇELİK', sicil: '100005', avatar: 'https://avatar.iran.liara.run/public/11', role: RoleEnum.Personel, buroIndex: 4 },
-    { ad: 'Zeynep', soyad: 'ARSLAN', sicil: '100006', avatar: 'https://avatar.iran.liara.run/public/81', role: RoleEnum.User, buroIndex: 0 },
-    { ad: 'Mustafa', soyad: 'YILDIZ', sicil: '100007', avatar: 'https://avatar.iran.liara.run/public/44', role: RoleEnum.User, buroIndex: 1 },
-    { ad: 'Asya Hilal', soyad: 'DEMİRKOL', sicil: '100008', avatar: 'https://avatar.iran.liara.run/public/75', role: RoleEnum.User, buroIndex: 1 },
-    { ad: 'Ayşenur', soyad: 'DEMİRKOL', sicil: '100009', avatar: 'https://avatar.iran.liara.run/public/92', role: RoleEnum.User, buroIndex: 1 },
-  ];
+// --- 4. Personeller Oluştur ---
+console.log('\n--- Personeller oluşturuluyor ---');
+const personelVerileri = [
+  // ID'leri Prisma tarafından otomatik oluşturulacak eski veriler
+  { ad: 'Ahmet', soyad: 'YILMAZ', sicil: '100001', avatar: 'https://avatar.iran.liara.run/public/38', role: RoleEnum.Admin, buroIndex: 0 },
+  { ad: 'Ayşe', soyad: 'DEMİR', sicil: '100002', avatar: 'https://avatar.iran.liara.run/public/51', role: RoleEnum.Personel, buroIndex: 1 },
+  { ad: 'Mehmet', soyad: 'KAYA', sicil: '100003', avatar: 'https://avatar.iran.liara.run/public/26', role: RoleEnum.Personel, buroIndex: 2 },
+  { ad: 'Fatma', soyad: 'ÖZKAN', sicil: '100004', avatar: 'https://avatar.iran.liara.run/public/66', role: RoleEnum.Personel, buroIndex: 3 },
+  { ad: 'Ali', soyad: 'ÇELİK', sicil: '100005', avatar: 'https://avatar.iran.liara.run/public/11', role: RoleEnum.Personel, buroIndex: 4 },
+  { ad: 'Zeynep', soyad: 'ARSLAN', sicil: '100006', avatar: 'https://avatar.iran.liara.run/public/81', role: RoleEnum.User, buroIndex: 0 },
+  { ad: 'Mustafa', soyad: 'YILDIZ', sicil: '100007', avatar: 'https://avatar.iran.liara.run/public/44', role: RoleEnum.User, buroIndex: 1 },
+  { ad: 'Asya Hilal', soyad: 'DEMİRKOL', sicil: '100008', avatar: 'https://avatar.iran.liara.run/public/75', role: RoleEnum.User, buroIndex: 1 },
+  { ad: 'Ayşenur', soyad: 'DEMİRKOL', sicil: '100009', avatar: 'https://avatar.iran.liara.run/public/92', role: RoleEnum.User, buroIndex: 1 },
 
-  const personeller = [];
-  for (const personelData of personelVerileri) {
-    const existing = await prisma.personel.findUnique({ where: { sicil: personelData.sicil } });
+  // --- MANUEL ID İLE EKLENECEK YENİ VERİLER ---
+  { id: "11d10a71-beff-428e-8e46-30df68ce1501", ad: 'Hasan', soyad: 'GÜVENÇ', sicil: '393911', avatar: 'https://avatar.iran.liara.run/public/10', role: RoleEnum.Personel, buroIndex: 0 },
+  { id: "5e557149-f19e-4068-a048-490127f228b7", ad: 'Korcan', soyad: 'PİŞKEN', sicil: '324902', avatar: 'https://avatar.iran.liara.run/public/12', role: RoleEnum.Personel, buroIndex: 1 },
+  { id: "ac115368-01aa-45d1-ad9c-63071f830dbe", ad: 'Ali', soyad: 'OĞUL', sicil: '335970', avatar: 'https://avatar.iran.liara.run/public/14', role: RoleEnum.Personel, buroIndex: 2 },
+  { id: "6da310b3-b7d8-4c50-8a27-778f8fadb289", ad: 'Bünyamin', soyad: 'ŞAHAN', sicil: '379859', avatar: 'https://avatar.iran.liara.run/public/16', role: RoleEnum.Personel, buroIndex: 3 },
+  { id: "25c60d81-b29a-45e3-9a46-816c5cad1d99", ad: 'Sinan', soyad: 'AKAR', sicil: '353247', avatar: 'https://avatar.iran.liara.run/public/18', role: RoleEnum.Personel, buroIndex: 4 },
+  { id: "be65cc63-2fec-4ffb-8572-94249971f213", ad: 'Mehmet Kemal', soyad: 'YÜREKTEN', sicil: '424747', avatar: 'https://avatar.iran.liara.run/public/20', role: RoleEnum.Personel, buroIndex: 0 },
+  { id: "5e9053ab-e1a7-4fc1-8141-9b9f13bc5033", ad: 'İsmail', soyad: 'Keçili', sicil: '421363', avatar: 'https://avatar.iran.liara.run/public/22', role: RoleEnum.Personel, buroIndex: 1 },
+  { id: "1630b132-b4a8-4b7a-a36f-ab8e88f50b01", ad: 'Niyazi', soyad: 'HAVULCUK', sicil: '398602', avatar: 'https://avatar.iran.liara.run/public/24', role: RoleEnum.Personel, buroIndex: 2 },
+  { id: "36f7bcc7-ce90-412c-955f-b5812fd9f9f0", ad: 'Davut', soyad: 'EYUP', sicil: '431724', avatar: 'https://avatar.iran.liara.run/public/28', role: RoleEnum.Personel, buroIndex: 3 },
+  { id: "eff084f4-208c-4e6d-acbc-bb76f1b16a18", ad: 'İbrahim', soyad: 'EROL', sicil: '350160', avatar: 'https://avatar.iran.liara.run/public/30', role: RoleEnum.Personel, buroIndex: 4 },
+  { id: "9941970d-713e-4ee7-82a7-c2bb797fecb9", ad: 'Gürkan', soyad: 'ÜNAL', sicil: '355384', avatar: 'https://avatar.iran.liara.run/public/32', role: RoleEnum.Personel, buroIndex: 0 },
+  { id: "062ca7be-9bb4-4169-a442-d50dce9791af", ad: 'Nafiz Salih', soyad: 'ARIKANLI', sicil: '347508', avatar: 'https://avatar.iran.liara.run/public/34', role: RoleEnum.Personel, buroIndex: 1 },
+  { id: "5cc03384-a63f-4fcb-aefc-f42fbdcc6007", ad: 'Durdu Mehmet', soyad: 'GÖK', sicil: '300148', avatar: 'https://avatar.iran.liara.run/public/36', role: RoleEnum.Personel, buroIndex: 2 },
+  { id: "11975681-f190-4bf8-bdb9-16c6f5df833c", ad: 'Murat', soyad: 'ŞİŞMAN', sicil: '410010', avatar: 'https://avatar.iran.liara.run/public/40', role: RoleEnum.Personel, buroIndex: 3 },
+  { id: "18ac9faa-9211-4c41-bd6c-127a0390e52e", ad: 'Abdullah', soyad: 'DEMİRKOL', sicil: '398346', avatar: 'https://avatar.iran.liara.run/public/41', role: RoleEnum.Personel, buroIndex: 3 },
+];
 
-    if (existing) {
-      console.log(`Personel '${personelData.ad}' zaten mevcut.`);
-      personeller.push(existing);
-    } else {
-      const hashedPassword = await bcrypt.hash('123456', 12); // Varsayılan şifre
+const personeller = [];
+// adminUser'ı bu döngü dışında bulmuştuk, onu da `personeller` dizisine ekleyelim ki sonraki adımlarda kullanılabilsin.
+if (adminUser) {
+    personeller.push(adminUser);
+}
 
-      const personel = await prisma.personel.create({
-        data: {
-          ad: personelData.ad,
-          soyad: personelData.soyad,
-          sicil: personelData.sicil,
-          avatar: personelData.avatar,
-          parola: hashedPassword,
-          role: personelData.role,
-          buroId: burolar[personelData.buroIndex].id,
-          isUser: personelData.role === RoleEnum.User || personelData.role === RoleEnum.Admin,
-          isAmir: personelData.role === RoleEnum.Admin,
-          status: AuditStatusEnum.Aktif,
-          createdById: adminUserId,
-        },
-      });
-      console.log(`Personel oluşturuldu: ${personel.ad} (${personel.sicil})`);
-      personeller.push(personel);
+for (const personelData of personelVerileri) {
+  // Kaydın sicil numarasına göre zaten var olup olmadığını kontrol et
+  const existing = await prisma.personel.findUnique({ where: { sicil: personelData.sicil } });
+
+  if (existing) {
+    console.log(`Personel '${existing.ad} ${existing.soyad}' (Sicil: ${personelData.sicil}) zaten mevcut, döngüdeki listeye ekleniyor.`);
+    // Var olan personeli de sonraki adımlarda kullanmak üzere listeye ekleyelim.
+    if (!personeller.find(p => p.sicil === existing.sicil)) {
+        personeller.push(existing);
     }
+  } else {
+    // Parolayı personelin sicil numarası olarak ayarla ve hash'le
+    const hashedPassword = await bcrypt.hash(personelData.sicil, 12);
+
+    // Veri objesini oluştur. Eğer manuel ID varsa ekle.
+    const dataToCreate = {
+        // Eğer `personelData.id` varsa, onu `id` alanına ata
+        ...(personelData.id && { id: personelData.id }),
+        ad: personelData.ad,
+        soyad: personelData.soyad,
+        sicil: personelData.sicil,
+        avatar: personelData.avatar,
+        parola: hashedPassword,
+        role: personelData.role,
+        buroId: burolar[personelData.buroIndex % burolar.length].id,
+        isUser: personelData.role === RoleEnum.User || personelData.role === RoleEnum.Admin,
+        isAmir: personelData.role === RoleEnum.Admin,
+        status: AuditStatusEnum.Aktif,
+        createdById: adminUserId,
+      };
+
+    const personel = await prisma.personel.create({ data: dataToCreate });
+
+    console.log(`Personel oluşturuldu: ${personel.ad} ${personel.soyad} (Sicil: ${personel.sicil})`);
+    personeller.push(personel);
   }
+}
 
   // --- 5. Sabit Kodlar Oluştur ---
   console.log('\n--- Sabit kodlar oluşturuluyor ---');

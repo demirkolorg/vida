@@ -52,6 +52,7 @@ const THEMES = [
 
 const DEFAULT_THEME = THEMES[0].value;
 const DEFAULT_DARK_MODE = false;
+const DEFAULT_FONT_SIZE = 16;
 
 const applyThemeToDOM = (themeName, isDarkMode) => {
   if (typeof window === 'undefined') return;
@@ -73,6 +74,9 @@ const applyThemeToDOM = (themeName, isDarkMode) => {
   } else {
     root.classList.remove('dark');
   }
+   // Font size application
+  root.style.setProperty('--base-font-size', `${fontSize}px`);
+  root.style.setProperty('--font-scale-factor', fontSize / DEFAULT_FONT_SIZE);
 };
 
 export const useThemeStore = create(

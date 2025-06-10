@@ -13,6 +13,7 @@ import { VidaLogo } from './VidaLogo';
 import { ThemeSelector } from '../theme/ThemeSelector';
 import { NotificationMenu } from '../notification/NotificationMenu';
 import { useAuthStore } from '@/stores/authStore';
+import { FontSizeControls } from '../theme/FontSizeControls';
 
 export const VidaHeader = () => {
   const user = useAuthStore(state => state.user);
@@ -28,6 +29,7 @@ export const VidaHeader = () => {
       <div className="ml-auto flex items-center gap-2 md:gap-2 lg:gap-2">
         <ThemeSelector />
         <NotificationMenu />
+      <FontSizeControls />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -8,7 +8,7 @@ import { Malzeme_ContextMenu as EntityContextMenu } from './contextMenu';
 import { Malzeme_Store as useEntityStore } from '../constants/store';
 import { Malzeme_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
 
-const columnVisibilityData = { status: false, kayitTarihi: false };
+const columnVisibilityData = { status: false, kayitTarihi: false,kod:false,vidaNo:false };
 const sorting = [{ id: 'createdAt', desc: true }];
 
 export function Malzeme_DataTable({ onRowClick }) {
