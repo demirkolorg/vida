@@ -30,7 +30,7 @@ export const VidaHeader = () => {
         <VidaLogo />
         <Badge variant="outline"  className="relative rounded-md h-6 ml-2">
           <Server />
-          {dbName}
+          {dbName}{" db"}
         </Badge>
       </div>
       <div className=" grow flex items-center justify-center">
