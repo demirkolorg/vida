@@ -76,7 +76,8 @@ export const useAuthStore = create((set, get) => ({
         user: { // Frontend'de tutarlı bir user objesi oluşturalım
           id: userData.id,
           sicil: userData.sicil,
-          name: userData.ad, // Backend 'ad' gönderiyor, frontend 'name' kullanabilir
+          ad: userData.ad, 
+          soyad: userData.soyad, 
           role: userData.role,
           avatar: userData.avatar,
         },

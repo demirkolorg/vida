@@ -1,4 +1,11 @@
+#! live
 # DATABASE_URL="postgresql://postgres:postgres@localhost:5432/vida?schema=public"
+
+#? test
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/vida-test?schema=public"
+
+#* backup
+# DATABASE_URL="postgresql://postgres:postgres@localhost:5432/vida-backup?schema=public"
 
 DB_USER=postgres
 DB_HOST=localhost

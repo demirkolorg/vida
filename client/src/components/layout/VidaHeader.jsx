@@ -1,23 +1,37 @@
 // src/components/SiteLayout.tsx
 import { Link, NavLink } from 'react-router-dom'; // react-router-dom'dan importlar
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Menu, Package2 } from 'lucide-react';
+import { Menu, Package2, Server } from 'lucide-react';
 import { LogoutDropdownMenuItem } from '@/components/auth/LogoutDropdownMenuItem';
 import { VidaNavMenu } from './VidaNavMenu';
 import { VidaLogo } from './VidaLogo';
 import { ThemeSelector } from '../theme/ThemeSelector';
 import { NotificationMenu } from '../notification/NotificationMenu';
 import { useAuthStore } from '@/stores/authStore';
+import { currentDb } from '../../api/database';
+import { useEffect, useState } from 'react';
 
 export const VidaHeader = () => {
   const user = useAuthStore(state => state.user);
+  const [dbName, setDbbName] = useState('');
+
+  useEffect(() => {
+    const dbname = currentDb();
+    setDbbName(dbname);
+  }, []);
+
   return (
     <header className="sticky  top-0 z-50 flex  items-center h-16  gap-4 border-b bg-primary/5 px-16 backdrop-blur-md">
-      <div className=" flex-none">
+      <div className=" flex">
         <VidaLogo />
+        <Badge variant="outline"  className="relative rounded-md h-6 ml-2">
+          <Server />
+          {dbName}
+        </Badge>
       </div>
       <div className=" grow flex items-center justify-center">
         <VidaNavMenu />
@@ -31,14 +45,17 @@ export const VidaHeader = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full ">
               <Avatar className="h-10 w-10 border-2 bg-primary/50 hover:bg-primary/70">
-                <AvatarImage src={user.avatar} alt="@shadcn" />
-                <AvatarFallback>CN</AvatarFallback>
+                <AvatarImage src={user.avatar} alt={user.ad} />
+                <AvatarFallback>{user.ad}</AvatarFallback>
               </Avatar>
               <span className="sr-only">Kullanıcı menüsünü aç</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Hesabım</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              {user.ad} {user.soyad}
+              <span className="text-xs text-muted-foreground font-medium ml-2">{user.sicil}</span>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Ayarlar</DropdownMenuItem>
             <DropdownMenuItem>Destek</DropdownMenuItem>

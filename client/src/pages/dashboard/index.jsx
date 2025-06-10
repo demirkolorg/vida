@@ -261,7 +261,7 @@ export function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center w-full h-64">
         <div className="text-center space-y-2">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="text-sm text-muted-foreground">Dashboard yükleniyor...</p>

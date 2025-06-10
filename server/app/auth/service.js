@@ -58,6 +58,7 @@ const service = {
           id: user.id,
           sicil: user.sicil,
           ad: user.ad,
+          soyad: user.soyad,
           role: user.role,
           avatar: user.avatar,
         },
@@ -68,11 +69,11 @@ const service = {
   },
   register: async data => {
     try {
-
       const hashedPassword = await bcrypt.hash(data.parola, 12);
       const result = await prisma[PrismaName].create({
         data: {
           ad: data.ad,
+          soyad: data.soyad,
           sicil: data.sicil,
           parola: hashedPassword,
           role: data.role,
