@@ -1,8 +1,6 @@
 // src/components/SiteLayout.tsx
-import { Link, NavLink, Outlet } from 'react-router-dom'; // react-router-dom'dan importlar
-import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
+import { Link, NavLink } from 'react-router-dom'; // react-router-dom'dan importlar
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -13,7 +11,6 @@ import { VidaLogo } from './VidaLogo';
 import { ThemeSelector } from '../theme/ThemeSelector';
 import { NotificationMenu } from '../notification/NotificationMenu';
 import { useAuthStore } from '@/stores/authStore';
-import { FontSizeControls } from '../theme/FontSizeControls';
 
 export const VidaHeader = () => {
   const user = useAuthStore(state => state.user);
@@ -29,7 +26,6 @@ export const VidaHeader = () => {
       <div className="ml-auto flex items-center gap-2 md:gap-2 lg:gap-2">
         <ThemeSelector />
         <NotificationMenu />
-      <FontSizeControls />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

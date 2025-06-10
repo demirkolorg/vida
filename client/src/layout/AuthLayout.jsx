@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'; // react-router-dom'dan importlar
 import { VidaHeader } from '@/components/layout/VidaHeader'; // VidaHeader bileşeni
 import { useLayout } from '@/contexts/LayoutContext';
 import { cn } from '@/lib/utils';
+import { FontSizeControls } from '../components/theme/FontSizeControls';
 
 export function AuthLayout() {
   const { disablePadding } = useLayout();

@@ -32,7 +32,7 @@ const service = {
       const whereClause = {};
       if (data.theme) whereClause.theme = data.theme;
       if (data.isDarkMode) whereClause.isDarkMode = data.isDarkMode;
-      if (data.fonstSize) whereClause.fonstSize = data.fonstSize; 
+      if (data.fontSize) whereClause.fontSize = data.fontSize; 
       if (data.dataTableSettings) whereClause.dataTableSettings = data.dataTableSettings; 
 
 
@@ -95,7 +95,7 @@ const service = {
       const validUpdateData = {};
       if (data.themeName !== undefined) validUpdateData.themeName = data.themeName;
       if (data.isDarkMode !== undefined) validUpdateData.isDarkMode = data.isDarkMode;
-      if (data.fonstSize !== undefined) validUpdateData.fonstSize = data.fonstSize;
+      if (data.fontSize !== undefined) validUpdateData.fontSize = data.fontSize;
       if (data.dataTableSettings !== undefined) validUpdateData.dataTableSettings = data.dataTableSettings;
 
       if (Object.keys(validUpdateData).length === 0) {
@@ -135,7 +135,7 @@ const service = {
       const createPayload = {
         theme: data.theme || 'violet',
         isDarkMode: data.isDarkMode || true,
-        fonstSize: data.fonstSize || "16",
+        fontSize: data.fontSize || "16",
         personelId: data.personelId,
         dataTableSettings:data.dataTableSettings
       };
@@ -152,7 +152,7 @@ const service = {
       const updatePayload = {};
       if (data.theme !== undefined) updatePayload.theme = data.theme;
       if (data.isDarkMode !== undefined) updatePayload.isDarkMode = data.isDarkMode;
-      if (data.fonstSize !== undefined) updatePayload.fonstSize = data.fonstSize;
+      if (data.fontSize !== undefined) updatePayload.fontSize = data.fontSize;
       if (data.dataTableSettings !== undefined) updatePayload.dataTableSettings = data.dataTableSettings;
 
       return await prisma[PrismaName].update({ where: { personelId: data.personelId }, data: updatePayload });
