@@ -115,9 +115,7 @@ const service = {
       await MarkaService.checkExistsById(data.markaId);
       await service.checkModelMarkaUnique(data.ad, data.markaId);
 
-      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
-        id: yeniId,
         ad: data.ad,
         markaId: data.markaId,
         status: AuditStatusEnum.Aktif,

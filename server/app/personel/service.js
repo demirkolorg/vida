@@ -108,10 +108,8 @@ const service = {
     try {
       if (data.buroId) await BuroService.checkExistsById(data.buroId);
 
-      const yeniId = helper.generateId(VarlıkKod);
 
       const createPayload = {
-        id: yeniId,
         ad: data.ad,
         sicil: data.sicil,
         role: data.role || 'Personel',

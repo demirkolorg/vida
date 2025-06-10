@@ -40,13 +40,12 @@ async function main() {
   } else {
     console.log(`Sicil numarası ${adminSicil} olan Süper Admin bulunamadı, yeni kayıt oluşturuluyor...`);
 
-    const yeniAdminId = helper.generateId(ENTITY_ID_PREFIXES.PERSONEL);
     const adminSifrePlainText = '999999';
     const saltRounds = 12;
     const hashlenmisSifre = await bcrypt.hash(adminSifrePlainText, saltRounds);
 
     const superAdminData = {
-      id: yeniAdminId,
+      // id: yeniAdminId,
       ad: 'Süper',
       soyad: 'ADMIN',
       sicil: adminSicil,
@@ -56,7 +55,7 @@ async function main() {
       isAmir: false,
       status: AuditStatusEnum.Aktif,
       avatar: 'https://lh3.googleusercontent.com/a/ACg8ocLInv6-XK4lnZwqLTQE-zKVLb7D4pqmpKlzIAExloW1BAqPdZXFQw=s288-c-no',
-      createdById: yeniAdminId,
+      // createdById: yeniAdminId,
     };
 
     adminUser = await prisma.personel.create({
@@ -85,7 +84,6 @@ async function main() {
     } else {
       const birim = await prisma.birim.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.BIRIM),
           ad: birimData.ad,
           aciklama: birimData.aciklama,
           status: AuditStatusEnum.Aktif,
@@ -122,7 +120,6 @@ async function main() {
     } else {
       const sube = await prisma.sube.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.SUBE),
           ad: subeData.ad,
           aciklama: subeData.aciklama,
           birimId: birimler[subeData.birimIndex].id,
@@ -160,7 +157,6 @@ async function main() {
     } else {
       const buro = await prisma.buro.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.BURO),
           ad: buroData.ad,
           aciklama: buroData.aciklama,
           subeId: subeler[buroData.subeIndex].id,
@@ -199,7 +195,6 @@ async function main() {
 
       const personel = await prisma.personel.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.PERSONEL),
           ad: personelData.ad,
           soyad: personelData.soyad,
           sicil: personelData.sicil,
@@ -240,7 +235,6 @@ async function main() {
     } else {
       const sabitKod = await prisma.sabitKodu.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.SABITKODU),
           ad: kodData.ad,
           aciklama: kodData.aciklama,
           status: AuditStatusEnum.Aktif,
@@ -275,7 +269,6 @@ async function main() {
     } else {
       const marka = await prisma.marka.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.MARKA),
           ad: markaData.ad,
           aciklama: markaData.aciklama,
           status: AuditStatusEnum.Aktif,
@@ -333,7 +326,6 @@ async function main() {
     } else {
       const model = await prisma.model.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.MODEL),
           ad: modelData.ad,
           aciklama: modelData.aciklama,
           markaId: markalar[modelData.markaIndex].id,
@@ -365,7 +357,6 @@ async function main() {
     } else {
       const depo = await prisma.depo.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.DEPO),
           ad: depoData.ad,
           aciklama: depoData.aciklama,
           status: AuditStatusEnum.Aktif,
@@ -411,7 +402,6 @@ async function main() {
     } else {
       const konum = await prisma.konum.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.KONUM),
           ad: konumData.ad,
           aciklama: konumData.aciklama,
           depoId: depolar[konumData.depoIndex].id,
@@ -597,7 +587,6 @@ async function main() {
     } else {
       const malzeme = await prisma.malzeme.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.MALZEME),
           vidaNo: malzemeData.vidaNo,
           kayitTarihi: new Date(), // Kayıt tarihi o anki zaman
           malzemeTipi: malzemeData.malzemeTipi,
@@ -646,7 +635,6 @@ async function main() {
 
       await prisma.malzemeHareket.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
           islemTarihi: kayitIslemTarihi,
           hareketTuru: HareketTuruEnum.Kayit,
           malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
@@ -669,7 +657,6 @@ async function main() {
 
         await prisma.malzemeHareket.create({
           data: {
-            id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
             islemTarihi: zimmetIslemTarihi,
             hareketTuru: HareketTuruEnum.Zimmet,
             malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
@@ -694,7 +681,6 @@ async function main() {
 
         await prisma.malzemeHareket.create({
           data: {
-            id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
             islemTarihi: iadeIslemTarihi,
             hareketTuru: HareketTuruEnum.Iade,
             malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam, // Kondisyon iade sırasında belirlenir
@@ -729,7 +715,6 @@ async function main() {
         } else {
           await prisma.malzemeHareket.create({
             data: {
-              id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
               islemTarihi: devirIslemTarihi,
               hareketTuru: HareketTuruEnum.Devir,
               malzemeKondisyonu: MalzemeKondisyonuEnum.Saglam,
@@ -756,7 +741,6 @@ async function main() {
 
         await prisma.malzemeHareket.create({
           data: {
-            id: helper.generateId(ENTITY_ID_PREFIXES.MALZEMEHAREKET),
             islemTarihi: kondisyonIslemTarihi,
             hareketTuru: HareketTuruEnum.KondisyonGuncelleme,
             malzemeKondisyonu: MalzemeKondisyonuEnum.Arizali,
@@ -786,7 +770,6 @@ async function main() {
       if (!existingSettings) {
         await prisma.userSettings.create({
           data: {
-            id: helper.generateId(ENTITY_ID_PREFIXES.USERSETTINGS),
             personelId: personel.id,
             themeName: 'violet',
             isDarkMode: true,
@@ -853,7 +836,6 @@ async function main() {
     if (!existing) {
       await prisma.savedFilter.create({
         data: {
-          id: helper.generateId(ENTITY_ID_PREFIXES.SAVEDFILTER),
           filterName: filterData.filterName,
           entityType: filterData.entityType,
           filterState: filterData.filterState,
@@ -914,7 +896,6 @@ async function main() {
   for (const logData of logVerileri) {
     await prisma.auditLog.create({
       data: {
-        id: helper.generateId(ENTITY_ID_PREFIXES.AUDITLOG),
         level: logData.level,
         rota: logData.rota,
         hizmet: logData.hizmet,

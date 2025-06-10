@@ -243,9 +243,7 @@ const service = {
       if (data.stokDemirbasNo) await service.checkStokDemirbasNoExists(data.stokDemirbasNo);
       if (data.bademSeriNo) await service.checkBademSeriNoExists(data.bademSeriNo);
 
-      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
-        id: yeniId,
         malzemeTipi: data.malzemeTipi,
         birimId: data.birimId,
         subeId: data.subeId,

@@ -117,9 +117,7 @@ const service = {
     try {
       await DepoService.checkExistsById(data.depoId);
 
-      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
-        id: yeniId,
         ad: data.ad,
         depoId: data.depoId,
         status: AuditStatusEnum.Aktif,

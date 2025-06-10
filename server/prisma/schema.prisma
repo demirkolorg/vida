@@ -84,7 +84,7 @@ enum GorevEnum {
 // ----- Models -----
 
 model Birim {
-  id         String    @id // String ID, uygulama tarafından atanacak
+  id         String    @id @default(uuid()) @db.Uuid // String ID, uygulama tarafından atanacak
   ad         String    @unique
   aciklama   String?
   subeler    Sube[]
@@ -92,67 +92,67 @@ model Birim {
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String // Personel ID'si (String)
+  createdById String          @db.Uuid // Personel ID'si (String)
   createdBy   Personel        @relation("BirimCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String? // Personel ID'si (String)
+  updatedById String?         @db.Uuid // Personel ID'si (String)
   updatedBy   Personel?       @relation("BirimUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Sube {
-  id         String    @id
+  id         String    @id @default(uuid()) @db.Uuid
   ad         String
   aciklama   String?
-  birimId    String
+  birimId    String    @db.Uuid
   birim      Birim     @relation(fields: [birimId], references: [id])
   burolar    Buro[]
   malzemeler Malzeme[] @relation("IsKarsiligiSubeMalzemeleri")
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String
+  createdById String          @db.Uuid
   createdBy   Personel        @relation("SubeCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String?
+  updatedById String?         @db.Uuid
   updatedBy   Personel?       @relation("SubeUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Buro {
-  id          String     @id
+  id          String     @id @default(uuid()) @db.Uuid
   ad          String
   aciklama    String?
-  subeId      String
+  subeId      String     @db.Uuid
   sube        Sube       @relation(fields: [subeId], references: [id])
-  amirId      String?
+  amirId      String?    @db.Uuid
   amir        Personel?  @relation("BuroAmiri", fields: [amirId], references: [id])
   personeller Personel[] @relation("BuroPersonelleri")
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String
+  createdById String          @db.Uuid
   createdBy   Personel        @relation("BuroCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String?
+  updatedById String?         @db.Uuid
   updatedBy   Personel?       @relation("BuroUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model SabitKodu {
-  id         String    @id
+  id         String    @id @default(uuid()) @db.Uuid
   ad         String    @unique
   aciklama   String?
   malzemeler Malzeme[]
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String
+  createdById String          @db.Uuid
   createdBy   Personel        @relation("SabitKoduCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String?
+  updatedById String?         @db.Uuid
   updatedBy   Personel?       @relation("SabitKoduUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Marka {
-  id         String    @id
+  id         String    @id @default(uuid()) @db.Uuid
   ad         String    @unique
   aciklama   String?
   modeller   Model[]
@@ -160,52 +160,52 @@ model Marka {
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String
+  createdById String          @db.Uuid
   createdBy   Personel        @relation("MarkaCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String?
+  updatedById String?         @db.Uuid
   updatedBy   Personel?       @relation("MarkaUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Model {
-  id         String    @id
+  id         String    @id @default(uuid()) @db.Uuid
   ad         String
   aciklama   String?
-  markaId    String
+  markaId    String    @db.Uuid
   marka      Marka     @relation(fields: [markaId], references: [id])
   malzemeler Malzeme[]
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String
+  createdById String          @db.Uuid
   createdBy   Personel        @relation("ModelCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String?
+  updatedById String?         @db.Uuid
   updatedBy   Personel?       @relation("ModelUpdatedBy", fields: [updatedById], references: [id])
 
   @@unique([ad, markaId])
 }
 
 model Depo {
-  id       String  @id
+  id       String  @id @default(uuid()) @db.Uuid
   ad       String  @unique
   aciklama String?
   konumlar Konum[]
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String
+  createdById String          @db.Uuid
   createdBy   Personel        @relation("DepoCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String?
+  updatedById String?         @db.Uuid
   updatedBy   Personel?       @relation("DepoUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Konum {
-  id       String  @id
+  id       String  @id @default(uuid()) @db.Uuid
   ad       String
   aciklama String?
-  depoId   String
+  depoId   String  @db.Uuid
   depo     Depo    @relation(fields: [depoId], references: [id])
 
   malzemeHareketleriKaynak MalzemeHareket[] @relation("HareketKaynakKonum")
@@ -213,27 +213,27 @@ model Konum {
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String
+  createdById String          @db.Uuid
   createdBy   Personel        @relation("KonumCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String?
+  updatedById String?         @db.Uuid
   updatedBy   Personel?       @relation("KonumUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Malzeme {
-  id                 String           @id
+  id                 String           @id @default(uuid()) @db.Uuid
   vidaNo             String?          @unique
   kayitTarihi        DateTime?        @db.Date
   malzemeTipi        MalzemeTipiEnum
-  birimId            String
+  birimId            String           @db.Uuid
   birim              Birim            @relation("KuvveBirimMalzemeleri", fields: [birimId], references: [id])
-  subeId             String
+  subeId             String           @db.Uuid
   sube               Sube             @relation("IsKarsiligiSubeMalzemeleri", fields: [subeId], references: [id])
-  sabitKoduId        String
+  sabitKoduId        String           @db.Uuid
   sabitKodu          SabitKodu        @relation(fields: [sabitKoduId], references: [id])
-  markaId            String
+  markaId            String           @db.Uuid
   marka              Marka            @relation(fields: [markaId], references: [id])
-  modelId            String
+  modelId            String           @db.Uuid
   model              Model            @relation(fields: [modelId], references: [id])
   kod                String?
   bademSeriNo        String?
@@ -244,48 +244,48 @@ model Malzeme {
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String
+  createdById String          @db.Uuid
   createdBy   Personel        @relation("MalzemeCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String?
+  updatedById String?         @db.Uuid
   updatedBy   Personel?       @relation("MalzemeUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model MalzemeHareket {
-  id                String                @id
+  id                String                @id @default(uuid()) @db.Uuid
   islemTarihi       DateTime              @default(now())
   hareketTuru       HareketTuruEnum
   malzemeKondisyonu MalzemeKondisyonuEnum
-  malzemeId         String
+  malzemeId         String                @db.Uuid
   malzeme           Malzeme               @relation(fields: [malzemeId], references: [id])
 
-  kaynakPersonelId String?
+  kaynakPersonelId String?   @db.Uuid
   kaynakPersonel   Personel? @relation("HareketKaynakPersonel", fields: [kaynakPersonelId], references: [id])
-  hedefPersonelId  String?
+  hedefPersonelId  String?   @db.Uuid
   hedefPersonel    Personel? @relation("HareketHedefPersonel", fields: [hedefPersonelId], references: [id])
 
-  kaynakKonumId String?
+  kaynakKonumId String? @db.Uuid
   kaynakKonum   Konum?  @relation("HareketKaynakKonum", fields: [kaynakKonumId], references: [id])
-  hedefKonumId  String?
+  hedefKonumId  String? @db.Uuid
   hedefKonum    Konum?  @relation("HareketHedefKonum", fields: [hedefKonumId], references: [id])
 
   aciklama String?
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String
+  createdById String          @db.Uuid
   createdBy   Personel        @relation("MalzemeHareketCreatedBy", fields: [createdById], references: [id])
 }
 
 model Personel {
-  id         String    @id
+  id         String    @id @default(uuid()) @db.Uuid
   ad         String
   soyad      String
   sicil      String    @unique
   parola     String
   role       RoleEnum  @default(Personel)
   avatar     String?
-  buroId     String?
+  buroId     String?   @db.Uuid
   buro       Buro?     @relation("BuroPersonelleri", fields: [buroId], references: [id])
   isUser     Boolean   @default(false)
   isAmir     Boolean   @default(false)
@@ -327,25 +327,25 @@ model Personel {
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String?
+  createdById String?         @db.Uuid
   createdBy   Personel?       @relation("PersonelCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String?
+  updatedById String?         @db.Uuid
   updatedBy   Personel?       @relation("PersonelUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model UserSettings {
-  id                String   @id
+  id                String   @id @default(uuid()) @db.Uuid
   themeName         String?  @default("violet")
   isDarkMode        Boolean? @default(true)
   dataTableSettings Json?
   language          String?  @default("tr")
-  personelId        String   @unique
+  personelId        String   @unique @db.Uuid
   personel          Personel @relation("PersonelSettings", fields: [personelId], references: [id], onDelete: Cascade)
 }
 
 model SavedFilter {
-  id          String  @id
+  id          String  @id @default(uuid()) @db.Uuid
   filterName  String // "Aktif Birimler", "İstanbul Şubeleri Malzemeleri"
   entityType  String // "birim", "malzeme", "personel", "sube" vb. (istemcideki tableId ile eşleşebilir)
   filterState Json // TanStack Table'dan { columnFilters: [], globalFilter: "", sorting: [], pagination: {}, columnVisibility: {} }
@@ -353,26 +353,26 @@ model SavedFilter {
 
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String // Personel ID'si (String)
+  createdById String          @db.Uuid // Personel ID'si (String)
   createdBy   Personel        @relation("FilterCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String? // Personel ID'si (String)
+  updatedById String?         @db.Uuid // Personel ID'si (String)
   updatedBy   Personel?       @relation("FilterUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model AuditLog {
-  id          String    @id
+  id          String    @id @default(uuid()) @db.Uuid
   level       String
   rota        String
   hizmet      String
   log         Json
   createdAt   DateTime  @default(now())
-  createdById String?
+  createdById String?   @db.Uuid
   createdBy   Personel? @relation("AuditLogCreatedBy", fields: [createdById], references: [id])
 }
 
 model Tutanak {
-  id          String          @id // String ID, uygulama tarafından atanacak
+  id          String          @id @default(uuid()) @db.Uuid // String ID, uygulama tarafından atanacak
   hareketTuru HareketTuruEnum // Zimmet, Iade, Devir vs.
 
   // Malzeme bilgileri
@@ -395,10 +395,10 @@ model Tutanak {
   // Audit alanları
   status      AuditStatusEnum @default(Aktif)
   createdAt   DateTime        @default(now())
-  createdById String // Tutanağı oluşturan kullanıcı
+  createdById String          @db.Uuid // Tutanağı oluşturan kullanıcı
   createdBy   Personel        @relation("TutanakCreatedBy", fields: [createdById], references: [id])
   updatedAt   DateTime        @updatedAt
-  updatedById String? // Tutanağı güncelleyen kullanıcı
+  updatedById String?         @db.Uuid // Tutanağı güncelleyen kullanıcı
   updatedBy   Personel?       @relation("TutanakUpdatedBy", fields: [updatedById], references: [id])
 
   // İndeksler için

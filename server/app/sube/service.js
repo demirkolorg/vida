@@ -125,10 +125,7 @@ const service = {
     try {
       await BirimService.checkExistsById(data.birimId);
 
-      const yeniId = helper.generateId(VarlıkKod);
-
       const createPayload = {
-        id: yeniId,
         ad: data.ad,
         birimId: data.birimId,
         status: AuditStatusEnum.Aktif,

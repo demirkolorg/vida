@@ -283,9 +283,7 @@ const service = {
       // Transaction ile zimmet + tutanak işlemini atomik yap
       const result = await prisma.$transaction(async tx => {
         // 1. Zimmet hareketini oluştur
-        const yeniId = helper.generateId(VarlıkKod);
         const createPayload = {
-          id: yeniId,
           islemTarihi: new Date(data.islemTarihi || new Date()),
           hareketTuru: 'Zimmet',
           malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
@@ -441,10 +439,8 @@ const service = {
             }
 
             // Zimmet hareketini oluştur
-            const yeniId = helper.generateId(VarlıkKod);
             const yeniHareket = await tx[PrismaName].create({
               data: {
-                id: yeniId,
                 islemTarihi: new Date(data.islemTarihi || new Date()),
                 hareketTuru: HareketTuruEnum.Zimmet,
                 malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
@@ -589,9 +585,7 @@ const service = {
       // Transaction ile iade + tutanak işlemini atomik yap
       const result = await prisma.$transaction(async tx => {
         // 1. İade hareketini oluştur
-        const yeniId = helper.generateId(VarlıkKod);
         const createPayload = {
-          id: yeniId,
           islemTarihi: new Date(data.islemTarihi || new Date()),
           hareketTuru: 'Iade',
           malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
@@ -754,9 +748,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
-            id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
             hareketTuru: HareketTuruEnum.Iade,
             malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
@@ -932,9 +924,7 @@ const service = {
       // Transaction ile devir + tutanak işlemini atomik yap
       const result = await prisma.$transaction(async tx => {
         // 1. Devir hareketini oluştur
-        const yeniId = helper.generateId(VarlıkKod);
         const createPayload = {
-          id: yeniId,
           islemTarihi: new Date(data.islemTarihi || new Date()),
           hareketTuru: 'Devir',
           malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
@@ -1136,9 +1126,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
-            id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
             hareketTuru: HareketTuruEnum.Devir,
             malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
@@ -1323,9 +1311,7 @@ const service = {
         throw new Error('Kayıp veya düşüm yapılmış malzemeler transfer edilemez.');
       }
 
-      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
-        id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
         hareketTuru: 'DepoTransferi',
         malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
@@ -1362,9 +1348,7 @@ const service = {
         throw new Error('Kondisyon güncelleme: Yeni kondisyon mevcut kondisyon ile aynı.');
       }
 
-      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
-        id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
         hareketTuru: 'KondisyonGuncelleme',
         malzemeKondisyonu: data.malzemeKondisyonu,
@@ -1395,9 +1379,7 @@ const service = {
         throw new Error('Zaten kayıp veya düşüm yapılmış malzemeler için tekrar kayıp bildirimi yapılamaz.');
       }
 
-      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
-        id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
         hareketTuru: 'Kayip',
         malzemeKondisyonu: data.malzemeKondisyonu || 'Kayip',
@@ -1438,9 +1420,7 @@ const service = {
         throw new Error('Zaten kayıp veya düşüm yapılmış malzemeler için tekrar düşüm yapılamaz.');
       }
 
-      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
-        id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
         hareketTuru: 'Dusum',
         malzemeKondisyonu: data.malzemeKondisyonu || 'Hurda',
@@ -1485,9 +1465,7 @@ const service = {
         throw new Error('Bu malzemenin zaten hareket geçmişi var. Kayıp olmayan malzemeler haricinde "Kayıt" işlemi yapılamaz.');
       }
 
-      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
-        id: yeniId,
         islemTarihi: new Date(data.islemTarihi || new Date()),
         hareketTuru: 'Kayit',
         malzemeKondisyonu: data.malzemeKondisyonu || 'Saglam',
@@ -1563,9 +1541,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
-            id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
             hareketTuru: HareketTuruEnum.DepoTransferi,
             malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,
@@ -1645,9 +1621,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
-            id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
             hareketTuru: HareketTuruEnum.KondisyonGuncelleme,
             malzemeKondisyonu: data.malzemeKondisyonu,
@@ -1729,9 +1703,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
-            id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
             hareketTuru: HareketTuruEnum.Kayip,
             malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Kayip,
@@ -1819,9 +1791,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
-            id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
             hareketTuru: HareketTuruEnum.Dusum,
             malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Hurda,
@@ -1917,9 +1887,7 @@ const service = {
             continue;
           }
 
-          const yeniId = helper.generateId(VarlıkKod);
           const createPayload = {
-            id: yeniId,
             islemTarihi: new Date(data.islemTarihi || new Date()),
             hareketTuru: HareketTuruEnum.Kayit,
             malzemeKondisyonu: data.malzemeKondisyonu || MalzemeKondisyonuEnum.Saglam,

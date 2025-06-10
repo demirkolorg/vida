@@ -91,10 +91,8 @@ const service = {
     }
 
     try {
-      const yeniId = helper.generateId(VarlıkKod);
 
       const createPayload = {
-        id: yeniId,
         filterName,
         entityType,
         filterState, // JSON olarak saklanacak

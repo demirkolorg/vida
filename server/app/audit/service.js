@@ -35,7 +35,6 @@ const service = {
     const logData = serializeLog(log);
     const newAudit = await prisma[PrismaName].create({
       data: {
-        id: helper.generateId(VarlıkKod),
         level: 'INFO',
         createdById,
         hizmet: HizmetName,
@@ -51,7 +50,6 @@ const service = {
 
     const newAudit = await prisma[PrismaName].create({
       data: {
-        id: helper.generateId(VarlıkKod),
         level: 'ERROR',
         createdById,
         hizmet: HizmetName,
@@ -66,7 +64,6 @@ const service = {
     const logData = serializeLog(log);
     const newAudit = await prisma[PrismaName].create({
       data: {
-        id: helper.generateId(VarlıkKod),
         level: 'WARNING',
         createdById,
         hizmet: HizmetName,
@@ -81,7 +78,6 @@ const service = {
     const logData = serializeLog(log);
     const newAudit = await prisma[PrismaName].create({
       data: {
-        id: helper.generateId(VarlıkKod),
         level: 'SUCCESS',
         createdById,
         hizmet: HizmetName,

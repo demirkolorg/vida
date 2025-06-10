@@ -145,10 +145,8 @@ const service = {
       await SubeService.checkExistsById(data.subeId);
       if (data.amirId) await PersonelService.checkExistsById(data.amirId);
 
-      const yeniId = helper.generateId(VarlıkKod);
 
       const createPayload = {
-        id: yeniId,
         ad: data.ad,
         subeId: data.subeId,
         status: AuditStatusEnum.Aktif,

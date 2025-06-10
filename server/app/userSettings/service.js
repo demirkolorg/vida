@@ -100,13 +100,11 @@ const service = {
         });
         if (existingSettings) return existingSettings;
       }
-      const yeniId = helper.generateId(VarlıkKod);
 
       return await prisma[PrismaName].upsert({
         where: { personelId: data.personelId },
         update: validUpdateData,
         create: {
-          id:yeniId,
           personelId: data.personelId,
           themeName: validUpdateData.themeName !== undefined ? validUpdateData.themeName : 'default',
           isDarkMode: validUpdateData.isDarkMode !== undefined ? validUpdateData.isDarkMode : false,
@@ -128,10 +126,8 @@ const service = {
     try {
       await BirimService.checkExistsById(data.personelId);
 
-      const yeniId = helper.generateId(VarlıkKod);
 
       const createPayload = {
-        id: yeniId,
         theme: data.theme || 'violet',
         isDarkMode: data.isDarkMode || true,
         personelId: data.personelId,

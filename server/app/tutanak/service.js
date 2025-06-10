@@ -74,7 +74,6 @@ const service = {
 
   create: async data => {
     try {
-      const yeniId = helper.generateId(VarlıkKod);
 
       // İstatistikleri hesapla
       const malzemeler = data.malzemeler || [];
@@ -83,7 +82,6 @@ const service = {
       const sarfSayisi = malzemeler.filter(m => m.malzemeTipi === 'Sarf').length;
 
       const createPayload = {
-        id: yeniId,
         hareketTuru: data.hareketTuru,
         malzemeIds: data.malzemeIds || [],
         malzemeler: data.malzemeler || [],

@@ -83,9 +83,7 @@ const service = {
 
   create: async data => {
     try {
-      const yeniId = helper.generateId(VarlıkKod);
       const createPayload = {
-        id: yeniId,
         ad: data.ad,
         status: AuditStatusEnum.Aktif,
         createdById: data.islemYapanKullanici,

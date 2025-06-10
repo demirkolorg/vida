@@ -68,12 +68,10 @@ const service = {
   },
   register: async data => {
     try {
-      const yeniId = helper.generateId(VarlıkKod);
 
       const hashedPassword = await bcrypt.hash(data.parola, 12);
       const result = await prisma[PrismaName].create({
         data: {
-          id: yeniId,
           ad: data.ad,
           sicil: data.sicil,
           parola: hashedPassword,
