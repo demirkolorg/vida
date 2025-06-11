@@ -17,24 +17,44 @@ export const Malzeme_Columns = () => {
 
   return [
     {
+      accessorKey: 'malzemeTipi',
+      header: ({ column }) => <HeaderButton column={column} title="Malzeme Tipi" />,
+      cell: ({ row }) => {
+        const malzemeTipi = row.getValue('malzemeTipi');
+        const getMalzemeTipiClassName = malzemeTipi => {
+          const baseClass = 'font-medium text-sm';
+          switch (malzemeTipi) {
+            case 'Demirbas':
+              return `${baseClass} text-primary/70 `;
+            case 'Sarf':
+              return `${baseClass} text-secondary`;
+            default:
+              return `${baseClass} text-gray-700`;
+          }
+        };
+
+        return <div className={getMalzemeTipiClassName(malzemeTipi)}>{malzemeTipi}</div>;
+      },
+      filterFn: inArrayFilterFn,
+      size: 90,
+      meta: {
+        exportHeader: 'Malzeme Tipi',
+        filterVariant: 'select',
+        filterOptions: [
+          { label: 'Demirbaş', value: 'Demirbas' },
+          { label: 'Sarf', value: 'Sarf' },
+        ],
+      },
+    },
+    {
       accessorKey: 'vidaNo',
       header: ({ column }) => <HeaderButton column={column} title="Vida No" />,
       cell: ({ row }) => {
         const vidaNo = row.getValue('vidaNo');
-        return (
-          <div className="font-mono text-sm">
-            {vidaNo ? (
-              <Badge variant="outline" className="font-mono">
-                {vidaNo}
-              </Badge>
-            ) : (
-              <span className="text-muted-foreground">-</span>
-            )}
-          </div>
-        );
+        return <div className="font-mono text-sm">{vidaNo ? vidaNo : <span className="text-muted-foreground">-</span>}</div>;
       },
       enableHiding: false,
-      size: 150,
+      size: 100,
       filterFn: inArrayFilterFn,
       meta: {
         exportHeader: 'Vida No',
@@ -47,17 +67,7 @@ export const Malzeme_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Kod" />,
       cell: ({ row }) => {
         const kod = row.getValue('kod');
-        return (
-          <div className="font-mono text-xs">
-            {kod ? (
-              <Badge variant="outline" className="font-mono">
-                {kod}
-              </Badge>
-            ) : (
-              <span className="text-muted-foreground">-</span>
-            )}
-          </div>
-        );
+        return <div className="font-mono text-sm">{kod ? kod : <span className="text-muted-foreground">-</span>}</div>;
       },
       filterFn: inArrayFilterFn,
       size: 150,
@@ -71,17 +81,7 @@ export const Malzeme_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Badem Seri No" />,
       cell: ({ row }) => {
         const bademSeriNo = row.getValue('bademSeriNo');
-        return (
-          <div className="font-mono text-xs">
-            {bademSeriNo ? (
-              <Badge variant="outline" className="font-mono">
-                {bademSeriNo}
-              </Badge>
-            ) : (
-              <span className="text-muted-foreground">-</span>
-            )}
-          </div>
-        );
+        return <div className="font-mono text-sm">{bademSeriNo ? bademSeriNo : <span className="text-muted-foreground">-</span>}</div>;
       },
       filterFn: inArrayFilterFn,
       size: 150,
@@ -95,17 +95,7 @@ export const Malzeme_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="ETMYS Seri No" />,
       cell: ({ row }) => {
         const etmysSeriNo = row.getValue('etmysSeriNo');
-        return (
-          <div className="font-mono text-xs">
-            {etmysSeriNo ? (
-              <Badge variant="outline" className="font-mono">
-                {etmysSeriNo}
-              </Badge>
-            ) : (
-              <span className="text-muted-foreground">-</span>
-            )}
-          </div>
-        );
+        return <div className="font-mono text-sm">{etmysSeriNo ? etmysSeriNo : <span className="text-muted-foreground">-</span>}</div>;
       },
       filterFn: inArrayFilterFn,
       size: 150,
@@ -119,17 +109,7 @@ export const Malzeme_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Stok/Demirbaş No" />,
       cell: ({ row }) => {
         const stokDemirbasNo = row.getValue('stokDemirbasNo');
-        return (
-          <div className="font-mono text-xs">
-            {stokDemirbasNo ? (
-              <Badge variant="outline" className="font-mono">
-                {stokDemirbasNo}
-              </Badge>
-            ) : (
-              <span className="text-muted-foreground">-</span>
-            )}
-          </div>
-        );
+        return <div className="font-mono text-sm">{stokDemirbasNo ? stokDemirbasNo : <span className="text-muted-foreground">-</span>}</div>;
       },
       filterFn: inArrayFilterFn,
       size: 150,
@@ -140,28 +120,6 @@ export const Malzeme_Columns = () => {
     },
 
     {
-      accessorKey: 'malzemeTipi',
-      header: ({ column }) => <HeaderButton column={column} title="Malzeme Tipi" />,
-      cell: ({ row }) => {
-        const malzemeTipi = row.getValue('malzemeTipi');
-        return (
-          <Badge variant={malzemeTipi === 'Demirbas' ? 'default' : 'secondary'} className="text-xs">
-            {malzemeTipi || '-'}
-          </Badge>
-        );
-      },
-      filterFn: inArrayFilterFn,
-      size: 120,
-      meta: {
-        exportHeader: 'Malzeme Tipi',
-        filterVariant: 'select',
-        filterOptions: [
-          { label: 'Demirbaş', value: 'Demirbas' },
-          { label: 'Sarf', value: 'Sarf' },
-        ],
-      },
-    },
-    {
       accessorKey: 'sabitKodu',
       accessorFn: row => row.sabitKodu?.ad || '',
       header: ({ column }) => <HeaderButton column={column} title="Sabit Kodu" />,
@@ -170,7 +128,7 @@ export const Malzeme_Columns = () => {
         return sabitKodu ? <div className="font-medium text-sm">{sabitKodu.ad}</div> : <span className="text-muted-foreground text-sm">-</span>;
       },
       filterFn: inArrayFilterFn,
-      size: 160,
+      size: 200,
       meta: {
         exportHeader: 'Sabit Kodu',
         filterVariant: 'select',
@@ -185,7 +143,7 @@ export const Malzeme_Columns = () => {
         return marka ? <div className="font-medium text-sm">{marka.ad}</div> : <span className="text-muted-foreground text-sm">-</span>;
       },
       filterFn: inArrayFilterFn,
-      size: 120,
+      size: 150,
       meta: {
         exportHeader: 'Marka',
         filterVariant: 'select',
@@ -201,7 +159,7 @@ export const Malzeme_Columns = () => {
         return model ? <div className="text-sm">{model.ad}</div> : <span className="text-muted-foreground text-sm">-</span>;
       },
       filterFn: inArrayFilterFn,
-      size: 120,
+      size: 150,
       meta: {
         exportHeader: 'Model',
         filterVariant: 'select',
@@ -210,13 +168,13 @@ export const Malzeme_Columns = () => {
     {
       accessorKey: 'birim',
       accessorFn: row => row.birim?.ad || '',
-      header: ({ column }) => <HeaderButton column={column} title="Kuvve Birimi" />,
+      header: ({ column }) => <HeaderButton column={column} title="Kuvvesi" />,
       cell: ({ row }) => {
         const birim = row.original.birim;
         return birim ? <div className="font-medium text-sm">{birim.ad}</div> : <span className="text-muted-foreground text-sm">-</span>;
       },
       filterFn: inArrayFilterFn,
-      size: 150,
+      size: 100,
       meta: {
         exportHeader: 'Kuvve Birimi',
         filterVariant: 'select',
@@ -225,13 +183,13 @@ export const Malzeme_Columns = () => {
     {
       accessorKey: 'sube',
       accessorFn: row => row.sube?.ad || '',
-      header: ({ column }) => <HeaderButton column={column} title="İş Karşılığı Şube" />,
+      header: ({ column }) => <HeaderButton column={column} title="Şubesi" />,
       cell: ({ row }) => {
         const sube = row.original.sube;
         return sube ? <div className="font-medium text-sm">{sube.ad}</div> : <span className="text-muted-foreground text-sm">-</span>;
       },
       filterFn: inArrayFilterFn,
-      size: 170,
+      size: 100,
       meta: {
         exportHeader: 'İş Karşılığı Şube',
         filterVariant: 'select',
@@ -258,49 +216,98 @@ export const Malzeme_Columns = () => {
     {
       accessorKey: 'sonHareketTuru',
       accessorFn: row => {
-        if (row.malzemeHareketleri && row.malzemeHareketleri.length > 0) {
-          return row.malzemeHareketleri[0].hareketTuru || '';
-        }
-        return '';
+        const sonHareket = anlamliSonHareketi(row);
+        return sonHareket?.hareketTuru || '';
       },
-      header: ({ column }) => <HeaderButton column={column} title="Son Hareketi" />,
+      header: ({ column }) => <HeaderButton column={column} title="Son Hareket Türü" />,
       cell: ({ row }) => {
-        const sonHareketiAnlamli = anlamliSonHareketi(row?.original);
-        const hareketTuru = sonHareketiAnlamli?.hareketTuru;
+        const sonHareket = anlamliSonHareketi(row.original);
+        const hareketTuru = sonHareket?.hareketTuru;
+
+        if (!hareketTuru) {
+          return <span className="text-muted-foreground text-sm">-</span>;
+        }
+
         const label = hareketTuruLabels[hareketTuru] ?? hareketTuru;
-        return hareketTuru ? <div className="font-medium text-sm">{label}</div> : <span className="text-muted-foreground text-sm">-</span>;
+
+        // Hareket türüne göre renk kodlaması
+        const getHareketClassName = tur => {
+          const baseClass = 'font-medium text-sm';
+          switch (tur) {
+            case 'Zimmet':
+              return `${baseClass} text-green-700`;
+            case 'Iade':
+              return `${baseClass} text-blue-700`;
+            case 'Devir':
+              return `${baseClass} text-orange-700`;
+            case 'Kayıp':
+              return `${baseClass} text-red-700`;
+            case 'Düşüm':
+              return `${baseClass} text-purple-700`;
+            case 'Kayıt':
+              return `${baseClass}  text-cyan-700`;
+            case 'Depo Transferi':
+              return `${baseClass}  text-yellow-700`;
+            case 'Kondisyon Güncelleme':
+              return `${baseClass}  text-gray-700`;
+            default:
+              return `${baseClass} text-gray-700`;
+          }
+        };
+
+        return <div className={getHareketClassName(hareketTuru)}>{label}</div>;
       },
       filterFn: inArrayFilterFn,
-      size: 120,
+      size: 140,
+      enableSorting: true,
       meta: {
-        exportHeader: 'Son Hareketi',
-        filterVariant: 'text',
+        exportHeader: 'Son Hareket Türü',
+        filterVariant: 'select',
+        filterOptions: Object.entries(hareketTuruLabels || {}).map(([value, label]) => ({
+          label,
+          value,
+        })),
       },
     },
     {
       accessorKey: 'zimmetOzet',
       accessorFn: row => {
-        const depoda = malzemeDepoda(row?.original);
-        const personelde = malzemePersonelde(row?.original);
-        let text = '';
-        if (depoda) text = 'Depoda';
-        if (personelde) text = 'Personelde';
-        return text;
+        const depoda = malzemeDepoda(row);
+        const personelde = malzemePersonelde(row);
+
+        if (depoda) return 'Depoda';
+        if (personelde) return 'Personelde';
+        return 'Bilinmiyor';
       },
-      header: ({ column }) => <HeaderButton column={column} title="Özet" />,
+      header: ({ column }) => <HeaderButton column={column} title="Zimmet Durumu" />,
       cell: ({ row }) => {
-        const depoda = malzemeDepoda(row?.original);
-        const personelde = malzemePersonelde(row?.original);
-        let text = '';
-        if (depoda) text = 'Depoda';
-        if (personelde) text = 'Personelde';
-        return <div className="font-medium text-sm">{text}</div>;
+        const depoda = malzemeDepoda(row.original);
+        const personelde = malzemePersonelde(row.original);
+
+        let text = 'Bilinmiyor';
+        let className = 'font-medium text-sm text-gray-700';
+
+        if (depoda) {
+          text = 'Depoda';
+          className = 'font-medium text-sm text-blue-700';
+        } else if (personelde) {
+          text = 'Personelde';
+          className = 'font-medium text-sm text-green-700';
+        }
+
+        return <div className={className}>{text}</div>;
       },
       filterFn: inArrayFilterFn,
       size: 120,
+      enableSorting: true,
       meta: {
-        exportHeader: 'Son Hareketi',
-        filterVariant: 'text',
+        exportHeader: 'Zimmet Durumu',
+        filterVariant: 'select',
+        filterOptions: [
+          { label: 'Depoda', value: 'Depoda' },
+          { label: 'Personelde', value: 'Personelde' },
+          { label: 'Bilinmiyor', value: 'Bilinmiyor' },
+        ],
       },
     },
     {
@@ -311,13 +318,13 @@ export const Malzeme_Columns = () => {
         }
         return '';
       },
-      header: ({ column }) => <HeaderButton column={column} title="Özet" />,
+      header: ({ column }) => <HeaderButton column={column} title="Kondisyon" />,
       cell: ({ row }) => {
         const kondisyon = row?.original?.malzemeHareketleri?.[0]?.malzemeKondisyonu;
         return <div className="font-medium text-sm">{kondisyon}</div>;
       },
       filterFn: inArrayFilterFn,
-      size: 120,
+      size: 100,
       meta: {
         exportHeader: 'Son Hareketi',
         filterVariant: 'text',

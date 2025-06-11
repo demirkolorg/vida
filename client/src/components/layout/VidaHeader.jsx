@@ -28,10 +28,10 @@ export const VidaHeader = () => {
     <header className="sticky  top-0 z-50 flex  items-center h-16  gap-4 border-b bg-primary/5 px-16 backdrop-blur-md">
       <div className=" flex">
         <VidaLogo />
-        <Badge variant="outline"  className="relative rounded-md h-6 ml-2">
+        {/* <Badge variant="outline"  className="relative rounded-md h-6 ml-2">
           <Server />
           {dbName}{" db"}
-        </Badge>
+        </Badge> */}
       </div>
       <div className=" grow flex items-center justify-center">
         <VidaNavMenu />

@@ -8,7 +8,7 @@ import { Malzeme_ContextMenu as EntityContextMenu } from './contextMenu';
 import { Malzeme_Store as useEntityStore } from '../constants/store';
 import { Malzeme_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
 
-const columnVisibilityData = { status: false, kayitTarihi: false,kod:false,vidaNo:false };
+const columnVisibilityData = { status: false, kayitTarihi: false,kod:false };
 const sorting = [{ id: 'createdAt', desc: true }];
 
 export function Malzeme_DataTable({ onRowClick }) {
@@ -123,14 +123,15 @@ export function Malzeme_DataTable({ onRowClick }) {
   const facesFilterData = useMemo(
     () => [
       { columnId: 'malzemeTipi', title: 'Malzeme Tipi' },
+      { columnId: 'sonHareketTuru', title: 'Son Hareketi' },
+      { columnId: 'zimmetOzet', title: 'Zimmet' },
       { columnId: 'kondisyon', title: 'Kondisyon' },
       { columnId: 'sabitKodu', title: 'Sabit Kodu' },
       { columnId: 'marka', title: 'Marka' },
       { columnId: 'model', title: 'Model' },
-      { columnId: 'birim', title: 'Kuvve Birimi' },
-      { columnId: 'sube', title: 'İş Karşılığı Şube' },
+      { columnId: 'birim', title: 'Kuvvesi' },
+      { columnId: 'sube', title: 'Şubesi' },
       { columnId: 'createdBy', title: 'Oluşturan' },
-      { columnId: 'zimmetOzet', title: 'zimmetOzet' },
     ],
     [],
   );
