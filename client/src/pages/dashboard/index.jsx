@@ -6,38 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  Package,
-  Users,
-  Warehouse,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  ArrowUpRight,
-  Activity,
-  BarChart3,
-  CalendarIcon,
-  Settings,
-  Plus,
-  Search,
-  MapPin,
-  User,
-  Building2,
-  Timer,
-  Target,
-  Zap,
-  FileText,
-  Calendar,
-  ArrowRight,
-  DollarSign,
-  Percent,
-} from 'lucide-react';
+import { Package, Users, Warehouse, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Clock, ArrowUpRight, Activity, BarChart3, CalendarIcon, Settings, Plus, Search, MapPin, User, Building2, Timer, Target, Zap, FileText, Calendar, ArrowRight, DollarSign, Percent } from 'lucide-react';
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-
+import { GlobalSearchComponent } from '@/components/GlobalSearchComponent';
 // Store'ları import et
 import { Malzeme_Store } from '@/app/malzeme/constants/store';
 import { MalzemeHareket_Store } from '@/app/malzemeHareket/constants/store';
@@ -272,7 +245,8 @@ export function DashboardPage() {
 
   return (
     <div className=" mx-auto py-6 space-y-6">
-      {/* Header */}
+
+        {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Hoş geldin, {user?.name || 'Kullanıcı'}! 👋</h1>
@@ -290,27 +264,15 @@ export function DashboardPage() {
         </div> */}
       </div>
 
+
+      <GlobalSearchComponent entityTypes={['birim', 'personel', 'malzeme']} placeholder="Birim, personel ve malzemelerde ara..." />
+
+    
       {/* Ana İstatistikler */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Toplam Malzeme" value={stats.totalMalzeme?.toLocaleString('tr-TR') || '0'} description="Sistemdeki toplam malzeme" icon={Package} iconColor="blue" />
-        <StatCard
-          title="Zimmetli Malzemeler"
-          value={stats.zimmetliCount?.toLocaleString('tr-TR') || '0'}
-          description={`${stats.performansMetrikleri?.zimmetliPersonelSayisi || 0} personelde`}
-          icon={Users}
-          iconColor="orange"
-          trend="up"
-          trendValue={`${stats.detayliIstatistikler?.verimlilikMetrikleri?.zimmetOrani || 0}%`}
-        />
-        <StatCard
-          title="Depodaki Malzemeler"
-          value={stats.depodaCount?.toLocaleString('tr-TR') || '0'}
-          description="Depoda mevcut"
-          icon={Warehouse}
-          iconColor="green"
-          trend="neutral"
-          trendValue={`${stats.detayliIstatistikler?.verimlilikMetrikleri?.depoKapasite || 0}% kapasite`}
-        />
+        <StatCard title="Zimmetli Malzemeler" value={stats.zimmetliCount?.toLocaleString('tr-TR') || '0'} description={`${stats.performansMetrikleri?.zimmetliPersonelSayisi || 0} personelde`} icon={Users} iconColor="orange" trend="up" trendValue={`${stats.detayliIstatistikler?.verimlilikMetrikleri?.zimmetOrani || 0}%`} />
+        <StatCard title="Depodaki Malzemeler" value={stats.depodaCount?.toLocaleString('tr-TR') || '0'} description="Depoda mevcut" icon={Warehouse} iconColor="green" trend="neutral" trendValue={`${stats.detayliIstatistikler?.verimlilikMetrikleri?.depoKapasite || 0}% kapasite`} />
         <StatCard title="Kayıp/Düşüm" value={stats.kayipCount?.toLocaleString('tr-TR') || '0'} description="Kritik durumlar" icon={AlertTriangle} iconColor="red" />
       </div>
 
@@ -491,9 +453,7 @@ export function DashboardPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Günlük İşlem Yoğunluğu</span>
-                    <span className="text-sm font-semibold">
-                      {stats.performansMetrikleri?.haftalikHareket && stats.performansMetrikleri.haftalikHareket > 35 ? 'Yüksek' : stats.performansMetrikleri?.haftalikHareket && stats.performansMetrikleri.haftalikHareket > 14 ? 'Orta' : 'Düşük'}
-                    </span>
+                    <span className="text-sm font-semibold">{stats.performansMetrikleri?.haftalikHareket && stats.performansMetrikleri.haftalikHareket > 35 ? 'Yüksek' : stats.performansMetrikleri?.haftalikHareket && stats.performansMetrikleri.haftalikHareket > 14 ? 'Orta' : 'Düşük'}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Haftalık Verimlilik</span>
