@@ -312,89 +312,85 @@ export function ZimmetSheet() {
             />
 
             {/* Hedef Personel ComboBox */}
-       <FormField
-  control={form.control}
-  name="hedefPersonelId"
-  render={({ field }) => (
-    <FormItem className="flex flex-col">
-      <FormLabel>Hedef Personel*</FormLabel>
-      <Popover open={personelPopoverOpen} onOpenChange={setPersonelPopoverOpen}>
-        <PopoverTrigger asChild>
-          <FormControl>
-            <Button variant="outline" role="combobox" className={cn('w-full justify-between', !field.value && 'text-muted-foreground')}>
-              {field.value
-                ? (() => {
-                    const selectedPersonel = personelList.find(personel => personel.id === field.value);
-                    if (!selectedPersonel) return 'Personel Bulunamadı';
-                    
-                    // Ad ve soyad varsa birleştir, yoksa sadece ad kullan
-                    const fullName = selectedPersonel.soyad 
-                      ? `${selectedPersonel.ad} ${selectedPersonel.soyad}`.trim()
-                      : selectedPersonel.ad || selectedPersonel.sicil || 'İsimsiz Personel';
-                    
-                    return fullName;
-                  })()
-                : 'Personel seçin...'}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </FormControl>
-        </PopoverTrigger>
-        <PopoverContent className="w-[400px] max-h-[--radix-popover-content-available-height] p-0">
-          <Command
-            filter={(value, search) => {
-              const personel = personelList.find(p => p.id === value);
-              if (!personel) return 0;
-              
-              // Ad, soyad ve sicil alanlarında arama yap
-              const searchFields = [
-                personel.ad || '',
-                personel.soyad || '',
-                personel.sicil || '',
-                // Tam ad kombinasyonu
-                personel.soyad ? `${personel.ad} ${personel.soyad}`.trim() : personel.ad || ''
-              ].join(' ').toLowerCase();
-              
-              return searchFields.includes(search.toLowerCase()) ? 1 : 0;
-            }}
-          >
-            <CommandInput placeholder="Personel ara (ad, soyad, sicil)..." />
-            <CommandList>
-              <CommandEmpty>Personel bulunamadı.</CommandEmpty>
-              <CommandGroup>
-                {personelList.map(personel => {
-                  // Personel görüntü metni oluştur
-                  const displayName = personel.soyad 
-                    ? `${personel.ad} ${personel.soyad}`.trim()
-                    : personel.ad || personel.sicil || 'İsimsiz Personel';
-                  
-                  // Sicil varsa ekle
-                  const displayText = personel.sicil 
-                    ? `${displayName} (${personel.sicil})`
-                    : displayName;
-                  
-                  return (
-                    <CommandItem
-                      value={personel.id}
-                      key={personel.id}
-                      onSelect={() => {
-                        form.setValue('hedefPersonelId', personel.id);
-                        setPersonelPopoverOpen(false);
-                      }}
-                    >
-                      <Check className={cn('mr-2 h-4 w-4', personel.id === field.value ? 'opacity-100' : 'opacity-0')} />
-                      {displayText}
-                    </CommandItem>
-                  );
-                })}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
+            <FormField
+              control={form.control}
+              name="hedefPersonelId"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Hedef Personel*</FormLabel>
+                  <Popover open={personelPopoverOpen} onOpenChange={setPersonelPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button variant="outline" role="combobox" className={cn('w-full justify-between', !field.value && 'text-muted-foreground')}>
+                          {field.value
+                            ? (() => {
+                                const selectedPersonel = personelList.find(personel => personel.id === field.value);
+                                if (!selectedPersonel) return 'Personel Bulunamadı';
+
+                                // Ad ve soyad varsa birleştir, yoksa sadece ad kullan
+                                const fullName = selectedPersonel.soyad ? `${selectedPersonel.ad} ${selectedPersonel.soyad}`.trim() : selectedPersonel.ad || selectedPersonel.sicil || 'İsimsiz Personel';
+
+                                return fullName;
+                              })()
+                            : 'Personel seçin...'}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[400px] max-h-[--radix-popover-content-available-height] p-0">
+                      <Command
+                        filter={(value, search) => {
+                          const personel = personelList.find(p => p.id === value);
+                          if (!personel) return 0;
+
+                          // Ad, soyad ve sicil alanlarında arama yap
+                          const searchFields = [
+                            personel.ad || '',
+                            personel.soyad || '',
+                            personel.sicil || '',
+                            // Tam ad kombinasyonu
+                            personel.soyad ? `${personel.ad} ${personel.soyad}`.trim() : personel.ad || '',
+                          ]
+                            .join(' ')
+                            .toLowerCase();
+
+                          return searchFields.includes(search.toLowerCase()) ? 1 : 0;
+                        }}
+                      >
+                        <CommandInput placeholder="Personel ara (ad, soyad, sicil)..." />
+                        <CommandList>
+                          <CommandEmpty>Personel bulunamadı.</CommandEmpty>
+                          <CommandGroup>
+                            {personelList.map(personel => {
+                              // Personel görüntü metni oluştur
+                              const displayName = personel.soyad ? `${personel.ad} ${personel.soyad}`.trim() : personel.ad || personel.sicil || 'İsimsiz Personel';
+
+                              // Sicil varsa ekle
+                              const displayText = personel.sicil ? `${displayName} (${personel.sicil})` : displayName;
+
+                              return (
+                                <CommandItem
+                                  value={personel.id}
+                                  key={personel.id}
+                                  onSelect={() => {
+                                    form.setValue('hedefPersonelId', personel.id);
+                                    setPersonelPopoverOpen(false);
+                                  }}
+                                >
+                                  <Check className={cn('mr-2 h-4 w-4', personel.id === field.value ? 'opacity-100' : 'opacity-0')} />
+                                  {displayText}
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Açıklama Textarea */}
             <FormField

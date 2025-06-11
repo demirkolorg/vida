@@ -157,7 +157,7 @@ export function IadeSheet() {
         konumId: data.konumId,
         aciklama: data.aciklama || null,
       };
-      
+
       const result = await iadeAction(hareketVerisi, { showToast: true });
       if (result) {
         closeSheet();

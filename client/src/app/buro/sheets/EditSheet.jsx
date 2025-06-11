@@ -5,9 +5,11 @@ import { FormFieldTextarea } from '@/components/form/FormFieldTextarea';
 import { FormFieldSelect } from '@/components/form/FormFieldSelect';
 import { BaseEditSheet } from '@/components/sheet/BaseEditSheet';
 import { EntityHuman, EntityType } from '../constants/api';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 import { Buro_Store as EntityStore } from '../constants/store';
 import { Buro_FormInputSchema as EntityFormUpdateSchema } from '../constants/schema';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 // Şube seçenekleri için hook veya store
 import { Sube_Store } from '../../sube/constants/store';
@@ -22,11 +24,11 @@ export const Buro_EditSheet = props => {
   // Şube listesi için store'dan veri çekiyoruz
   const subeList = Sube_Store(state => state.datas);
   const loadSubeList = Sube_Store(state => state.GetAll);
-  
+
   // Personel listesi için store'dan veri çekiyoruz (amir seçimi için)
   const personelList = Personel_Store(state => state.datas);
   const loadPersonelList = Personel_Store(state => state.GetAll);
-  
+
   // Component mount olduğunda şube ve personel listelerini yükle
   React.useEffect(() => {
     if (!subeList || subeList.length === 0) {
@@ -38,16 +40,18 @@ export const Buro_EditSheet = props => {
   }, [subeList, loadSubeList, personelList, loadPersonelList]);
 
   // Şube seçeneklerini hazırla
-  const subeOptions = subeList?.map(sube => ({
-    value: sube.id,
-    label: sube.ad
-  })) || [];
+  const subeOptions =
+    subeList?.map(sube => ({
+      value: sube.id,
+      label: sube.ad,
+    })) || [];
 
   // Personel seçeneklerini hazırla (amir seçimi için)
-  const amirOptions = personelList?.map(personel => ({
-    value: personel.id,
-    label: personel.ad || personel.sicil
-  })) || [];
+  const amirOptions =
+    personelList?.map(personel => ({
+      value: personel.id,
+      label: personel.ad + ' ' + personel.soyad + ' (' + personel.sicil + ')',
+    })) || [];
 
   const handleUpdateSubmit = async (id, formData) => {
     const payload = {};
@@ -67,7 +71,7 @@ export const Buro_EditSheet = props => {
       toast.info('Değişiklik yapılmadı.');
       return currentItemForEdit;
     }
-    return updateAction(id, payload); 
+    return updateAction(id, payload);
   };
 
   const generateDescription = itemData => {
@@ -79,53 +83,13 @@ export const Buro_EditSheet = props => {
 
   const renderFormInputs = ({ formData, setFieldValue, errors }) => (
     <div className="space-y-4">
-      <FormFieldInput
-        label={`${EntityHuman} Adı`}
-        name="ad"
-        id={`edit-${EntityType}-ad`}
-        value={formData.ad || ''}
-        onChange={e => setFieldValue('ad', e.target.value)}
-        error={errors.ad}
-        showRequiredStar={true}
-        maxLength={100}
-        placeholder={`${EntityHuman} adını giriniz`}
-      />
-      
-      <FormFieldSelect
-        label="Bağlı Şube"
-        name="subeId"
-        id={`edit-${EntityType}-subeId`}
-        value={formData.subeId || ''}
-        onChange={value => setFieldValue('subeId', value)}
-        error={errors.subeId}
-        showRequiredStar={true}
-        placeholder="Şube seçiniz"
-        options={subeOptions}
-        emptyMessage="Şube bulunamadı"
-      />
-      
-      <FormFieldSelect
-        label="Büro Amiri"
-        name="amirId"
-        id={`edit-${EntityType}-amirId`}
-        value={formData.amirId || ''}
-        onChange={value => setFieldValue('amirId', value)}
-        error={errors.amirId}
-        placeholder="Büro amiri seçiniz (opsiyonel)"
-        options={amirOptions}
-        emptyMessage="Personel bulunamadı"
-      />
-      
-      <FormFieldTextarea
-        label="Açıklama"
-        name="aciklama"
-        id={`edit-${EntityType}-aciklama`}
-        value={formData.aciklama || ''}
-        onChange={e => setFieldValue('aciklama', e.target.value)}
-        error={errors.aciklama}
-        placeholder={`${EntityHuman} ile ilgili kısa bir açıklama (opsiyonel)`}
-        rows={3}
-      />
+      <FormFieldInput label={`${EntityHuman} Adı`} name="ad" id={`edit-${EntityType}-ad`} value={formData.ad || ''} onChange={e => setFieldValue('ad', e.target.value)} error={errors.ad} showRequiredStar={true} maxLength={100} placeholder={`${EntityHuman} adını giriniz`} />
+
+      <FormFieldSelect label="Bağlı Şube" name="subeId" id={`edit-${EntityType}-subeId`} value={formData.subeId || ''} onChange={value => setFieldValue('subeId', value)} error={errors.subeId} showRequiredStar={true} placeholder="Şube seçiniz" options={subeOptions} emptyMessage="Şube bulunamadı" />
+
+      <FormFieldSelect label="Büro Amiri" name="amirId" id={`edit-${EntityType}-amirId`} value={formData.amirId || ''} onChange={value => setFieldValue('amirId', value)} error={errors.amirId} placeholder="Büro amiri seçiniz (opsiyonel)" options={amirOptions} emptyMessage="Personel bulunamadı" />
+
+      <FormFieldTextarea label="Açıklama" name="aciklama" id={`edit-${EntityType}-aciklama`} value={formData.aciklama || ''} onChange={e => setFieldValue('aciklama', e.target.value)} error={errors.aciklama} placeholder={`${EntityHuman} ile ilgili kısa bir açıklama (opsiyonel)`} rows={3} />
     </div>
   );
 

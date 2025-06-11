@@ -2,6 +2,7 @@ import { HeaderButton } from '@/components/table/HeaderButton';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EntityHuman } from '../constants/api';
+import { AvatarWithName } from '@/components/table/AvatarWithName';
 
 export const Buro_Columns = () => {
   const inArrayFilterFn = (row, columnId, filterValueArray) => {
@@ -61,24 +62,7 @@ export const Buro_Columns = () => {
       header: ({ column }) => <HeaderButton column={column} title="Büro Amiri" />,
       cell: ({ row }) => {
         const amir = row.original.amir;
-        if (!amir) {
-          return <div className="text-sm text-gray-500">-</div>;
-        }
-        
-        return (
-          <div className="flex items-center space-x-2">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={amir.avatar || '/placeholder.png'} alt={amir.ad || 'Avatar'} />
-              <AvatarFallback className="text-xs">{amir.ad?.substring(0, 1) || 'A'}</AvatarFallback>
-            </Avatar>
-            <span className="text-sm font-medium">{amir.ad || amir.sicil}</span>
-            {amir.unvan && (
-              <Badge variant="secondary" className="text-xs">
-                {amir.unvan}
-              </Badge>
-            )}
-          </div>
-        );
+        return amir ? <AvatarWithName user={amir} /> : <div className="text-sm text-muted-foreground">-</div>;
       },
       filterFn: inArrayFilterFn,
       size: 220,
