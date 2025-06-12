@@ -10,12 +10,16 @@ import { Package, Users, Warehouse, TrendingUp, TrendingDown, AlertTriangle, Che
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { GlobalSearchComponent } from '@/components/GlobalSearchComponent';
+// import { GlobalSearchComponent } from '@/components/GlobalSearchComponent';
+// import  ExampleUsage  from '@/components/ExampleUsage';
 // Store'ları import et
 import { Malzeme_Store } from '@/app/malzeme/constants/store';
 import { MalzemeHareket_Store } from '@/app/malzemeHareket/constants/store';
 import { Personel_Store } from '@/app/personel/constants/store';
 import { useAuthStore } from '@/stores/authStore';
+import { HeaderSearchComponent } from '@/app/globalsearch';
+// import { GlobalSearchComponent } from '@/app/globalsearch/components/GlobalSearchComponent';
+import { GlobalSearchComponent } from '@/app/globalSearch';
 
 export function DashboardPage() {
   const user = useAuthStore(state => state.user);
@@ -245,8 +249,7 @@ export function DashboardPage() {
 
   return (
     <div className=" mx-auto py-6 space-y-6">
-
-        {/* Header */}
+      {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Hoş geldin, {user?.name || 'Kullanıcı'}! 👋</h1>
@@ -263,11 +266,10 @@ export function DashboardPage() {
           </Button>
         </div> */}
       </div>
+      {/* <ExampleUsage /> */}
+      {/* <GlobalSearchComponent entityTypes={['birim', 'personel', 'malzeme']} placeholder="Birim, personel ve malzemelerde ara..." /> */}
+      {/* <HeaderSearchComponent /> */}
 
-
-      <GlobalSearchComponent entityTypes={['birim', 'personel', 'malzeme']} placeholder="Birim, personel ve malzemelerde ara..." />
-
-    
       {/* Ana İstatistikler */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Toplam Malzeme" value={stats.totalMalzeme?.toLocaleString('tr-TR') || '0'} description="Sistemdeki toplam malzeme" icon={Package} iconColor="blue" />
@@ -275,7 +277,6 @@ export function DashboardPage() {
         <StatCard title="Depodaki Malzemeler" value={stats.depodaCount?.toLocaleString('tr-TR') || '0'} description="Depoda mevcut" icon={Warehouse} iconColor="green" trend="neutral" trendValue={`${stats.detayliIstatistikler?.verimlilikMetrikleri?.depoKapasite || 0}% kapasite`} />
         <StatCard title="Kayıp/Düşüm" value={stats.kayipCount?.toLocaleString('tr-TR') || '0'} description="Kritik durumlar" icon={AlertTriangle} iconColor="red" />
       </div>
-
       {/* Performans Metrikleri */}
       {/* <div className="grid gap-4 md:grid-cols-5">
         <StatCard
@@ -308,7 +309,6 @@ export function DashboardPage() {
           trendValue={`${stats.performansMetrikleri?.toplamPersonel || 0} toplam`}
         />
       </div> */}
-
       {/* Detaylı Analiz Metrikleri */}
       {/* <div className="grid gap-4 md:grid-cols-6">
         <StatCard title="Zimmet Oranı" value={`%${stats.detayliIstatistikler?.verimlilikMetrikleri?.zimmetOrani || 0}`} description="Toplam malzemeden" icon={Percent} iconColor="orange" />
@@ -318,7 +318,6 @@ export function DashboardPage() {
         <StatCard title="Kritik Oran" value={`%${Math.round(((stats.kayipCount || 0) / (stats.totalMalzeme || 1)) * 100)}`} description="Kayıp/Düşüm oranı" icon={AlertTriangle} iconColor="red" />
         <StatCard title="İşlem Sıklığı" value={`${Math.round(((stats.performansMetrikleri?.haftalikHareket || 0) / 7) * 10) / 10}`} description="Günlük ortalama" icon={Zap} iconColor="yellow" />
       </div> */}
-
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Sol Kolon */}
         <div className="lg:col-span-2 space-y-6">

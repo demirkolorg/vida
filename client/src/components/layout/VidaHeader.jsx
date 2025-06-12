@@ -14,6 +14,7 @@ import { NotificationMenu } from '../notification/NotificationMenu';
 import { useAuthStore } from '@/stores/authStore';
 import { currentDb } from '../../api/database';
 import { useEffect, useState } from 'react';
+import { HeaderSearchComponent } from '@/app/globalSearch';
 
 export const VidaHeader = () => {
   const user = useAuthStore(state => state.user);
@@ -28,6 +29,9 @@ export const VidaHeader = () => {
     <header className="sticky  top-0 z-50 flex  items-center h-16  gap-4 border-b bg-primary/5 px-16 backdrop-blur-md">
       <div className=" flex">
         <VidaLogo />
+
+
+
         {/* <Badge variant="outline"  className="relative rounded-md h-6 ml-2">
           <Server />
           {dbName}{" db"}
@@ -38,6 +42,8 @@ export const VidaHeader = () => {
       </div>
 
       <div className="ml-auto flex items-center gap-2 md:gap-2 lg:gap-2">
+<HeaderSearchComponent  />
+
         <ThemeSelector />
         <NotificationMenu />
 
