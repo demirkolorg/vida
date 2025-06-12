@@ -7,7 +7,16 @@ import { cn } from '@/lib/utils';
 import { getEntityConfig } from '../helpers/entityConfig';
 import { SearchResultItem } from './SearchResultItem';
 
-export const SearchResultCategory = ({ entityType, results, onItemSelect, isExpanded, onToggleExpand, enableContextMenu = false, searchTerm = '', contextMenuRenderer = null }) => {
+export const SearchResultCategory = ({ 
+  entityType, 
+  results, 
+  onItemSelect, 
+  isExpanded, 
+  onToggleExpand, 
+  enableContextMenu = false, 
+  searchTerm = '', 
+  contextMenuRenderer = null 
+}) => {
   const config = getEntityConfig(entityType);
   const Icon = config.icon;
 
@@ -16,13 +25,27 @@ export const SearchResultCategory = ({ entityType, results, onItemSelect, isExpa
   const hasContextMenuSupport = ['malzeme', 'birim', 'personel', 'sube'].includes(entityType);
 
   const renderItem = (item, index) => {
-    const itemComponent = <SearchResultItem key={item.id || index} item={item} entityType={entityType} onSelect={onItemSelect} hasContextMenu={enableContextMenu && hasContextMenuSupport} searchTerm={searchTerm} />;
+    const itemComponent = (
+      <SearchResultItem 
+        key={item.id || index} 
+        item={item} 
+        entityType={entityType} 
+        onSelect={onItemSelect} 
+        hasContextMenu={enableContextMenu && hasContextMenuSupport} 
+        searchTerm={searchTerm} 
+      />
+    );
 
-    // Context menu support
-    // if (enableContextMenu && hasContextMenuSupport && contextMenuRenderer) {
-    //   return contextMenuRenderer(itemComponent, item, entityType);
-    // }
-    return contextMenuRenderer(itemComponent, item, entityType);
+    // Context menu desteği kontrolü
+    if (enableContextMenu && contextMenuRenderer) {
+      console.log('Context menu uygulanıyor:', entityType, item.id);
+      try {
+        return contextMenuRenderer(itemComponent, item, entityType);
+      } catch (error) {
+        console.error('Context menu render hatası:', error);
+        return itemComponent;
+      }
+    }
 
     return itemComponent;
   };
@@ -38,11 +61,17 @@ export const SearchResultCategory = ({ entityType, results, onItemSelect, isExpa
               {results.length}
             </Badge>
           </div>
-          {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+          {isExpanded ? (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          )}
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="bg-background">{results.map((item, index) => renderItem(item, index))}</div>
+        <div className="bg-background">
+          {results.map((item, index) => renderItem(item, index))}
+        </div>
       </CollapsibleContent>
     </Collapsible>
   );
