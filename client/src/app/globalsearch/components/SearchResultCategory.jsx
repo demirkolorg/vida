@@ -38,11 +38,9 @@ export const SearchResultCategory = ({
 
     // Context menu desteği kontrolü
     if (enableContextMenu && contextMenuRenderer) {
-      console.log('Context menu uygulanıyor:', entityType, item.id);
       try {
         return contextMenuRenderer(itemComponent, item, entityType);
       } catch (error) {
-        console.error('Context menu render hatası:', error);
         return itemComponent;
       }
     }
