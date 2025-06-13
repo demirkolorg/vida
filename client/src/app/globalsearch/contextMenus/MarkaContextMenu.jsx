@@ -1,4 +1,16 @@
 // client/src/app/globalSearch/components/contextMenus/MarkaContextMenu.jsx
+import React from 'react';
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from '@/components/ui/context-menu';
+import { 
+  Eye, 
+  Edit, 
+  Package, 
+  FileText 
+} from 'lucide-react';
+
 export const MarkaContextMenu = ({ item, onAction }) => {
   return (
     <>

@@ -1,4 +1,17 @@
 // client/src/app/globalSearch/components/contextMenus/ModelContextMenu.jsx
+import React from 'react';
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from '@/components/ui/context-menu';
+import { 
+  Eye, 
+  Edit, 
+  Package, 
+  MapPin, 
+  FileText 
+} from 'lucide-react';
+
 export const ModelContextMenu = ({ item, onAction }) => {
   return (
     <>

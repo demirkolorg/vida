@@ -1,4 +1,18 @@
 // client/src/app/globalSearch/components/contextMenus/SubeContextMenu.jsx
+import React from 'react';
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from '@/components/ui/context-menu';
+import { 
+  Eye, 
+  Edit, 
+  UserPlus, 
+  Package, 
+  MapPin, 
+  FileText 
+} from 'lucide-react';
+
 export const SubeContextMenu = ({ item, onAction }) => {
   return (
     <>

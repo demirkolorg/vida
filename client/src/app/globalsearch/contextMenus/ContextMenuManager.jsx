@@ -1,25 +1,29 @@
 // client/src/app/globalSearch/components/contextMenus/ContextMenuManager.jsx
 import React from 'react';
 import { toast } from 'sonner';
-import {
-  MalzemeContextMenu,
-  PersonelContextMenu,
-  BirimContextMenu,
-  SubeContextMenu,
-  BuroContextMenu,
-  MarkaContextMenu,
-  ModelContextMenu,
-  DepoContextMenu,
-  KonumContextMenu,
-  MalzemeHareketContextMenu,
-  SabitKoduContextMenu
-} from './index';
+import { MalzemeContextMenu } from './MalzemeContextMenu';
+import { PersonelContextMenu } from './PersonelContextMenu';
+import { BirimContextMenu } from './BirimContextMenu';
+import { SubeContextMenu } from './SubeContextMenu';
+import { BuroContextMenu } from './BuroContextMenu';
+import { MarkaContextMenu } from './MarkaContextMenu';
+import { ModelContextMenu } from './ModelContextMenu';
+import { DepoContextMenu } from './DepoContextMenu';
+import { KonumContextMenu } from './KonumContextMenu';
+import { MalzemeHareketContextMenu } from './MalzemeHareketContextMenu';
+import { SabitKoduContextMenu } from './SabitKoduContextMenu';
 
 export const ContextMenuManager = ({ entityType, item, onNavigate }) => {
   
   const handleAction = (action, item) => {
     console.log(`Context menu action: ${action}`, item);
     
+      // Önce onNavigate callback'ini çağır
+    if (onNavigate) {
+      onNavigate(item, entityType, action);
+      return;
+    }
+
     switch (action) {
       // Genel işlemler
       case 'view':
@@ -269,29 +273,31 @@ export const ContextMenuManager = ({ entityType, item, onNavigate }) => {
 
   // Context menu component'ini döndür
   const getContextMenuComponent = () => {
+    const commonProps = { item, onAction: handleAction };
+    
     switch (entityType) {
       case 'malzeme':
-        return <MalzemeContextMenu item={item} onAction={handleAction} />;
+        return <MalzemeContextMenu {...commonProps} />;
       case 'personel':
-        return <PersonelContextMenu item={item} onAction={handleAction} />;
+        return <PersonelContextMenu {...commonProps} />;
       case 'birim':
-        return <BirimContextMenu item={item} onAction={handleAction} />;
+        return <BirimContextMenu {...commonProps} />;
       case 'sube':
-        return <SubeContextMenu item={item} onAction={handleAction} />;
+        return <SubeContextMenu {...commonProps} />;
       case 'buro':
-        return <BuroContextMenu item={item} onAction={handleAction} />;
+        return <BuroContextMenu {...commonProps} />;
       case 'marka':
-        return <MarkaContextMenu item={item} onAction={handleAction} />;
+        return <MarkaContextMenu {...commonProps} />;
       case 'model':
-        return <ModelContextMenu item={item} onAction={handleAction} />;
+        return <ModelContextMenu {...commonProps} />;
       case 'depo':
-        return <DepoContextMenu item={item} onAction={handleAction} />;
+        return <DepoContextMenu {...commonProps} />;
       case 'konum':
-        return <KonumContextMenu item={item} onAction={handleAction} />;
+        return <KonumContextMenu {...commonProps} />;
       case 'malzemeHareket':
-        return <MalzemeHareketContextMenu item={item} onAction={handleAction} />;
+        return <MalzemeHareketContextMenu {...commonProps} />;
       case 'sabitKodu':
-        return <SabitKoduContextMenu item={item} onAction={handleAction} />;
+        return <SabitKoduContextMenu {...commonProps} />;
       default:
         return null;
     }

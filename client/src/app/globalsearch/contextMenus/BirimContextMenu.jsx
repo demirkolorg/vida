@@ -1,4 +1,21 @@
 // client/src/app/globalSearch/components/contextMenus/BirimContextMenu.jsx
+import React from 'react';
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+} from '@/components/ui/context-menu';
+import { 
+  Eye, 
+  Edit, 
+  UserPlus, 
+  Package, 
+  MapPin, 
+  FileText 
+} from 'lucide-react';
+
 export const BirimContextMenu = ({ item, onAction }) => {
   return (
     <>

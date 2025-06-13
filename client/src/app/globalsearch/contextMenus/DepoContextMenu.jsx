@@ -1,4 +1,22 @@
 // client/src/app/globalSearch/components/contextMenus/DepoContextMenu.jsx
+import React from 'react';
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+} from '@/components/ui/context-menu';
+import { 
+  Eye, 
+  Edit, 
+  MapPin, 
+  Package, 
+  FileText,
+  ArrowRightLeft,
+  RotateCcw 
+} from 'lucide-react';
+
 export const DepoContextMenu = ({ item, onAction }) => {
   return (
     <>

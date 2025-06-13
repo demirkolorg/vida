@@ -1,9 +1,10 @@
-// client/src/app/globalSearch/components/QuickSearchComponent.jsx
+// client/src/app/globalsearch/components/QuickSearchComponent.jsx
 import React, { useState, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils'; // EKSIK OLAN IMPORT
 import { GlobalSearch_Store } from '../constants/store';
 import { getEntityConfig } from '../helpers/entityConfig';
 import { debounce } from '../helpers/searchUtils';

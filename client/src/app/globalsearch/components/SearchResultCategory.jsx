@@ -1,4 +1,3 @@
-// client/src/app/globalSearch/components/SearchResultCategory.jsx
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -36,11 +35,12 @@ export const SearchResultCategory = ({
       />
     );
 
-    // Context menu desteği kontrolü
-    if (enableContextMenu && contextMenuRenderer) {
+  // Context menu desteği kontrolü - BU KOD DÜZELTILMELI
+    if (enableContextMenu && contextMenuRenderer && typeof contextMenuRenderer === 'function') {
       try {
         return contextMenuRenderer(itemComponent, item, entityType);
       } catch (error) {
+        console.error('Context menu render error:', error);
         return itemComponent;
       }
     }

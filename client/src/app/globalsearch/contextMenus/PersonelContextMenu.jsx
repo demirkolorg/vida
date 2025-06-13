@@ -1,4 +1,22 @@
 // client/src/app/globalSearch/components/contextMenus/PersonelContextMenu.jsx
+import React from 'react';
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+} from '@/components/ui/context-menu';
+import { 
+  Eye, 
+  Edit, 
+  UserPlus, 
+  Package, 
+  ArrowRightLeft, 
+  History,
+  FileText 
+} from 'lucide-react';
+
 export const PersonelContextMenu = ({ item, onAction }) => {
   return (
     <>

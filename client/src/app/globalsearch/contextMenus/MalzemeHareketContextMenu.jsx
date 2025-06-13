@@ -1,4 +1,18 @@
 // client/src/app/globalSearch/components/contextMenus/MalzemeHareketContextMenu.jsx
+import React from 'react';
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from '@/components/ui/context-menu';
+import { 
+  Eye, 
+  Package, 
+  UserPlus, 
+  MapPin, 
+  RotateCcw,
+  FileText 
+} from 'lucide-react';
+
 export const MalzemeHareketContextMenu = ({ item, onAction }) => {
   return (
     <>

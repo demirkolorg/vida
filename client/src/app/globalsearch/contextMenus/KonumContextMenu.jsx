@@ -1,4 +1,18 @@
 // client/src/app/globalSearch/components/contextMenus/KonumContextMenu.jsx
+import React from 'react';
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from '@/components/ui/context-menu';
+import { 
+  Eye, 
+  Edit, 
+  MapPin, 
+  Package, 
+  ArrowRightLeft,
+  FileText 
+} from 'lucide-react';
+
 export const KonumContextMenu = ({ item, onAction }) => {
   return (
     <>

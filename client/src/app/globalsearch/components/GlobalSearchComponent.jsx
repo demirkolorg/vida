@@ -92,8 +92,11 @@ export const GlobalSearchComponent = ({
   };
 
   // Context menu renderer - yeni context menüleri kullan
-  const renderWithContextMenu = (itemComponent, item, entityType) => {
+ const renderWithContextMenu = (itemComponent, item, entityType) => {
+    console.log('renderWithContextMenu called:', { entityType, enableContextMenu, item: item?.id });
+    
     if (!enableContextMenu) {
+      console.log('Context menu disabled');
       return itemComponent;
     }
 
@@ -163,14 +166,16 @@ export const GlobalSearchComponent = ({
         autoFocus={autoFocus}
       />
 
-      {/* Search Results Dropdown */}
-      {isOpen && (
-        <Card className="absolute right-0 px-0 pt-3 pb-1 w-[550px] mt-1 z-50 shadow-xl border-primary">
-          <CardContent className="p-0">
-            {renderDropdownContent()}
-          </CardContent>
-        </Card>
-      )}
+{isOpen && (
+  <Card className="absolute right-0 w-[550px] mt-1 z-50 shadow-xl border-primary">
+    <CardContent className="p-0">
+      {renderDropdownContent()}
+    </CardContent>
+  </Card>
+)}
+
+
+
     </div>
   );
 };
