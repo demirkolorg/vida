@@ -44,5 +44,5 @@ export const HeaderSearchComponent = () => {
     toast.success(`${item.ad || item.vidaNo || item.sicil} seçildi`);
   };
 
-  return <GlobalSearchComponent  onResultSelect={handleResultSelect}  />;
+  return <GlobalSearchComponent enableContextMenu={true} onResultSelect={handleResultSelect} />;
 };

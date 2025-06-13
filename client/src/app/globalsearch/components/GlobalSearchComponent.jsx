@@ -1,4 +1,4 @@
-// client/src/app/globalSearch/components/GlobalSearchComponent.jsx
+// client/src/app/globalSearch/components/GlobalSearchComponent.jsx - Güncellenmiş versiyon
 import React, { useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ContextMenu, ContextMenuTrigger, ContextMenuContent } from '@/components/ui/context-menu';
@@ -9,12 +9,7 @@ import { SearchResults } from './SearchResults';
 import { RecentSearches } from './RecentSearches';
 import { EmptyState } from './EmptyState';
 import { LoadingState } from './LoadingState';
-
-// Context menü componentlerini import et
-import { Malzeme_ContextMenu } from '@/app/malzeme/table/contextMenu';
-import { Birim_ContextMenu } from '@/app/birim/table/contextMenu';
-import { Personel_ContextMenu } from '@/app/personel/table/contextMenu';
-import { Sube_ContextMenu } from '@/app/sube/table/contextMenu';
+import { ContextMenuManager } from '../contextMenus';
 
 export const GlobalSearchComponent = ({
   placeholder = "Tüm kayıtlarda ara...",
@@ -76,69 +71,44 @@ export const GlobalSearchComponent = ({
     onResultSelect?.(item, entityType);
   };
 
-  // Context menu renderer - mevcut context menüleri kullan
+  // Context menu navigation handler
+  const handleContextMenuNavigation = (item, entityType, action) => {
+    // Bu fonksiyon context menu'den gelen navigasyon isteklerini handle eder
+    console.log('Context menu navigation:', { item, entityType, action });
+    
+    // Action türüne göre farklı navigasyonlar yapılabilir
+    switch (action) {
+      case 'view':
+        onResultSelect?.(item, entityType, { action: 'view' });
+        break;
+      case 'edit':
+        onResultSelect?.(item, entityType, { action: 'edit' });
+        break;
+      default:
+        onResultSelect?.(item, entityType, { action });
+    }
+    
+    setIsOpen(false);
+  };
+
+  // Context menu renderer - yeni context menüleri kullan
   const renderWithContextMenu = (itemComponent, item, entityType) => {
     if (!enableContextMenu) {
       return itemComponent;
     }
 
-    // Context menu desteklenen entity'ler için mevcut componentleri kullan
-    const getContextMenuComponent = (entityType, item) => {
-      switch (entityType) {
-        case 'malzeme':
-          return (
-            <Malzeme_ContextMenu 
-              item={item}
-              selectedItems={[]} // Global search'te çoklu seçim yok
-              isCurrentItemSelected={false}
-              selectionCount={0}
-            />
-          );
-        case 'birim':
-          return (
-            <Birim_ContextMenu 
-              item={item}
-              selectedItems={[]}
-              isCurrentItemSelected={false}
-              selectionCount={0}
-            />
-          );
-        case 'personel':
-          return (
-            <Personel_ContextMenu 
-              item={item}
-              selectedItems={[]}
-              isCurrentItemSelected={false}
-              selectionCount={0}
-            />
-          );
-        case 'sube':
-          return (
-            <Sube_ContextMenu 
-              item={item}
-              selectedItems={[]}
-              isCurrentItemSelected={false}
-              selectionCount={0}
-            />
-          );
-        default:
-          return null;
-      }
-    };
-
-    const contextMenuComponent = getContextMenuComponent(entityType, item);
-    
-    if (!contextMenuComponent) {
-      return itemComponent;
-    }
-
+    // Tüm entity türleri için context menu desteği var
     return (
       <ContextMenu key={`context-${item.id}`}>
         <ContextMenuTrigger asChild>
           {itemComponent}
         </ContextMenuTrigger>
         <ContextMenuContent className="w-64">
-          {contextMenuComponent}
+          <ContextMenuManager 
+            entityType={entityType} 
+            item={item} 
+            onNavigate={handleContextMenuNavigation}
+          />
         </ContextMenuContent>
       </ContextMenu>
     );
