@@ -269,47 +269,93 @@ export const Malzeme_Columns = () => {
         })),
       },
     },
-    {
-      accessorKey: 'zimmetOzet',
-      accessorFn: row => {
-        const depoda = malzemeDepoda(row);
-        const personelde = malzemePersonelde(row);
+  {
+  accessorKey: 'zimmetOzet',
+  accessorFn: row => {
+    const sonHareket = anlamliSonHareketi(row);
+    
+    if (!sonHareket) return 'Bilinmiyor';
+    
+    const depoda = malzemeDepoda(row);
+    const personelde = malzemePersonelde(row);
 
-        if (depoda) return 'Depoda';
-        if (personelde) return 'Personelde';
-        return 'Bilinmiyor';
-      },
-      header: ({ column }) => <HeaderButton column={column} title="Zimmet Durumu" />,
-      cell: ({ row }) => {
-        const depoda = malzemeDepoda(row.original);
-        const personelde = malzemePersonelde(row.original);
+    if (depoda) {
+      // Depo bilgisini al
+      const konum = sonHareket.konum || sonHareket.hedefKonum;
+      if (konum) {
+        const depoAdi = konum.depo?.ad || 'Bilinmeyen Depo';
+        const konumAdi = konum.ad || 'Bilinmeyen Konum';
+        return `${depoAdi} - ${konumAdi}`;
+      }
+      return 'Depoda (Konum Bilinmiyor)';
+    }
+    
+    if (personelde) {
+      // Personel bilgisini al
+      const personel = sonHareket.hedefPersonel;
+      if (personel) {
+        const personelAdi = `${personel.ad || ''} ${personel.soyad || ''}`.trim();
+        return personelAdi || personel.sicil || 'Bilinmeyen Personel';
+      }
+      return 'Personelde (Kişi Bilinmiyor)';
+    }
+    
+    return 'Bilinmiyor';
+  },
+  header: ({ column }) => <HeaderButton column={column} title="Zimmet Durumu" />,
+  cell: ({ row }) => {
+    const sonHareket = anlamliSonHareketi(row.original);
+    
+    if (!sonHareket) {
+      return <div className="font-medium text-sm text-gray-700">Bilinmiyor</div>;
+    }
+    
+    const depoda = malzemeDepoda(row.original);
+    const personelde = malzemePersonelde(row.original);
 
-        let text = 'Bilinmiyor';
-        let className = 'font-medium text-sm text-gray-700';
+    if (depoda) {
+      const konum = sonHareket.hedefKonum;
+      let displayText = 'Depoda';
+      
+      if (konum) {
+        const depoAdi = konum.depo?.ad || 'Bilinmeyen Depo';
+        const konumAdi = konum.ad || 'Bilinmeyen Konum';
+        displayText = `${depoAdi} - ${konumAdi}`;
+      }
+      
+      return (
+        <div className="font-medium text-sm text-blue-700" title={displayText}>
+          <div className="truncate max-w-[150px]">{displayText}</div>
+        </div>
+      );
+    }
+    
+    if (personelde) {
+      const personel = sonHareket.hedefPersonel;
+      let displayText = 'Personelde';
+      
+      if (personel) {
+        const personelAdi = `${personel.ad || ''} ${personel.soyad || ''} (${personel.sicil || ''})`.trim();
+        displayText = personelAdi || personel.sicil || 'Bilinmeyen Personel';
+      }
+      
+      return (
+        <div className="font-medium text-sm text-green-700" title={displayText}>
+          <div className="truncate max-w-[150px]">{displayText}</div>
+        </div>
+      );
+    }
 
-        if (depoda) {
-          text = 'Depoda';
-          className = 'font-medium text-sm text-blue-700';
-        } else if (personelde) {
-          text = 'Personelde';
-          className = 'font-medium text-sm text-green-700';
-        }
-
-        return <div className={className}>{text}</div>;
-      },
-      filterFn: inArrayFilterFn,
-      size: 120,
-      enableSorting: true,
-      meta: {
-        exportHeader: 'Zimmet Durumu',
-        filterVariant: 'select',
-        filterOptions: [
-          { label: 'Depoda', value: 'Depoda' },
-          { label: 'Personelde', value: 'Personelde' },
-          { label: 'Bilinmiyor', value: 'Bilinmiyor' },
-        ],
-      },
-    },
+    return <div className="font-medium text-sm text-gray-700">Bilinmiyor</div>;
+  },
+  filterFn: inArrayFilterFn,
+  size: 180, // Genişliği artırdık çünkü daha fazla bilgi gösteriyoruz
+  enableSorting: true,
+  meta: {
+    exportHeader: 'Zimmet Durumu',
+    filterVariant: 'text', // Select yerine text yaptık çünkü çok fazla farklı değer olacak
+  },
+},
     {
       accessorKey: 'kondisyon',
       accessorFn: row => {

@@ -14,7 +14,8 @@ export const GlobalSearchInput = ({
   isLoading = false,
   className,
   autoFocus = false,
-  disabled = false
+  disabled = false,
+  size = 'sm' // 'sm', 'default', 'lg' seçenekleri
 }) => {
   const inputRef = useRef(null);
 
@@ -37,12 +38,59 @@ export const GlobalSearchInput = ({
     onFocus?.();
   };
 
+  // Size'a göre padding ve icon boyutlarını ayarla
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'sm':
+        return {
+          input: "h-8 px-8 text-sm",
+          icon: "h-3 w-3",
+          iconLeft: "left-2.5",
+          clearButton: "h-5 w-5 right-0.5",
+          clearIcon: "h-2.5 w-2.5"
+        };
+      case 'lg':
+        return {
+          input: "h-12 px-12 text-base",
+          icon: "h-5 w-5",
+          iconLeft: "left-4",
+          clearButton: "h-8 w-8 right-1",
+          clearIcon: "h-4 w-4"
+        };
+      default: // 'default'
+        return {
+          input: "h-10 px-10 text-sm",
+          icon: "h-4 w-4",
+          iconLeft: "left-3",
+          clearButton: "h-7 w-7 right-1",
+          clearIcon: "h-3 w-3"
+        };
+    }
+  };
+
+  const sizeClasses = getSizeClasses();
+
   return (
     <div className={cn("relative", className)}>
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-      {isLoading && (
-        <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+      {/* Search Icon - Loading durumunda gizlenir */}
+      {!isLoading && (
+        <Search className={cn(
+          "absolute top-1/2 transform -translate-y-1/2 text-muted-foreground",
+          sizeClasses.icon,
+          sizeClasses.iconLeft
+        )} />
       )}
+      
+      {/* Loading Icon */}
+      {isLoading && (
+        <Loader2 className={cn(
+          "absolute top-1/2 transform -translate-y-1/2 animate-spin text-muted-foreground",
+          sizeClasses.icon,
+          sizeClasses.iconLeft
+        )} />
+      )}
+      
+      {/* Input */}
       <Input
         ref={inputRef}
         type="text"
@@ -52,18 +100,24 @@ export const GlobalSearchInput = ({
         onFocus={handleFocus}
         disabled={disabled}
         className={cn(
-          "px-10 py-6 border border-primary",
-          isLoading && "pl-10"
+          sizeClasses.input,
+          "border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary"
         )}
       />
+      
+      {/* Clear Button */}
       {value && !disabled && (
         <Button
           variant="ghost"
           size="sm"
           onClick={handleClear}
-          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-destructive/10"
+          className={cn(
+            "absolute top-1/2 transform -translate-y-1/2 p-0 hover:bg-destructive/10",
+            sizeClasses.clearButton,
+            sizeClasses.iconLeft === "right-1" ? "right-1" : "right-1"
+          )}
         >
-          <X className="h-3 w-3" />
+          <X className={sizeClasses.clearIcon} />
         </Button>
       )}
     </div>
