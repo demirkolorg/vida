@@ -68,7 +68,8 @@ const service = {
               malzemeKondisyonu: true,
               hedefPersonelId: true,
               kaynakPersonelId: true,
-              konumId: true,
+              hedefKonumId: true,
+              kaynakKonumId: true,
             },
             orderBy: { createdAt: 'desc' },
             take: 1,
@@ -118,7 +119,6 @@ const service = {
                   ad: true,
                   soyad: true,
                   sicil: true,
-
                 },
               },
               kaynakPersonel: {
@@ -176,8 +176,8 @@ const service = {
               hareketTuru: true,
               islemTarihi: true,
               malzemeKondisyonu: true,
-              kaynakPersonel: { select: { ad: true,soyad:true, sicil: true } },
-              hedefPersonel: { select: { ad: true, soyad:true,sicil: true } },
+              kaynakPersonel: { select: { ad: true, soyad: true, sicil: true } },
+              hedefPersonel: { select: { ad: true, soyad: true, sicil: true } },
               konum: { select: { ad: true, depo: { select: { ad: true } } } },
               aciklama: true,
             },
