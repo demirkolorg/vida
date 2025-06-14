@@ -25,8 +25,7 @@ import { Malzeme_ListPage } from '@/app/malzeme/pages/ListPage';
 import { MalzemeHareket_ListPage } from '@/app/malzemeHareket/pages/ListPage';
 import { Tutanak_ListPage } from '@/app/tutanak/pages/ListPage';
 
-import TutanakBuilder from "../pages/other/TutanakBuilder"
-import { GlobalSearchPage } from '../app/globalsearch';
+import TutanakBuilder from '../pages/other/TutanakBuilder';
 
 const router = createBrowserRouter([
   {
@@ -120,9 +119,6 @@ const router = createBrowserRouter([
               {
                 path: '/builder',
                 element: <TutanakBuilder />,
-              },  {
-                path: '/search',
-                element: <GlobalSearchPage />,
               },
             ],
           },

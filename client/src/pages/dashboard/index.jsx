@@ -17,9 +17,6 @@ import { Malzeme_Store } from '@/app/malzeme/constants/store';
 import { MalzemeHareket_Store } from '@/app/malzemeHareket/constants/store';
 import { Personel_Store } from '@/app/personel/constants/store';
 import { useAuthStore } from '@/stores/authStore';
-import { HeaderSearchComponent } from '@/app/globalsearch';
-// import { GlobalSearchComponent } from '@/app/globalsearch/components/GlobalSearchComponent';
-import { GlobalSearchComponent } from '@/app/globalSearch';
 
 export function DashboardPage() {
   const user = useAuthStore(state => state.user);

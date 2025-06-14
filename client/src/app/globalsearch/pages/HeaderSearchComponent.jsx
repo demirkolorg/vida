@@ -1,20 +1,9 @@
-// client/src/app/globalSearch/index.js - Main export file
-export { GlobalSearchComponent } from './components/GlobalSearchComponent';
-export { QuickSearchComponent } from './components/QuickSearchComponent';
-export { GlobalSearchPage } from './pages/GlobalSearchPage';
-export { useGlobalSearch } from './hooks/useGlobalSearch';
-export { GlobalSearch_Store } from './constants/store';
-export { GlobalSearch_ApiService } from './constants/api';
-export { GlobalSearch_RequestSchema, QuickSearch_RequestSchema, GlobalSearchResponse_Schema } from './constants/schema';
-export { entityConfig, getEntityConfig, getAllEntityTypes, getContextMenuSupportedEntities } from './helpers/entityConfig';
-export { validateSearchRequest, validateQuickSearchRequest, formatSearchResults, getDisplayName, highlightSearchTerm, debounce, getSearchStatsText } from './helpers/searchUtils';
-
 // client/src/app/globalSearch/components/HeaderSearchComponent.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GlobalSearchComponent } from './components/GlobalSearchComponent';
 import { toast } from 'sonner';
-import { createGlobalSearchNavigationHandler } from './components/globalSearchNavigation';
+import { GlobalSearchComponent } from '../components/GlobalSearchComponent';
+import { createGlobalSearchNavigationHandler } from '../components/globalSearchNavigation';
 
 // Sheet'leri import et
 import { PersonelZimmetSheet } from '@/app/personel/sheets/PersonelZimmetSheet';
