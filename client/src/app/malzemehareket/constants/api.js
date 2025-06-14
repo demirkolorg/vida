@@ -1,5 +1,5 @@
 // client/src/app/malzemehareket/constants/api.js - Bulk işlemler eklendi
-import { createBaseApiService } from "@/api/BaseApiServices";
+import { createBaseApiService } from '@/api/BaseApiServices';
 import { axiosInstance } from '@/api/index';
 
 export const EntityType = 'malzemeHareket';
@@ -9,7 +9,7 @@ export const EntityHuman = 'Malzeme Hareket';
 export const MalzemeHareket_ApiService = createBaseApiService(EntityType, EntityHuman);
 
 // Özel API metodları
-MalzemeHareket_ApiService.getMalzemeGecmisi = async (malzemeId) => {
+MalzemeHareket_ApiService.getMalzemeGecmisi = async malzemeId => {
   try {
     const response = await axiosInstance('post', `${EntityType}/getMalzemeGecmisi`, { malzemeId });
     return response?.data?.data || [];
@@ -19,9 +19,15 @@ MalzemeHareket_ApiService.getMalzemeGecmisi = async (malzemeId) => {
   }
 };
 
-MalzemeHareket_ApiService.getPersonelZimmetleri = async (personelId) => {
+MalzemeHareket_ApiService.getPersonelZimmetleri = async personelId => {
   try {
+    console.log('API çağrısı yapılıyor, personelId:', personelId);
+
     const response = await axiosInstance('post', `${EntityType}/getPersonelZimmetleri`, { personelId });
+
+    console.log('API yanıtı alındı:', response?.data);
+    console.log('API data kısmı:', response?.data?.data);
+
     return response?.data?.data || [];
   } catch (error) {
     console.error(`API hatası (${EntityHuman} getPersonelZimmetleri):`, error?.response?.data || error.message || error);
@@ -30,7 +36,7 @@ MalzemeHareket_ApiService.getPersonelZimmetleri = async (personelId) => {
 };
 
 // İş süreçleri için özel API metodları
-MalzemeHareket_ApiService.zimmet = async (data) => {
+MalzemeHareket_ApiService.zimmet = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/zimmet`, data);
     return response?.data?.data || null;
@@ -40,7 +46,7 @@ MalzemeHareket_ApiService.zimmet = async (data) => {
   }
 };
 
-MalzemeHareket_ApiService.iade = async (data) => {
+MalzemeHareket_ApiService.iade = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/iade`, data);
     return response?.data?.data || null;
@@ -50,7 +56,7 @@ MalzemeHareket_ApiService.iade = async (data) => {
   }
 };
 
-MalzemeHareket_ApiService.devir = async (data) => {
+MalzemeHareket_ApiService.devir = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/devir`, data);
     return response?.data?.data || null;
@@ -60,7 +66,7 @@ MalzemeHareket_ApiService.devir = async (data) => {
   }
 };
 
-MalzemeHareket_ApiService.depoTransfer = async (data) => {
+MalzemeHareket_ApiService.depoTransfer = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/depoTransfer`, data);
     return response?.data?.data || null;
@@ -70,7 +76,7 @@ MalzemeHareket_ApiService.depoTransfer = async (data) => {
   }
 };
 
-MalzemeHareket_ApiService.kondisyon = async (data) => {
+MalzemeHareket_ApiService.kondisyon = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/kondisyon`, data);
     return response?.data?.data || null;
@@ -80,7 +86,7 @@ MalzemeHareket_ApiService.kondisyon = async (data) => {
   }
 };
 
-MalzemeHareket_ApiService.kayip = async (data) => {
+MalzemeHareket_ApiService.kayip = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/kayip`, data);
     return response?.data?.data || null;
@@ -90,7 +96,7 @@ MalzemeHareket_ApiService.kayip = async (data) => {
   }
 };
 
-MalzemeHareket_ApiService.dusum = async (data) => {
+MalzemeHareket_ApiService.dusum = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/dusum`, data);
     return response?.data?.data || null;
@@ -100,7 +106,7 @@ MalzemeHareket_ApiService.dusum = async (data) => {
   }
 };
 
-MalzemeHareket_ApiService.kayit = async (data) => {
+MalzemeHareket_ApiService.kayit = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/kayit`, data);
     return response?.data?.data || null;
@@ -115,7 +121,7 @@ MalzemeHareket_ApiService.kayit = async (data) => {
 // ================================
 
 // Bulk zimmet işlemi
-MalzemeHareket_ApiService.bulkZimmet = async (data) => {
+MalzemeHareket_ApiService.bulkZimmet = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/bulk/zimmet`, data);
     return response?.data?.data || null;
@@ -126,7 +132,7 @@ MalzemeHareket_ApiService.bulkZimmet = async (data) => {
 };
 
 // Bulk iade işlemi
-MalzemeHareket_ApiService.bulkIade = async (data) => {
+MalzemeHareket_ApiService.bulkIade = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/bulk/iade`, data);
     return response?.data?.data || null;
@@ -136,7 +142,7 @@ MalzemeHareket_ApiService.bulkIade = async (data) => {
   }
 };
 // Bulk devir işlemi
-MalzemeHareket_ApiService.bulkDevir = async (data) => {
+MalzemeHareket_ApiService.bulkDevir = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/bulk/devir`, data);
     return response?.data?.data || null;
@@ -146,7 +152,7 @@ MalzemeHareket_ApiService.bulkDevir = async (data) => {
   }
 };
 // Bulk depo transfer işlemi
-MalzemeHareket_ApiService.bulkDepoTransfer = async (data) => {
+MalzemeHareket_ApiService.bulkDepoTransfer = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/bulk/depoTransfer`, data);
     return response?.data?.data || null;
@@ -157,7 +163,7 @@ MalzemeHareket_ApiService.bulkDepoTransfer = async (data) => {
 };
 
 // Bulk kondisyon güncelleme işlemi
-MalzemeHareket_ApiService.bulkKondisyonGuncelleme = async (data) => {
+MalzemeHareket_ApiService.bulkKondisyonGuncelleme = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/bulk/kondisyonGuncelleme`, data);
     return response?.data?.data || null;
@@ -168,7 +174,7 @@ MalzemeHareket_ApiService.bulkKondisyonGuncelleme = async (data) => {
 };
 
 // Bulk kayıp işlemi
-MalzemeHareket_ApiService.bulkKayip = async (data) => {
+MalzemeHareket_ApiService.bulkKayip = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/bulk/kayip`, data);
     return response?.data?.data || null;
@@ -179,7 +185,7 @@ MalzemeHareket_ApiService.bulkKayip = async (data) => {
 };
 
 // Bulk düşüm işlemi
-MalzemeHareket_ApiService.bulkDusum = async (data) => {
+MalzemeHareket_ApiService.bulkDusum = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/bulk/dusum`, data);
     return response?.data?.data || null;
@@ -189,7 +195,7 @@ MalzemeHareket_ApiService.bulkDusum = async (data) => {
   }
 };
 // Bulk kayit işlemi
-MalzemeHareket_ApiService.bulkKayit = async (data) => {
+MalzemeHareket_ApiService.bulkKayit = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/bulk/kayit`, data);
     return response?.data?.data || null;
@@ -199,7 +205,7 @@ MalzemeHareket_ApiService.bulkKayit = async (data) => {
   }
 };
 // Bulk status güncelleme
-MalzemeHareket_ApiService.bulkUpdateStatus = async (data) => {
+MalzemeHareket_ApiService.bulkUpdateStatus = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/bulk/updateStatus`, data);
     return response?.data?.data || null;
@@ -209,7 +215,7 @@ MalzemeHareket_ApiService.bulkUpdateStatus = async (data) => {
   }
 };
 
-MalzemeHareket_ApiService.bulkDelete = async (data) => {
+MalzemeHareket_ApiService.bulkDelete = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/bulk/delete`, data);
     return response?.data?.data || null;
@@ -220,7 +226,7 @@ MalzemeHareket_ApiService.bulkDelete = async (data) => {
 };
 
 // Bulk malzeme durumu kontrolü
-MalzemeHareket_ApiService.bulkCheckMalzemeDurumu = async (data) => {
+MalzemeHareket_ApiService.bulkCheckMalzemeDurumu = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/bulk/checkMalzemeDurumu`, data);
     return response?.data?.data || null;
@@ -235,7 +241,7 @@ MalzemeHareket_ApiService.bulkCheckMalzemeDurumu = async (data) => {
 // ================================
 
 // Hareket istatistikleri
-MalzemeHareket_ApiService.getHareketIstatistikleri = async (data) => {
+MalzemeHareket_ApiService.getHareketIstatistikleri = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/istatistik/hareket`, data);
     return response?.data?.data || null;
@@ -246,7 +252,7 @@ MalzemeHareket_ApiService.getHareketIstatistikleri = async (data) => {
 };
 
 // Personel istatistikleri
-MalzemeHareket_ApiService.getPersonelIstatistikleri = async (data) => {
+MalzemeHareket_ApiService.getPersonelIstatistikleri = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/istatistik/personel`, data);
     return response?.data?.data || null;
@@ -257,7 +263,7 @@ MalzemeHareket_ApiService.getPersonelIstatistikleri = async (data) => {
 };
 
 // Malzeme istatistikleri
-MalzemeHareket_ApiService.getMalzemeIstatistikleri = async (data) => {
+MalzemeHareket_ApiService.getMalzemeIstatistikleri = async data => {
   try {
     const response = await axiosInstance('post', `${EntityType}/istatistik/malzeme`, data);
     return response?.data?.data || null;

@@ -39,6 +39,8 @@ const includeEntity = {
 const orderByEntity = { createdAt: 'desc' };
 
 const service = {
+  
+
   checkExistsById: async id => {
     const result = await prisma[PrismaName].findUnique({ where: { id } });
     if (!result || result.status === AuditStatusEnum.Silindi) {
@@ -2152,14 +2154,18 @@ const service = {
     }
   },
 
-  // Personel zimmetleri
+ 
+
+  // Alternatif versiyon - Malzeme hareket tablosundan başlayarak
   getPersonelZimmetleri: async data => {
     try {
       if (!data.personelId) throw new Error('Personel ID zorunludur.');
+
+      
       await service.checkPersonelExists(data.personelId);
 
-      // Personelin zimmetli malzemelerini getir (son hareketlerini kontrol ederek)
-      const allHareketler = await prisma[PrismaName].findMany({
+      // Önce personelin hedef olduğu tüm hareketleri al
+      const personelHareketleri = await prisma.malzemeHareket.findMany({
         where: {
           hedefPersonelId: data.personelId,
           status: AuditStatusEnum.Aktif,
@@ -2167,24 +2173,70 @@ const service = {
         include: {
           malzeme: {
             include: {
+              birim: { select: { id: true, ad: true } },
+              sube: { select: { id: true, ad: true } },
+              sabitKodu: { select: { id: true, ad: true } },
+              marka: { select: { id: true, ad: true } },
+              model: { select: { id: true, ad: true } },
               malzemeHareketleri: {
+                where: { status: AuditStatusEnum.Aktif },
                 orderBy: { createdAt: 'desc' },
                 take: 1,
+                include: {
+                  hedefPersonel: { select: { id: true, ad: true, soyad: true, sicil: true } },
+                  kaynakPersonel: { select: { id: true, ad: true, soyad: true, sicil: true } },
+                },
               },
             },
           },
-          ...includeEntity,
+          kaynakPersonel: { select: { id: true, ad: true, soyad: true, sicil: true } },
+          hedefPersonel: { select: { id: true, ad: true, soyad: true, sicil: true } },
+          kaynakKonum: {
+            select: {
+              id: true,
+              ad: true,
+              depo: { select: { id: true, ad: true } },
+            },
+          },
+          hedefKonum: {
+            select: {
+              id: true,
+              ad: true,
+              depo: { select: { id: true, ad: true } },
+            },
+          },
         },
-        orderBy: orderByEntity,
+        orderBy: { createdAt: 'desc' },
       });
+      console.log("personelHareketleri: ", personelHareketleri)
 
-      // Sadece hala zimmetli olan malzemeleri filtrele
-      const zimmetliHareketler = allHareketler.filter(hareket => {
-        const sonHareket = hareket.malzeme?.malzemeHareketleri?.[0];
-        return sonHareket && ['Zimmet', 'Devir'].includes(sonHareket.hareketTuru) && sonHareket.hedefPersonelId === data.personelId;
-      });
+      // Her malzeme için son hareketini kontrol et ve hala zimmetli olanları filtrele
+      const zimmetliMalzemeler = [];
 
-      return zimmetliHareketler;
+      for (const hareket of personelHareketleri) {
+        const malzeme = hareket.malzeme;
+        const sonHareket = malzeme.malzemeHareketleri[0];
+
+        // Son hareket bu personele zimmet veya devir ise zimmetli sayılır
+        if (sonHareket && ['Zimmet', 'Devir'].includes(sonHareket.hareketTuru) && sonHareket.hedefPersonel?.id === data.personelId) {
+          zimmetliMalzemeler.push({
+            ...malzeme,
+            zimmetBilgileri: {
+              zimmetTarihi: sonHareket.islemTarihi,
+              zimmetTuru: sonHareket.hareketTuru,
+              malzemeKondisyonu: sonHareket.malzemeKondisyonu,
+              zimmetAciklamasi: sonHareket.aciklama,
+              kaynakPersonel: hareket.kaynakPersonel,
+              kaynakKonum: hareket.kaynakKonum,
+            },
+          });
+        }
+      }
+
+      // Benzersiz malzemeleri döndür (aynı malzeme birden fazla hareket geçmişine sahip olabilir)
+      const benzersizMalzemeler = zimmetliMalzemeler.filter((malzeme, index, self) => index === self.findIndex(m => m.id === malzeme.id));
+
+      return benzersizMalzemeler;
     } catch (error) {
       throw error;
     }
