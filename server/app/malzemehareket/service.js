@@ -39,8 +39,6 @@ const includeEntity = {
 const orderByEntity = { createdAt: 'desc' };
 
 const service = {
-  
-
   checkExistsById: async id => {
     const result = await prisma[PrismaName].findUnique({ where: { id } });
     if (!result || result.status === AuditStatusEnum.Silindi) {
@@ -2154,14 +2152,11 @@ const service = {
     }
   },
 
- 
-
   // Alternatif versiyon - Malzeme hareket tablosundan başlayarak
   getPersonelZimmetleri: async data => {
     try {
       if (!data.personelId) throw new Error('Personel ID zorunludur.');
 
-      
       await service.checkPersonelExists(data.personelId);
 
       // Önce personelin hedef olduğu tüm hareketleri al
@@ -2208,7 +2203,6 @@ const service = {
         },
         orderBy: { createdAt: 'desc' },
       });
-      console.log("personelHareketleri: ", personelHareketleri)
 
       // Her malzeme için son hareketini kontrol et ve hala zimmetli olanları filtrele
       const zimmetliMalzemeler = [];
