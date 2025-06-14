@@ -1,7 +1,7 @@
-// client/src/app/globalsearch/components/GlobalSearchComponent.jsx - Debug versiyon
+// GlobalSearchComponent'e debug ekleyelim
 import React, { useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ContextMenu, ContextMenuTrigger, ContextMenuContent } from '@/components/ui/context-menu';
+import { ContextMenu, ContextMenuTrigger, ContextMenuContent,ContextMenuItem } from '@/components/ui/context-menu';
 import { cn } from '@/lib/utils';
 import { useGlobalSearch } from '../hooks/useGlobalSearch';
 import { GlobalSearchInput } from './GlobalSearchInput';
@@ -10,6 +10,8 @@ import { RecentSearches } from './RecentSearches';
 import { EmptyState } from './EmptyState';
 import { LoadingState } from './LoadingState';
 import { ContextMenuManager } from '../contextMenus';
+
+
 
 export const GlobalSearchComponent = ({
   placeholder = "Tüm kayıtlarda ara...",
@@ -22,7 +24,7 @@ export const GlobalSearchComponent = ({
 }) => {
   const containerRef = useRef(null);
 
-  console.log('GlobalSearchComponent props:', { enableContextMenu, entityTypes });
+  console.log('🔧 GlobalSearchComponent props:', { enableContextMenu, entityTypes });
 
   const {
     query,
@@ -68,7 +70,7 @@ export const GlobalSearchComponent = ({
 
   // Handle result selection
   const handleResultSelect = (item, entityType, options = {}) => {
-    console.log('handleResultSelect called:', { item, entityType, options });
+    console.log('🔧 handleResultSelect called:', { item, entityType, options });
     saveToRecent(query);
     setIsOpen(false);
     onResultSelect?.(item, entityType, options);
@@ -76,7 +78,7 @@ export const GlobalSearchComponent = ({
 
   // Context menu navigation handler
   const handleContextMenuNavigation = (item, entityType, action) => {
-    console.log('Context menu navigation:', { item, entityType, action });
+    console.log('🔧 Context menu navigation:', { item, entityType, action });
     
     // Action türüne göre farklı navigasyonlar yapılabilir
     switch (action) {
@@ -91,9 +93,9 @@ export const GlobalSearchComponent = ({
     }
   };
 
-  // Context menu renderer - DÜZELTME
+  // Context menu renderer
   const renderWithContextMenu = (itemComponent, item, entityType) => {
-    console.log('renderWithContextMenu called:', { 
+    console.log('🔧 renderWithContextMenu called:', { 
       entityType, 
       enableContextMenu, 
       itemId: item?.id,
@@ -101,11 +103,10 @@ export const GlobalSearchComponent = ({
     });
     
     if (!enableContextMenu) {
-      console.log('Context menu disabled globally');
+      console.log('🔧 Context menu disabled globally');
       return itemComponent;
     }
 
-    // Context menu desteği olan entity türleri
     const supportedEntities = [
       'malzeme', 
       'personel', 
@@ -121,18 +122,27 @@ export const GlobalSearchComponent = ({
     ];
 
     if (!supportedEntities.includes(entityType)) {
-      console.log(`Context menu not supported for entity type: ${entityType}`);
+      console.log(`🔧 Context menu not supported for entity type: ${entityType}`);
       return itemComponent;
     }
 
     try {
-      console.log(`Creating context menu for ${entityType} - ${item.id}`);
-      return (
+      console.log(`🔧 Creating context menu for ${entityType} - ${item.id}`);
+      
+      // Context menu'yu wrap ederken ekstra log ekleyelim
+      const wrappedComponent = (
         <ContextMenu key={`context-${item.id}`}>
-          <ContextMenuTrigger asChild>
+          <ContextMenuTrigger 
+            asChild
+            onPointerDown={(e) => console.log('🔧 ContextMenuTrigger pointerDown:', e)}
+            onContextMenu={(e) => console.log('🔧 ContextMenuTrigger contextMenu:', e)}
+          >
             {itemComponent}
           </ContextMenuTrigger>
-          <ContextMenuContent className="w-64">
+          <ContextMenuContent 
+            className="w-64"
+            onOpenAutoFocus={(e) => console.log('🔧 ContextMenuContent opened:', e)}
+          >
             <ContextMenuManager 
               entityType={entityType} 
               item={item} 
@@ -141,8 +151,10 @@ export const GlobalSearchComponent = ({
           </ContextMenuContent>
         </ContextMenu>
       );
+      
+      return wrappedComponent;
     } catch (error) {
-      console.error('Context menu render error:', error);
+      console.error('🔧 Context menu render error:', error);
       return itemComponent;
     }
   };
@@ -154,25 +166,30 @@ export const GlobalSearchComponent = ({
     }
 
     if (hasQuery) {
-      console.log('Rendering SearchResults with:', {
+      console.log('🔧 Rendering SearchResults with:', {
         enableContextMenu,
         contextMenuRenderer: !!renderWithContextMenu,
         resultsKeys: Object.keys(results)
       });
 
       return (
-        <SearchResults
-          results={results}
-          query={query}
-          totalResults={totalResults}
-          isLoading={isLoading}
-          error={error}
-          expandedCategories={expandedCategories}
-          onToggleCategoryExpansion={toggleCategoryExpansion}
-          onItemSelect={handleResultSelect}
-          enableContextMenu={enableContextMenu}
-          contextMenuRenderer={renderWithContextMenu}
-        />
+        <>
+          {/* Debug componenti ekle */}
+          {/* <SuperDebugContextMenu /> */}
+          
+          <SearchResults
+            results={results}
+            query={query}
+            totalResults={totalResults}
+            isLoading={isLoading}
+            error={error}
+            expandedCategories={expandedCategories}
+            onToggleCategoryExpansion={toggleCategoryExpansion}
+            onItemSelect={handleResultSelect}
+            enableContextMenu={enableContextMenu}
+            contextMenuRenderer={renderWithContextMenu}
+          />
+        </>
       );
     }
 

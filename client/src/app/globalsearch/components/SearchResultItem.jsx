@@ -1,19 +1,48 @@
-// client/src/app/globalSearch/components/SearchResultItem.jsx
-import React from 'react';
+// client/src/app/globalsearch/components/SearchResultItem.jsx - FINAL FIX
+import React, { forwardRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { getEntityConfig } from '../helpers/entityConfig';
 
-export const SearchResultItem = ({ item, entityType, onSelect, hasContextMenu = false, searchTerm = '', className }) => {
+export const SearchResultItem = forwardRef(({ 
+  item, 
+  entityType, 
+  onSelect, 
+  hasContextMenu = false, 
+  searchTerm = '', 
+  className,
+  ...props 
+}, ref) => {
   const config = getEntityConfig(entityType);
   const Icon = config.icon;
+
+  // SORUN BURADA! onClick handler'ı context menu'yu engelliyor
+  // Event handler'ları tamamen değiştir
+  const handleMouseDown = (e) => {
+    console.log('🔧 SearchResultItem mouseDown:', e.button, e.type);
+    
+    // Sadece sol tık için select işlemi yap
+    if (e.button === 0) { // Sol tık
+      // Context menu varsa, sol tıkla sadece select yap, context menu açık değilse
+      onSelect?.(item, entityType);
+    }
+    // Sağ tık (button === 2) için hiçbir şey yapma, Radix halletsin
+  };
+
+  // Context menu için özel handler
+  const handleContextMenu = (e) => {
+    console.log('🔧 SearchResultItem contextMenu event:', e);
+    // Bu event'i durdurmayalım, Radix'e bıraka
+    // e.preventDefault(); // BUNU YAPMAYIN!
+    // e.stopPropagation(); // BUNU DA YAPMAYIN!
+  };
 
   const highlightText = text => {
     if (!text || !searchTerm) return text;
     const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
     return text.split(regex).map((part, index) =>
       regex.test(part) ? (
-        <mark key={index} className="bg-primary/20 text-primary  px-0.5 rounded">
+        <mark key={index} className="bg-primary/20 text-primary px-0.5 rounded">
           {part}
         </mark>
       ) : (
@@ -31,7 +60,7 @@ export const SearchResultItem = ({ item, entityType, onSelect, hasContextMenu = 
             {item.aciklama && <div className="text-sm text-muted-foreground">{highlightText(item.aciklama)}</div>}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Badge variant="outline" className="text-xs">
-                {item.status}
+                {item.status || 'Aktif'}
               </Badge>
               {(item.subeler?.length || 0) > 0 && <span>{item.subeler.length} şube</span>}
               {(item.malzemeler?.length || 0) > 0 && <span>{item.malzemeler.length} malzeme</span>}
@@ -48,7 +77,7 @@ export const SearchResultItem = ({ item, entityType, onSelect, hasContextMenu = 
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>Sicil: {highlightText(item.sicil)}</span>
                 <Badge variant="outline" className="text-xs">
-                  {item.role}
+                  {item.role || 'Personel'}
                 </Badge>
               </div>
               {item.buro && (
@@ -71,7 +100,7 @@ export const SearchResultItem = ({ item, entityType, onSelect, hasContextMenu = 
               {item.marka && <span>{highlightText(item.marka.ad)}</span>}
               {item.model && <span>{highlightText(item.model.ad)}</span>}
               <Badge variant="outline" className="text-xs">
-                {item.status}
+                {item.status || 'Aktif'}
               </Badge>
               {item.malzemeTipi && (
                 <Badge variant="secondary" className="text-xs">
@@ -145,9 +174,27 @@ export const SearchResultItem = ({ item, entityType, onSelect, hasContextMenu = 
   };
 
   return (
-    <div className={cn('flex items-start gap-3 p-3 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/50 last:border-b-0', className)} onClick={() => onSelect?.(item, entityType)}>
+    <div 
+      ref={ref}
+      className={cn(
+        'flex items-start gap-3 p-3 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/50 last:border-b-0',
+        hasContextMenu && 'select-none', // Context menu için text selection'ı kapat
+        className
+      )} 
+      onMouseDown={handleMouseDown} // onClick yerine onMouseDown kullan
+      onContextMenu={handleContextMenu} // Context menu event'ini logla ama durdurum
+      {...props}
+    >
       <Icon className={cn('h-5 w-5 mt-0.5', config.color)} />
       <div className="flex-1 min-w-0">{renderItemContent()}</div>
+      {/* Debug indicator */}
+      {hasContextMenu && (
+        <div className="text-xs bg-green-100 text-green-700 px-1 rounded">
+          R-CLICK
+        </div>
+      )}
     </div>
   );
-};
+});
+
+SearchResultItem.displayName = 'SearchResultItem';
