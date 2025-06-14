@@ -17,8 +17,39 @@ import { FilterManagementSheet } from '@/app/filter/sheet/FilterManagementSheet'
 import { AdvancedFilterSheet } from '@/app/filter/sheet/AdvancedFilterSheet';
 import { toast } from 'sonner';
 import { getMySettings, updateMySettings } from '@/api/userSettings';
+import { useHighlightId, useHighlightIdClear } from '@/hooks/useHighlightId';
 
-export function DataTable({ entityType, entityHuman, columns: specificColumns, data, isLoading, onRowClick, facetedFilterSetup = [], onRefresh, onToggleStatus, toolbarActions, enableRowSelection = true, hideNewButton = false, moreButtonRendered, rowContextMenu, initialSortingState = [], summarySetup = [], columnVisibilityData = {}, includeAuditColumns = true, renderCollapsibleToolbarContent, displayStatusFilter, enableColumnReordering = false, onRowSelectionChange, showRowSelectionColumn, selectionMode, selectedRowIds = [], enableSelectAll, showRowNumberColumn = true, autoClickFirstRow = false }) {
+export function DataTable({
+  entityType,
+  entityHuman,
+  columns: specificColumns,
+  data,
+  isLoading,
+  onRowClick,
+  facetedFilterSetup = [],
+  onRefresh,
+  onToggleStatus,
+  toolbarActions,
+  enableRowSelection = true,
+  hideNewButton = false,
+  moreButtonRendered,
+  rowContextMenu,
+  initialSortingState = [],
+  summarySetup = [],
+  columnVisibilityData = {},
+  includeAuditColumns = true,
+  renderCollapsibleToolbarContent,
+  displayStatusFilter,
+  enableColumnReordering = false,
+  onRowSelectionChange,
+  showRowSelectionColumn,
+  selectionMode,
+  selectedRowIds = [],
+  enableSelectAll,
+  showRowNumberColumn = true,
+  autoClickFirstRow = false,
+  // highlightId =null
+}) {
   const openSheet = useSheetStore(state => state.openSheet);
   const [columnFilters, setColumnFilters] = useState([]);
   const [globalSearchInput, setGlobalSearchInput] = useState('');
@@ -114,8 +145,18 @@ export function DataTable({ entityType, entityHuman, columns: specificColumns, d
   }, [userSettings, entityType]);
 
   const initialVisibility = useMemo(() => {
-    const auditColumnDefaultVisibility = includeAuditColumns ? { createdBy: false, createdAt: false, updatedBy: false, updatedAt: false } : {};
-    const defaultVisibility = { ...auditColumnDefaultVisibility, ...columnVisibilityData };
+    const auditColumnDefaultVisibility = includeAuditColumns
+      ? {
+          createdBy: false,
+          createdAt: false,
+          updatedBy: false,
+          updatedAt: false,
+        }
+      : {};
+    const defaultVisibility = {
+      ...auditColumnDefaultVisibility,
+      ...columnVisibilityData,
+    };
 
     // Eğer kaydedilmiş ayarlar varsa, onları kullan
     if (savedColumnSettings?.columnVisibility) {
@@ -139,9 +180,22 @@ export function DataTable({ entityType, entityHuman, columns: specificColumns, d
   useEffect(() => {
     if (!isLoadingSettings && savedColumnSettings) {
       if (savedColumnSettings.columnVisibility) {
-        const auditColumnDefaultVisibility = includeAuditColumns ? { createdBy: false, createdAt: false, updatedBy: false, updatedAt: false } : {};
-        const defaultVisibility = { ...auditColumnDefaultVisibility, ...columnVisibilityData };
-        setColumnVisibility({ ...defaultVisibility, ...savedColumnSettings.columnVisibility });
+        const auditColumnDefaultVisibility = includeAuditColumns
+          ? {
+              createdBy: false,
+              createdAt: false,
+              updatedBy: false,
+              updatedAt: false,
+            }
+          : {};
+        const defaultVisibility = {
+          ...auditColumnDefaultVisibility,
+          ...columnVisibilityData,
+        };
+        setColumnVisibility({
+          ...defaultVisibility,
+          ...savedColumnSettings.columnVisibility,
+        });
       }
 
       if (savedColumnSettings.columnSizing) {
@@ -445,8 +499,18 @@ export function DataTable({ entityType, entityHuman, columns: specificColumns, d
   const resetColumnSettings = useCallback(async () => {
     try {
       // Varsayılan ayarlara dön
-      const auditColumnDefaultVisibility = includeAuditColumns ? { createdBy: false, createdAt: false, updatedBy: false, updatedAt: false } : {};
-      const defaultVisibility = { ...auditColumnDefaultVisibility, ...columnVisibilityData };
+      const auditColumnDefaultVisibility = includeAuditColumns
+        ? {
+            createdBy: false,
+            createdAt: false,
+            updatedBy: false,
+            updatedAt: false,
+          }
+        : {};
+      const defaultVisibility = {
+        ...auditColumnDefaultVisibility,
+        ...columnVisibilityData,
+      };
 
       setColumnVisibility(defaultVisibility);
       setColumnSizing({});
@@ -472,22 +536,70 @@ export function DataTable({ entityType, entityHuman, columns: specificColumns, d
 
   const handleFirstRowClicked = useCallback(() => {}, []);
 
+  const highlightId = useHighlightId();
+  const clearHighlight = useHighlightIdClear();
+
+  useEffect(() => {
+    if (highlightId && data.length > 0) {
+      const timer = setTimeout(() => {
+        clearHighlight();
+      }, 5000); // 5 saniye sonra temizle
+
+      return () => clearTimeout(timer);
+    }
+  }, [highlightId, data.length, clearHighlight]);
+
+  // HighlightId için otomatik sayfa navigasyonu
+  useEffect(() => {
+    if (highlightId && data && data.length > 0 && !isLoading) {
+      // Highlight edilecek kaydın indeksini bul
+      const targetIndex = data.findIndex(item => item.id?.toString() === highlightId?.toString());
+
+      if (targetIndex !== -1) {
+        // Hangi sayfada olması gerektiğini hesapla
+        const pageSize = table.getState().pagination.pageSize;
+        const targetPage = Math.floor(targetIndex / pageSize);
+        const currentPage = table.getState().pagination.pageIndex;
+
+        // Eğer farklı bir sayfadaysa, o sayfaya git
+        if (targetPage !== currentPage) {
+          console.log(`HighlightId ${highlightId} found at index ${targetIndex}, navigating to page ${targetPage + 1}`);
+          table.setPageIndex(targetPage);
+
+          // Sayfa değiştiğinde bildirim göster
+          toast.info(`Aranan kayıt ${targetPage + 1}. sayfada bulundu`);
+        }
+
+        // Sayfaya gittikten sonra satırı scroll view'a getir
+        setTimeout(() => {
+          const highlightedRow = document.querySelector(`[data-row-id="${highlightId}"]`);
+          if (highlightedRow) {
+            highlightedRow.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+            });
+          }
+        }, 100);
+      } else {
+        console.warn(`HighlightId ${highlightId} not found in current data`);
+      }
+    }
+  }, [highlightId, data, isLoading, table]);
+
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden">
       <FilterManagementSheet sheetTypeIdentifier="filterManagement" entityType={entityType} entityHuman={entityHuman} table={table} onClearAllFilters={handleClearAllFilters} onApplySavedFilter={handleApplySavedFilter} isTableFiltered={isTableFiltered} />
       <AdvancedFilterSheet sheetTypeIdentifier="advancedFilter" entityType={entityType} entityHuman={entityHuman} table={table} onApplyFilters={applyAdvancedFiltersToTable} />
 
       <div className="flex-shrink-0">
-        <ToolbarIndex table={table} globalSearchTerm={globalSearchInput} onGlobalSearchChange={handleGlobalSearchInputChange} facetedFilterSetup={facetedFilterSetup} data={data} moreButtonRendered={moreButtonRendered} toolbarActions={toolbarActions} onRefresh={onRefresh} isLoading={isLoading} hideNewButton={hideNewButton} handleCreate={handleCreate} isCollapsibleToolbarOpen={isCollapsibleToolbarOpen} setIsCollapsibleToolbarOpen={setIsCollapsibleToolbarOpen} onClearAllFilters={handleClearAllFilters} renderCollapsibleToolbarContent={renderCollapsibleToolbarContent} entityType={entityType} displayStatusFilter={displayStatusFilter} onToggleStatus={onToggleStatus} isTableFiltered={isTableFiltered} bulkActions={bulkActions} resetColumnSettings={resetColumnSettings} selectedRowCount={selectedRowCount} clearSelection={clearSelection}/>
+        <ToolbarIndex table={table} globalSearchTerm={globalSearchInput} onGlobalSearchChange={handleGlobalSearchInputChange} facetedFilterSetup={facetedFilterSetup} data={data} moreButtonRendered={moreButtonRendered} toolbarActions={toolbarActions} onRefresh={onRefresh} isLoading={isLoading} hideNewButton={hideNewButton} handleCreate={handleCreate} isCollapsibleToolbarOpen={isCollapsibleToolbarOpen} setIsCollapsibleToolbarOpen={setIsCollapsibleToolbarOpen} onClearAllFilters={handleClearAllFilters} renderCollapsibleToolbarContent={renderCollapsibleToolbarContent} entityType={entityType} displayStatusFilter={displayStatusFilter} onToggleStatus={onToggleStatus} isTableFiltered={isTableFiltered} bulkActions={bulkActions} resetColumnSettings={resetColumnSettings} selectedRowCount={selectedRowCount} clearSelection={clearSelection} />
       </div>
-
-    
 
       <div className="flex-1 min-h-0 rounded-md border overflow-hidden">
         <div className="h-full overflow-y-auto relative scrollbar dark:dark-scrollbar" ref={scrollRef}>
           <Table className="w-full table-fixed">
             <DataTableHeader table={table} />
-            <DataTableBody table={table} isLoading={isLoading} onRowClick={onRowClick} autoClickFirstRow={autoClickFirstRow} onFirstRowClicked={handleFirstRowClicked} rowContextMenu={rowContextMenu} enableRowSelection={enableRowSelection} visibleColumnsCount={visibleColumnsCount} />
+            <DataTableBody table={table} isLoading={isLoading} onRowClick={onRowClick} autoClickFirstRow={autoClickFirstRow} onFirstRowClicked={handleFirstRowClicked} rowContextMenu={rowContextMenu} enableRowSelection={enableRowSelection} visibleColumnsCount={visibleColumnsCount} highlightId={highlightId} />
           </Table>
 
           {/* <DataTableFooter summarySetup={summarySetup} allSummaries={allSummaries} visibleColumnsCount={visibleColumnsCount} /> */}

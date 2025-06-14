@@ -19,7 +19,6 @@ export const SearchResultItem = forwardRef(({
   // SORUN BURADA! onClick handler'ı context menu'yu engelliyor
   // Event handler'ları tamamen değiştir
   const handleMouseDown = (e) => {
-    console.log('🔧 SearchResultItem mouseDown:', e.button, e.type);
     
     // Sadece sol tık için select işlemi yap
     if (e.button === 0) { // Sol tık
@@ -31,7 +30,6 @@ export const SearchResultItem = forwardRef(({
 
   // Context menu için özel handler
   const handleContextMenu = (e) => {
-    console.log('🔧 SearchResultItem contextMenu event:', e);
     // Bu event'i durdurmayalım, Radix'e bıraka
     // e.preventDefault(); // BUNU YAPMAYIN!
     // e.stopPropagation(); // BUNU DA YAPMAYIN!

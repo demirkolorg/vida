@@ -25,7 +25,6 @@ export function Personel_ListPage() {
       <EntityDeleteSheet />
       <EntityDetailSheet />
       <EntityStatusDialog />
-      //!
       <PersonelZimmetSheet />
       <PersonelHareketleriSheet /> {/* YENİ EKLENEN */}
       <BulkIadeSheet />

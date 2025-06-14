@@ -6,6 +6,7 @@ import { Personel_Columns as EntityColumns } from './columns';
 import { Personel_ContextMenu as EntityContextMenu } from './contextMenu';
 import { Personel_Store as useEntityStore } from '../constants/store';
 import { Personel_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
+import { useHighlightId, useHighlightIdClear } from '@/hooks/useHighlightId';
 
 const columnVisibilityData = {};
 const sorting = [{ id: 'ad', desc: false }];
@@ -16,16 +17,16 @@ export function Personel_DataTable() {
   const isLoading = useEntityStore(state => state.loadingList);
   const toggleDisplayStatusFilter = useEntityStore(state => state.ToggleDisplayStatusFilter);
   const displayStatusFilter = useEntityStore(state => state.displayStatusFilter);
-  
+
   // Columns'ı STABLE hale getirin - datas.length'e göre değil sadece data varsa oluştursun
   const columns = useMemo(() => {
     const baseColumns = EntityColumns();
-    
+
     // Sadece datas varsa ve uzunluğu 0'dan büyükse filter options oluştur
     if (!datas || datas.length === 0) {
       return baseColumns;
     }
-    
+
     // Büro filter options'ını data'dan oluştur
     const uniqueBurolar = [...new Set(datas.map(item => item.buro?.ad).filter(Boolean))];
     const buroFilterOptions = uniqueBurolar.map(buroAd => ({
@@ -47,8 +48,8 @@ export function Personel_DataTable() {
           ...column,
           meta: {
             ...column.meta,
-            filterOptions: buroFilterOptions
-          }
+            filterOptions: buroFilterOptions,
+          },
         };
       }
       if (column.accessorKey === 'role') {
@@ -56,8 +57,8 @@ export function Personel_DataTable() {
           ...column,
           meta: {
             ...column.meta,
-            filterOptions: roleFilterOptions
-          }
+            filterOptions: roleFilterOptions,
+          },
         };
       }
       return column;
@@ -67,16 +68,19 @@ export function Personel_DataTable() {
   }, [datas]); // Sadece length değişimini izle, datas objesini değil
 
   // Faceted filter data - STABLE
-  const facesFilterData = useMemo(() => [
-    { columnId: 'status', title: 'Durum' },
-    { columnId: 'role', title: 'Rol' },
-    { columnId: 'buro', title: 'Bağlı Büro' },
-    { columnId: 'isUser', title: 'Sistem Kullanıcısı' },
-    { columnId: 'isAmir', title: 'Amir' },
-    { columnId: 'createdBy', title: 'Oluşturan' },
-  ], []); // Hiç değişmeyecek
+  const facesFilterData = useMemo(
+    () => [
+      { columnId: 'status', title: 'Durum' },
+      { columnId: 'role', title: 'Rol' },
+      { columnId: 'buro', title: 'Bağlı Büro' },
+      { columnId: 'isUser', title: 'Sistem Kullanıcısı' },
+      { columnId: 'isAmir', title: 'Amir' },
+      { columnId: 'createdBy', title: 'Oluşturan' },
+    ],
+    [],
+  ); // Hiç değişmeyecek
 
-  const contextMenu = useCallback((row) => <EntityContextMenu item={row.original} />, []);
+  const contextMenu = useCallback(row => <EntityContextMenu item={row.original} />, []);
 
   // useEffect - SADECE MOUNT'ta çalışsın
   useEffect(() => {
@@ -95,6 +99,20 @@ export function Personel_DataTable() {
     return datas.filter(item => item.status === displayStatusFilter);
   }, [datas, displayStatusFilter]); // datas objesi yerine length kullan
 
+  // const highlightId = useHighlightId();
+  // const clearHighlight = useHighlightIdClear(); 
+  // useEffect(() => {
+  //   if (highlightId && datas.length > 0) {
+  //     const timer = setTimeout(() => {
+  //       clearHighlight();
+  //       toast.info('Vurgulama otomatik olarak temizlendi');
+  //     }, 5000); // 5 saniye sonra temizle
+
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [highlightId, datas.length, clearHighlight]);
+  // console.log('highlightId,', highlightId);
+  
   return (
     <DataTable
       data={filteredDatas}
@@ -110,6 +128,7 @@ export function Personel_DataTable() {
       columnVisibilityData={columnVisibilityData}
       renderCollapsibleToolbarContent={() => <EntitySpecificToolbar />}
       displayStatusFilter={displayStatusFilter}
+      // highlightId={highlightId} // YENİ PROP EKLENDİ
     />
   );
 }

@@ -13,6 +13,7 @@ export function DataTableBody({
   visibleColumnsCount,
   autoClickFirstRow = false,
   onFirstRowClicked = null,
+  highlightId =null
 }) {
   const hasAutoClickedRef = useRef(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -113,10 +114,13 @@ export function DataTableBody({
         table.getRowModel().rows.map(row => {
           const rowData = row.original;
           const contextMenuContent = rowContextMenu ? rowContextMenu(row) : null;
+          const isHighlighted = highlightId && rowData.id?.toString() === highlightId?.toString();
           const rowClassName = cn(
             'even:bg-primary/3 cursor-default transition-colors',
             row.getIsSelected() && 'bg-muted/50',
-            onRowClick && 'hover:bg-primary/40'
+            onRowClick && 'hover:bg-primary/40',
+            isHighlighted && 'bg-yellow-200 hover:bg-yellow-300 dark:bg-yellow-800 dark:hover:bg-yellow-700 '
+
           );
 
           if (contextMenuContent) {

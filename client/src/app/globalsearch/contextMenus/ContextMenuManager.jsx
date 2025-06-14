@@ -62,7 +62,6 @@ export const ContextMenuManager = ({ entityType, item, onNavigate }) => {
 
 // Basit entity'ler için action handler
 const handleSimpleAction = (action, item, entityType, onNavigate) => {
-  console.log(`Context menu action: ${action}`, item);
   
   // Önce onNavigate callback'ini çağır (eğer varsa)
   if (onNavigate) {

@@ -24,7 +24,6 @@ export const GlobalSearchComponent = ({
 }) => {
   const containerRef = useRef(null);
 
-  console.log('🔧 GlobalSearchComponent props:', { enableContextMenu, entityTypes });
 
   const {
     query,
@@ -70,7 +69,6 @@ export const GlobalSearchComponent = ({
 
   // Handle result selection
   const handleResultSelect = (item, entityType, options = {}) => {
-    console.log('🔧 handleResultSelect called:', { item, entityType, options });
     saveToRecent(query);
     setIsOpen(false);
     onResultSelect?.(item, entityType, options);
@@ -78,7 +76,6 @@ export const GlobalSearchComponent = ({
 
   // Context menu navigation handler
   const handleContextMenuNavigation = (item, entityType, action) => {
-    console.log('🔧 Context menu navigation:', { item, entityType, action });
     
     // Action türüne göre farklı navigasyonlar yapılabilir
     switch (action) {
@@ -95,15 +92,9 @@ export const GlobalSearchComponent = ({
 
   // Context menu renderer
   const renderWithContextMenu = (itemComponent, item, entityType) => {
-    console.log('🔧 renderWithContextMenu called:', { 
-      entityType, 
-      enableContextMenu, 
-      itemId: item?.id,
-      itemName: item?.ad || item?.vidaNo || item?.sicil 
-    });
+   
     
     if (!enableContextMenu) {
-      console.log('🔧 Context menu disabled globally');
       return itemComponent;
     }
 
@@ -122,26 +113,21 @@ export const GlobalSearchComponent = ({
     ];
 
     if (!supportedEntities.includes(entityType)) {
-      console.log(`🔧 Context menu not supported for entity type: ${entityType}`);
       return itemComponent;
     }
 
     try {
-      console.log(`🔧 Creating context menu for ${entityType} - ${item.id}`);
       
       // Context menu'yu wrap ederken ekstra log ekleyelim
       const wrappedComponent = (
         <ContextMenu key={`context-${item.id}`}>
           <ContextMenuTrigger 
             asChild
-            onPointerDown={(e) => console.log('🔧 ContextMenuTrigger pointerDown:', e)}
-            onContextMenu={(e) => console.log('🔧 ContextMenuTrigger contextMenu:', e)}
           >
             {itemComponent}
           </ContextMenuTrigger>
           <ContextMenuContent 
             className="w-64"
-            onOpenAutoFocus={(e) => console.log('🔧 ContextMenuContent opened:', e)}
           >
             <ContextMenuManager 
               entityType={entityType} 
@@ -166,11 +152,7 @@ export const GlobalSearchComponent = ({
     }
 
     if (hasQuery) {
-      console.log('🔧 Rendering SearchResults with:', {
-        enableContextMenu,
-        contextMenuRenderer: !!renderWithContextMenu,
-        resultsKeys: Object.keys(results)
-      });
+    
 
       return (
         <>

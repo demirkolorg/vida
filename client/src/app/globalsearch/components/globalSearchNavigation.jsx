@@ -3,7 +3,6 @@ export const createGlobalSearchNavigationHandler = (navigate, toast) => {
   return (item, entityType, options = {}) => {
     const { action } = options;
     
-    console.log('Global search navigation:', { item, entityType, action });
     
     // Entity type'a göre navigasyon
     switch (entityType) {

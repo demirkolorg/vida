@@ -38,12 +38,7 @@ export const SearchResultCategory = ({
 
   const hasContextMenuSupport = supportedContextMenuEntities.includes(entityType);
 
-  console.log(`SearchResultCategory - ${entityType}:`, {
-    enableContextMenu,
-    hasContextMenuSupport,
-    contextMenuRenderer: !!contextMenuRenderer,
-    resultsCount: results.length
-  });
+ 
 
   const renderItem = (item, index) => {
     const itemComponent = (
@@ -59,7 +54,6 @@ export const SearchResultCategory = ({
 
     // Context menu renderer kontrolü - DÜZELTME
     if (enableContextMenu && hasContextMenuSupport && contextMenuRenderer && typeof contextMenuRenderer === 'function') {
-      console.log(`Rendering context menu for ${entityType} item:`, item.id);
       try {
         return contextMenuRenderer(itemComponent, item, entityType);
       } catch (error) {
@@ -69,11 +63,7 @@ export const SearchResultCategory = ({
       }
     }
 
-    console.log(`No context menu for ${entityType}:`, {
-      enableContextMenu,
-      hasContextMenuSupport,
-      hasRenderer: !!contextMenuRenderer
-    });
+   
 
     return itemComponent;
   };

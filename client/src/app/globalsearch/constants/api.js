@@ -12,7 +12,6 @@ export const GlobalSearch_ApiService = createBaseApiService(EntityType, EntityHu
 GlobalSearch_ApiService.globalSearch = async (searchData) => {
   const rota = 'search';
   try {
-    console.log(`Global Search API çağrıldı:`, searchData);
     const response = await axiosInstance('post', `globalsearch/${rota}`, searchData);
     return response?.data?.data || {};
   } catch (error) {
@@ -28,7 +27,6 @@ GlobalSearch_ApiService.globalSearch = async (searchData) => {
 GlobalSearch_ApiService.quickSearch = async (searchData) => {
   const rota = 'quick';
   try {
-    console.log(`Quick Search API çağrıldı:`, searchData);
     const response = await axiosInstance('post', `globalsearch/${rota}`, searchData);
     return response?.data?.data || {};
   } catch (error) {
