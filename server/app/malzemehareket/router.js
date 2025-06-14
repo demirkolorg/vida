@@ -58,6 +58,7 @@ r.post('/bulk/checkMalzemeDurumu', authToken, authRoles(RoleEnum.User, RoleEnum.
 // ================================
 r.post('/getMalzemeGecmisi', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getMalzemeGecmisi);
 r.post('/getPersonelZimmetleri', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getPersonelZimmetleri);
+r.post('/getPersonelHareketleri', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getPersonelHareketleri);
 r.post('/checkMalzemeDurumu', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.checkMalzemeDurumu);
 
 // ================================

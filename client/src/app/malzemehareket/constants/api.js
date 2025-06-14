@@ -35,6 +35,42 @@ MalzemeHareket_ApiService.getPersonelZimmetleri = async personelId => {
   }
 };
 
+MalzemeHareket_ApiService.getPersonelHareketleri = async data => {
+  try {
+    console.log('API çağrısı yapılıyor - getPersonelHareketleri, data:', data);
+
+    const response = await axiosInstance('post', `${EntityType}/getPersonelHareketleri`, data);
+
+    console.log('API yanıtı alındı - getPersonelHareketleri:', response?.data);
+    console.log('API data kısmı - getPersonelHareketleri:', response?.data?.data);
+
+    return (
+      response?.data?.data || {
+        hareketler: [],
+        sayfalama: {
+          currentPage: 1,
+          totalPages: 0,
+          totalRecords: 0,
+          recordsPerPage: 50,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+        istatistikler: {
+          toplamHareket: 0,
+          zimmetAlinan: 0,
+          iadeEdilen: 0,
+          devirAlinan: 0,
+          devirVerilen: 0,
+          hareketTuruDagilimi: {},
+        },
+        filtreler: {},
+      }
+    );
+  } catch (error) {
+    console.error(`API hatası (${EntityHuman} getPersonelHareketleri):`, error?.response?.data || error.message || error);
+    throw error;
+  }
+};
 // İş süreçleri için özel API metodları
 MalzemeHareket_ApiService.zimmet = async data => {
   try {

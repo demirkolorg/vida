@@ -9,6 +9,8 @@ import { Personel_EditSheet as EntityEditSheet } from '../sheets/EditSheet';
 import { Personel_DeleteSheet as EntityDeleteSheet } from '../sheets/DeleteSheet';
 import { Personel_DetailSheet as EntityDetailSheet } from '../sheets/DetailSheet';
 import { PersonelZimmetSheet } from '../sheets/PersonelZimmetSheet'; // Yeni eklenen import
+import { PersonelHareketleriSheet } from '../sheets/PersonelHareketleriSheet'; // YENİ EKLENEN
+
 // Bulk işlem sheet'leri - personel zimmetlerinden iade/devir için gerekli
 import { BulkIadeSheet } from '@/app/malzemehareket/sheets/BulkIadeSheet';
 import { BulkDevirSheet } from '@/app/malzemehareket/sheets/BulkDevirSheet';
@@ -25,6 +27,7 @@ export function Personel_ListPage() {
       <EntityStatusDialog />
       //!
       <PersonelZimmetSheet />
+      <PersonelHareketleriSheet /> {/* YENİ EKLENEN */}
       <BulkIadeSheet />
       <BulkDevirSheet />
     </div>

@@ -8,7 +8,7 @@ export const usePersonelStore = create((set, get) => ({
   currentPersonelZimmet: null,
 
   // PersonelZimmetSheet açma fonksiyonu
-  openPersonelZimmetSheet: (personel) => {
+  openPersonelZimmetSheet: personel => {
     set({
       isPersonelZimmetSheetOpen: true,
       currentPersonelZimmet: personel,
@@ -22,6 +22,20 @@ export const usePersonelStore = create((set, get) => ({
       currentPersonelZimmet: null,
     });
   },
+  openPersonelHareketleriSheet: personel => {
+    console.log('PersonelHareketleri sheet açılıyor:', personel);
+    set({
+      isPersonelHareketleriSheetOpen: true,
+      currentPersonelHareketleri: personel,
+    });
+  },
 
+  closePersonelHareketleriSheet: () => {
+    console.log('PersonelHareketleri sheet kapanıyor');
+    set({
+      isPersonelHareketleriSheetOpen: false,
+      currentPersonelHareketleri: null,
+    });
+  },
   // Diğer mevcut store fonksiyonları burada olacak...
 }));

@@ -641,6 +641,28 @@ const controller = {
       response.error(req, res, HizmetName, rota, message.get.error, error.message);
     }
   },
+  // PERSONEL TÜM HAREKETLERİ (HEM ALAN HEM VEREN)
+getPersonelHareketleri: async (req, res) => {
+  const rota = 'getPersonelHareketleri';
+  try {
+    const data = req.body;
+    
+    // Personel ID kontrolü
+    if (!data.personelId) {
+      return response.error(req, res, HizmetName, rota, message.get.error, message.required.personelId);
+    }
+
+    const result = await service.getPersonelHareketleri(data);
+    
+    const mesaj = `Personel hareket geçmişi başarıyla getirildi. ` +
+                 `Toplam ${result.sayfalama.totalRecords} hareket bulundu. ` +
+                 `(Sayfa ${result.sayfalama.currentPage}/${result.sayfalama.totalPages})`;
+    
+    response.success(req, res, HizmetName, rota, mesaj, result);
+  } catch (error) {
+    response.error(req, res, HizmetName, rota, message.get.error, error.message);
+  }
+}
 };
 
 export default controller;

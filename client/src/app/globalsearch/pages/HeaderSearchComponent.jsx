@@ -1,11 +1,13 @@
-// client/src/app/globalSearch/components/HeaderSearchComponent.jsx
+// 1. SORUN TESPİTİ: HeaderSearchComponent'teki PersonelZimmetSheet store'dan habersiz
+// client/src/app/globalsearch/pages/HeaderSearchComponent.jsx
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { GlobalSearchComponent } from '../components/GlobalSearchComponent';
 import { createGlobalSearchNavigationHandler } from '../components/globalSearchNavigation';
 
-// Sheet'leri import et
+// Sheet'leri import et - DİKKAT: Bu sheet'ler store'larla bağlantılı olmalı
 import { PersonelZimmetSheet } from '@/app/personel/sheets/PersonelZimmetSheet';
 import { BulkIadeSheet } from '@/app/malzemehareket/sheets/BulkIadeSheet';
 import { BulkDevirSheet } from '@/app/malzemehareket/sheets/BulkDevirSheet';
@@ -28,38 +30,16 @@ export const HeaderSearchComponent = () => {
   const navigate = useNavigate();
   const handleResultSelect = createGlobalSearchNavigationHandler(navigate, toast);
 
-  // const handleResultSelect = (item, entityType) => {
-  //   // Entity tipine göre navigasyon
-  //   switch (entityType) {
-  //     case 'malzeme':
-  //       navigate(`/malzeme?highlight=${item.id}`);
-  //       break;
-  //     case 'birim':
-  //       navigate(`/birim?highlight=${item.id}`);
-  //       break;
-  //     case 'personel':
-  //       navigate(`/personel?highlight=${item.id}`);
-  //       break;
-  //     case 'sube':
-  //       navigate(`/sube?highlight=${item.id}`);
-  //       break;
-  //     case 'malzemeHareket':
-  //       navigate(`/malzeme-hareketleri?highlight=${item.id}`);
-  //       break;
-  //     default:
-  //       navigate(`/${entityType}?highlight=${item.id}`);
-  //   }
-
-  //   toast.success(`${item.ad || item.vidaNo || item.sicil} seçildi`);
-  // };
-
   return (
     <>
       {/* TÜM SHEET'LER - Global search'te context menu'lardan açılabilsin diye */}
+      {/* Store state'leri kontrol et ve sadece gerektiğinde render et */}
+
       {/* Personel Sheet'leri */}
       <PersonelZimmetSheet />
       <BulkIadeSheet />
       <BulkDevirSheet />
+
       {/* Malzeme Hareket Sheet'leri */}
       <ZimmetSheet />
       <IadeSheet />

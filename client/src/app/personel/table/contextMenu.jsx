@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu';
 import { BaseContextMenu } from '@/components/contextMenu/BaseContextMenu';
 import { EntityHuman, EntityType } from '../constants/api';
-import { 
+import { Activity,
   Building2Icon, 
   KeyIcon, 
   UserCheckIcon, 
@@ -28,6 +28,8 @@ export function Personel_ContextMenu({ item }) {
   // Bulk işlemler için store metodları
   const openBulkIadeSheet = useMalzemeHareketStore(state => state.openBulkIadeSheet);
   const openBulkDevirSheet = useMalzemeHareketStore(state => state.openBulkDevirSheet);
+  const GetPersonelHareketleri = MalzemeHareket_Store(state => state.GetPersonelHareketleri);
+  const openPersonelHareketleriSheet = usePersonelStore(state => state.openPersonelHareketleriSheet);
   
   // Personel zimmetlerini almak için store
   const personelZimmetleri = MalzemeHareket_Store(state => state.personelZimmetleri);
@@ -190,12 +192,43 @@ export function Personel_ContextMenu({ item }) {
     }
   }, [item, personelZimmetleri, GetPersonelZimmetleri, openBulkDevirSheet]);
 
+    const handleShowPersonelHareketleri = useCallback(async () => {
+    if (!item?.id) {
+      toast.error('Personel bilgisi bulunamadı.');
+      return;
+    }
+
+    try {
+      console.log('Personel hareketleri getiriliyor:', item.id);
+      
+      // Store'dan personel hareketlerini getir
+      await GetPersonelHareketleri(item.id, {
+        page: 1,
+        limit: 50,
+        sortBy: 'islemTarihi',
+        sortOrder: 'desc'
+      });
+      
+      // Sheet'i aç
+      openPersonelHareketleriSheet(item);
+      
+      toast.success(`${item.ad} personelinin malzeme hareketleri getiriliyor...`);
+    } catch (error) {
+      console.error('Personel hareketleri getirme hatası:', error);
+      toast.error('Personel hareketleri getirilirken bir hata oluştu.');
+    }
+  }, [item, GetPersonelHareketleri, openPersonelHareketleriSheet]);
   return (
     <BaseContextMenu item={item} entityType={EntityType} entityHuman={EntityHuman} menuTitle={menuTitle}>
       {/* Personel Zimmetleri Göster */}
       <ContextMenuItem className="" onSelect={handleShowPersonelZimmetleri}>
         <Package className="mr-2 h-4 w-4 text-orange-500" />
         <span>Zimmetli Malzemeleri Göster</span>
+      </ContextMenuItem>
+
+   <ContextMenuItem className="" onSelect={handleShowPersonelHareketleri}>
+        <Activity className="mr-2 h-4 w-4 text-green-500" />
+        <span>Malzeme Hareketlerini Göster</span>
       </ContextMenuItem>
 
       {/* Bulk İşlemler */}

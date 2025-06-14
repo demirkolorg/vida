@@ -24,6 +24,34 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
     loadingBulkKayip: false,
     loadingBulkDusum: false,
 
+    // YENİ EKLENEN: Personel Hareketleri state'leri
+    personelHareketleri: [],
+    loadingPersonelHareketleri: false,
+    personelHareketleriSayfalama: {
+      currentPage: 1,
+      totalPages: 0,
+      totalRecords: 0,
+      recordsPerPage: 50,
+      hasNextPage: false,
+      hasPrevPage: false,
+    },
+    personelHareketleriIstatistikler: {
+      toplamHareket: 0,
+      zimmetAlinan: 0,
+      iadeEdilen: 0,
+      devirAlinan: 0,
+      devirVerilen: 0,
+      hareketTuruDagilimi: {},
+    },
+    personelHareketleriFiltreler: {
+      personelId: null,
+      hareketTuru: null,
+      baslangicTarihi: null,
+      bitisTarihi: null,
+      sortBy: 'islemTarihi',
+      sortOrder: 'desc',
+    },
+
     // ================================
     // BULK İŞLEMLERİ - YENİ METODLAR
     // ================================
@@ -749,6 +777,112 @@ export const MalzemeHareket_Store = createCrudStore(EntityHuman, EntityApiServic
         toast.error(`${malzemeKondisyonu} kondisyonundaki ${EntityHuman} listesi getirilirken hata: ${message}`);
         set({ error: message, loadingList: false, datas: [], isSearchResult: false });
       }
+    },
+    // PERSONEL TÜM HAREKETLERİNİ GETİR (HEM ALAN HEM VEREN)
+    GetPersonelHareketleri: async (personelId, options = {}) => {
+      const showSuccessToast = options?.showToast ?? false;
+      const requestParams = {
+        personelId,
+        page: options.page || 1,
+        limit: options.limit || 50,
+        sortBy: options.sortBy || 'islemTarihi',
+        sortOrder: options.sortOrder || 'desc',
+        hareketTuru: options.hareketTuru || null,
+        baslangicTarihi: options.baslangicTarihi || null,
+        bitisTarihi: options.bitisTarihi || null,
+      };
+
+      if (get().loadingPersonelHareketleri) return;
+
+      set({ loadingPersonelHareketleri: true, error: null });
+
+      try {
+        console.log('Store: Personel hareketleri getiriliyor...', requestParams);
+
+        const result = await EntityApiService.getPersonelHareketleri(requestParams);
+
+        console.log("Store: API'den gelen personel hareketleri:", result);
+
+        // Store'u güncelle
+        set({
+          personelHareketleri: result.hareketler || [],
+          personelHareketleriSayfalama: result.sayfalama || {},
+          personelHareketleriIstatistikler: result.istatistikler || {},
+          personelHareketleriFiltreler: result.filtreler || {},
+          loadingPersonelHareketleri: false,
+        });
+
+        if (showSuccessToast) {
+          const mesaj = `${result.sayfalama?.totalRecords || 0} hareket kaydı getirildi.`;
+          toast.success(mesaj);
+        }
+
+        return result;
+      } catch (error) {
+        const message = error?.response?.data?.message || error.message || 'Personel hareketleri getirilemedi.';
+        console.error('Store: Personel hareketleri getirme hatası:', error);
+
+        toast.error(`Hata: ${message}`);
+        set({
+          error: message,
+          loadingPersonelHareketleri: false,
+          personelHareketleri: [],
+          personelHareketleriSayfalama: {},
+          personelHareketleriIstatistikler: {},
+          personelHareketleriFiltreler: {},
+        });
+
+        throw error;
+      }
+    },
+
+    // FİLTRELİ PERSONEL HAREKETLERİNİ GETİR (Sayfalama ile)
+    GetPersonelHareketleriWithFilter: async (personelId, filters = {}, options = {}) => {
+      const mergedOptions = {
+        ...filters,
+        ...options,
+        showToast: options.showToast ?? false,
+      };
+
+      return await get().GetPersonelHareketleri(personelId, mergedOptions);
+    },
+
+    // SONRAKI SAYFA HAREKETLERİNİ GETİR
+    GetPersonelHareketleriNextPage: async personelId => {
+      const currentSayfalama = get().personelHareketleriSayfalama;
+      const currentFilters = get().personelHareketleriFiltreler;
+
+      if (!currentSayfalama.hasNextPage) {
+        toast.warning('Son sayfadasınız.');
+        return;
+      }
+
+      const nextPage = currentSayfalama.currentPage + 1;
+
+      return await get().GetPersonelHareketleri(personelId, {
+        ...currentFilters,
+        page: nextPage,
+        showToast: false,
+      });
+    },
+
+    // ÖNCEKİ SAYFA HAREKETLERİNİ GETİR
+    GetPersonelHareketleriPrevPage: async personelId => {
+      const currentSayfalama = get().personelHareketleriSayfalama;
+      const currentFilters = get().personelHareketleriFiltreler;
+
+      if (!currentSayfalama.hasPrevPage) {
+        toast.warning('İlk sayfadasınız.');
+        return;
+      }
+
+      const prevPage = currentSayfalama.currentPage - 1;
+
+      return await get().GetPersonelHareketleri(personelId, {
+        ...currentFilters,
+        page: prevPage,
+        showToast: false,
+      });
     },
   };
 });
