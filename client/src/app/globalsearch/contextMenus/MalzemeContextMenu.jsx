@@ -1,4 +1,4 @@
-// client/src/app/globalSearch/components/contextMenus/MalzemeContextMenu.jsx
+// client/src/app/globalsearch/contextMenus/MalzemeContextMenu.jsx
 import React from 'react';
 import {
   ContextMenuItem,
@@ -17,7 +17,7 @@ import {
   MapPin, 
   History,
   FileText,
-  Trash2
+  Truck
 } from 'lucide-react';
 
 export const MalzemeContextMenu = ({ item, onAction }) => {
@@ -54,7 +54,7 @@ export const MalzemeContextMenu = ({ item, onAction }) => {
             Devir Et
           </ContextMenuItem>
           <ContextMenuItem onClick={() => onAction('transfer', item)}>
-            <Package className="w-4 h-4 mr-2" />
+            <Truck className="w-4 h-4 mr-2" />
             Konum Değiştir
           </ContextMenuItem>
         </ContextMenuSubContent>
@@ -62,7 +62,7 @@ export const MalzemeContextMenu = ({ item, onAction }) => {
       
       <ContextMenuItem onClick={() => onAction('location', item)}>
         <MapPin className="w-4 h-4 mr-2" />
-        Konum Bilgisi
+        Mevcut Konum
       </ContextMenuItem>
       
       <ContextMenuItem onClick={() => onAction('history', item)}>
@@ -74,7 +74,7 @@ export const MalzemeContextMenu = ({ item, onAction }) => {
       
       <ContextMenuItem onClick={() => onAction('report', item)}>
         <FileText className="w-4 h-4 mr-2" />
-        Rapor Oluştur
+        Malzeme Raporu
       </ContextMenuItem>
     </>
   );

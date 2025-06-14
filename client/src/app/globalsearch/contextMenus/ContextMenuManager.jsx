@@ -1,4 +1,4 @@
-// client/src/app/globalSearch/components/contextMenus/ContextMenuManager.jsx
+// client/src/app/globalsearch/contextMenus/ContextMenuManager.jsx
 import React from 'react';
 import { toast } from 'sonner';
 import { MalzemeContextMenu } from './MalzemeContextMenu';
@@ -18,12 +18,13 @@ export const ContextMenuManager = ({ entityType, item, onNavigate }) => {
   const handleAction = (action, item) => {
     console.log(`Context menu action: ${action}`, item);
     
-      // Önce onNavigate callback'ini çağır
+    // Önce onNavigate callback'ini çağır (eğer varsa)
     if (onNavigate) {
       onNavigate(item, entityType, action);
       return;
     }
 
+    // Fallback toast mesajları (eğer onNavigate yoksa)
     switch (action) {
       // Genel işlemler
       case 'view':
@@ -109,7 +110,7 @@ export const ContextMenuManager = ({ entityType, item, onNavigate }) => {
         handleBrand(item);
         break;
         
-      // Malzeme Hareket işlemleri
+      // Hareket işlemleri
       case 'material':
         handleMaterial(item);
         break;
@@ -119,156 +120,126 @@ export const ContextMenuManager = ({ entityType, item, onNavigate }) => {
       case 'document':
         handleDocument(item);
         break;
-        
-      // Sabit Kod işlemleri
       case 'subcategories':
         handleSubcategories(item);
         break;
         
       default:
-        toast.info(`${action} işlemi henüz hazır değil`);
+        toast.info(`${action} işlemi henüz implement edilmedi`);
     }
   };
 
-  // İşlem fonksiyonları
+  // Fallback handler fonksiyonları
   const handleView = (item, entityType) => {
-    onNavigate?.(item, entityType, 'view');
-    toast.success(`${item.ad || item.vidaNo || item.sicil} detayları görüntüleniyor`);
+    toast.info(`${item.ad || item.vidaNo || item.sicil} görüntüleniyor`);
   };
 
   const handleEdit = (item, entityType) => {
-    onNavigate?.(item, entityType, 'edit');
-    toast.success(`${item.ad || item.vidaNo || item.sicil} düzenleme sayfası açılıyor`);
+    toast.info(`${item.ad || item.vidaNo || item.sicil} düzenleniyor`);
   };
 
   const handleReport = (item, entityType) => {
-    toast.info(`${entityType} raporu hazırlanıyor...`);
-    // Rapor oluşturma işlemi
+    toast.info(`${item.ad || item.vidaNo || item.sicil} raporu hazırlanıyor`);
   };
 
   const handleZimmet = (item) => {
-    toast.info(`${item.vidaNo} için zimmet işlemi başlatılıyor`);
-    // Zimmet modal'ı açılacak
+    toast.info(`${item.vidaNo} zimmet işlemi başlatılıyor`);
   };
 
   const handleIade = (item) => {
-    toast.info(`${item.vidaNo} için iade işlemi başlatılıyor`);
-    // İade modal'ı açılacak
+    toast.info(`${item.vidaNo} iade işlemi başlatılıyor`);
   };
 
   const handleDevir = (item) => {
-    toast.info(`${item.vidaNo} için devir işlemi başlatılıyor`);
-    // Devir modal'ı açılacak
+    toast.info(`${item.vidaNo} devir işlemi başlatılıyor`);
   };
 
   const handleTransfer = (item) => {
-    toast.info(`${item.vidaNo} için transfer işlemi başlatılıyor`);
-    // Transfer modal'ı açılacak
+    toast.info(`${item.vidaNo} transfer işlemi başlatılıyor`);
   };
 
   const handleLocation = (item) => {
-    toast.info(`${item.vidaNo} konumu gösteriliyor`);
-    // Konum bilgisi modal'ı açılacak
+    toast.info(`${item.vidaNo || item.ad} konum bilgisi gösteriliyor`);
   };
 
   const handleHistory = (item, entityType) => {
-    toast.info(`${entityType} geçmişi gösteriliyor`);
-    // Geçmiş modal'ı açılacak
+    toast.info(`${item.ad || item.vidaNo || item.sicil} geçmişi gösteriliyor`);
   };
 
   const handleAssignments = (item) => {
-    toast.info(`${item.ad} ${item.soyad} zimmetli malzemeleri gösteriliyor`);
-    // Zimmetli malzemeler listesi açılacak
+    toast.info(`${item.ad} zimmetli malzemeleri gösteriliyor`);
   };
 
   const handleNewAssignment = (item) => {
-    toast.info(`${item.ad} ${item.soyad} için yeni zimmet başlatılıyor`);
-    // Yeni zimmet modal'ı açılacak
+    toast.info(`${item.ad} için yeni zimmet işlemi başlatılıyor`);
   };
 
   const handleBulkAssignment = (item) => {
-    toast.info(`${item.ad} ${item.soyad} için toplu zimmet başlatılıyor`);
-    // Toplu zimmet modal'ı açılacak
+    toast.info(`${item.ad} için toplu zimmet işlemi başlatılıyor`);
   };
 
   const handlePersonnel = (item, entityType) => {
     toast.info(`${item.ad} personel listesi gösteriliyor`);
-    // Personel listesi açılacak
   };
 
   const handleMaterials = (item, entityType) => {
     toast.info(`${item.ad} malzeme listesi gösteriliyor`);
-    // Malzeme listesi açılacak
   };
 
   const handleBranches = (item) => {
     toast.info(`${item.ad} şube listesi gösteriliyor`);
-    // Şube listesi açılacak
   };
 
   const handleOffices = (item) => {
     toast.info(`${item.ad} büro listesi gösteriliyor`);
-    // Büro listesi açılacak
   };
 
   const handleParentUnit = (item) => {
     toast.info(`${item.ad} bağlı birimi gösteriliyor`);
-    // Bağlı birim gösterilecek
   };
 
   const handleParentBranch = (item) => {
     toast.info(`${item.ad} bağlı şubesi gösteriliyor`);
-    // Bağlı şube gösterilecek
   };
 
   const handleLocations = (item) => {
     toast.info(`${item.ad} depo konumları gösteriliyor`);
-    // Depo konumları açılacak
   };
 
   const handleInventory = (item) => {
     toast.info(`${item.ad} envanter raporu hazırlanıyor`);
-    // Envanter raporu açılacak
   };
 
   const handleStockIn = (item) => {
     toast.info(`${item.ad} stok girişi başlatılıyor`);
-    // Stok giriş modal'ı açılacak
   };
 
   const handleStockOut = (item) => {
     toast.info(`${item.ad} stok çıkışı başlatılıyor`);
-    // Stok çıkış modal'ı açılacak
   };
 
   const handleModels = (item) => {
     toast.info(`${item.ad} model listesi gösteriliyor`);
-    // Model listesi açılacak
   };
 
   const handleBrand = (item) => {
     toast.info(`${item.ad} marka bilgisi gösteriliyor`);
-    // Marka bilgisi açılacak
   };
 
   const handleMaterial = (item) => {
     toast.info(`Hareket eden malzeme gösteriliyor`);
-    // İlgili malzeme açılacak
   };
 
   const handleReverse = (item) => {
     toast.warning(`Hareket geri alınıyor`);
-    // Hareket geri alma onayı açılacak
   };
 
   const handleDocument = (item) => {
     toast.info(`Hareket belgesi hazırlanıyor`);
-    // Hareket belgesi açılacak
   };
 
   const handleSubcategories = (item) => {
     toast.info(`${item.ad} alt kategorileri gösteriliyor`);
-    // Alt kategoriler açılacak
   };
 
   // Context menu component'ini döndür

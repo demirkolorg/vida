@@ -249,6 +249,26 @@ export function DashboardPage() {
 
   return (
     <div className=" mx-auto py-6 space-y-6">
+
+        <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div className="bg-blue-100 p-4 border-2 border-blue-300 rounded cursor-pointer">
+            Bu kutuya SAĞ TIKLA! (Right Click)
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-48 bg-white border shadow-lg">
+          <ContextMenuItem onClick={() => alert('Test 1 clicked!')}>
+            Test 1
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => alert('Test 2 clicked!')}>
+            Test 2  
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => alert('Test 3 clicked!')}>
+            Test 3
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+      
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>

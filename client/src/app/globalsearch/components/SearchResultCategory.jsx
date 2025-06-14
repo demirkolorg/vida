@@ -21,7 +21,29 @@ export const SearchResultCategory = ({
 
   if (!results || results.length === 0) return null;
 
-  const hasContextMenuSupport = ['malzeme', 'birim', 'personel', 'sube'].includes(entityType);
+  // Context menu desteği olan entity türleri - GENİŞLETİLDİ
+  const supportedContextMenuEntities = [
+    'malzeme', 
+    'personel', 
+    'birim', 
+    'sube', 
+    'buro', 
+    'marka', 
+    'model', 
+    'depo', 
+    'konum', 
+    'malzemeHareket', 
+    'sabitKodu'
+  ];
+
+  const hasContextMenuSupport = supportedContextMenuEntities.includes(entityType);
+
+  console.log(`SearchResultCategory - ${entityType}:`, {
+    enableContextMenu,
+    hasContextMenuSupport,
+    contextMenuRenderer: !!contextMenuRenderer,
+    resultsCount: results.length
+  });
 
   const renderItem = (item, index) => {
     const itemComponent = (
@@ -35,15 +57,23 @@ export const SearchResultCategory = ({
       />
     );
 
-  // Context menu desteği kontrolü - BU KOD DÜZELTILMELI
-    if (enableContextMenu && contextMenuRenderer && typeof contextMenuRenderer === 'function') {
+    // Context menu renderer kontrolü - DÜZELTME
+    if (enableContextMenu && hasContextMenuSupport && contextMenuRenderer && typeof contextMenuRenderer === 'function') {
+      console.log(`Rendering context menu for ${entityType} item:`, item.id);
       try {
         return contextMenuRenderer(itemComponent, item, entityType);
       } catch (error) {
         console.error('Context menu render error:', error);
+        // Hata durumunda normal item'ı döndür
         return itemComponent;
       }
     }
+
+    console.log(`No context menu for ${entityType}:`, {
+      enableContextMenu,
+      hasContextMenuSupport,
+      hasRenderer: !!contextMenuRenderer
+    });
 
     return itemComponent;
   };
@@ -58,6 +88,11 @@ export const SearchResultCategory = ({
             <Badge variant="secondary" className="text-xs">
               {results.length}
             </Badge>
+            {enableContextMenu && hasContextMenuSupport && (
+              <Badge variant="outline" className="text-xs bg-green-100 text-green-700">
+                Context Menu
+              </Badge>
+            )}
           </div>
           {isExpanded ? (
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
