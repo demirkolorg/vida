@@ -1,15 +1,36 @@
 // client/src/app/personel/table/contextMenu.jsx
 import { useCallback } from 'react';
-import { ContextMenuItem } from '@/components/ui/context-menu';
+import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu';
 import { BaseContextMenu } from '@/components/contextMenu/BaseContextMenu';
 import { EntityHuman, EntityType } from '../constants/api';
-import { Building2Icon, KeyIcon, UserCheckIcon, ShieldIcon, MailIcon, PhoneIcon, HistoryIcon, Package } from 'lucide-react';
+import { 
+  Building2Icon, 
+  KeyIcon, 
+  UserCheckIcon, 
+  ShieldIcon, 
+  MailIcon, 
+  PhoneIcon, 
+  HistoryIcon, 
+  Package,
+  ArrowLeftRight,
+  RotateCcw,
+  PackageCheck
+} from 'lucide-react';
 import { MalzemeHareket_Store } from '@/app/malzemehareket/constants/store';
 import { usePersonelStore } from '@/stores/usePersonelStore';
+import { useMalzemeHareketStore } from '@/stores/useMalzemeHareketStore';
+import { toast } from 'sonner';
 
 export function Personel_ContextMenu({ item }) {
   const GetPersonelZimmetleri = MalzemeHareket_Store(state => state.GetPersonelZimmetleri);
   const openPersonelZimmetSheet = usePersonelStore(state => state.openPersonelZimmetSheet);
+  
+  // Bulk işlemler için store metodları
+  const openBulkIadeSheet = useMalzemeHareketStore(state => state.openBulkIadeSheet);
+  const openBulkDevirSheet = useMalzemeHareketStore(state => state.openBulkDevirSheet);
+  
+  // Personel zimmetlerini almak için store
+  const personelZimmetleri = MalzemeHareket_Store(state => state.personelZimmetleri);
 
   const menuTitle = item?.ad ? `${item.ad} ${EntityHuman} Kaydı` : `${EntityHuman} İşlemleri`;
 
@@ -72,13 +93,125 @@ export function Personel_ContextMenu({ item }) {
     }
   }, [item, GetPersonelZimmetleri, openPersonelZimmetSheet]);
 
+  // Bulk iade işlemi
+  const handleBulkIade = useCallback(async () => {
+    if (!item?.id) return;
+    
+    try {
+      // Eğer personel zimmetleri daha önce yüklenmemişse, yükle
+      if (!personelZimmetleri || personelZimmetleri.length === 0) {
+        console.log('Personel zimmetleri yükleniyor...');
+        const result = await GetPersonelZimmetleri(item.id, { showToast: false });
+        
+        // Zimmetleri store'dan al
+        const zimmetler = MalzemeHareket_Store.getState().personelZimmetleri;
+        
+        if (!zimmetler || zimmetler.length === 0) {
+          toast.warning(`${item.ad} ${item.soyad} adlı personelin zimmetinde malzeme bulunmamaktadır.`);
+          return;
+        }
+        
+        // Her malzeme için kaynak personel bilgisini ekle (bulk iade için gerekli)
+        const malzemelerForBulkIade = zimmetler.map(malzeme => ({
+          ...malzeme,
+          kaynakPersonelId: item.id // Mevcut personel kaynak olacak (iade eden)
+        }));
+        
+        // Bulk iade sheet'i aç
+        openBulkIadeSheet(malzemelerForBulkIade);
+      } else {
+        // Zaten yüklenmiş zimmetleri kullan
+        if (personelZimmetleri.length === 0) {
+          toast.warning(`${item.ad} ${item.soyad} adlı personelin zimmetinde malzeme bulunmamaktadır.`);
+          return;
+        }
+        
+        // Her malzeme için kaynak personel bilgisini ekle (bulk iade için gerekli)
+        const malzemelerForBulkIade = personelZimmetleri.map(malzeme => ({
+          ...malzeme,
+          kaynakPersonelId: item.id // Mevcut personel kaynak olacak (iade eden)
+        }));
+        
+        openBulkIadeSheet(malzemelerForBulkIade);
+      }
+      
+      console.log(`${item.ad} için bulk iade işlemi başlatıldı`);
+    } catch (error) {
+      console.error('Bulk iade işlemi başlatılamadı:', error);
+      toast.error('Zimmetli malzemeler yüklenirken hata oluştu.');
+    }
+  }, [item, personelZimmetleri, GetPersonelZimmetleri, openBulkIadeSheet]);
+
+  // Bulk devir işlemi
+  const handleBulkDevir = useCallback(async () => {
+    if (!item?.id) return;
+    
+    try {
+      // Eğer personel zimmetleri daha önce yüklenmemişse, yükle
+      if (!personelZimmetleri || personelZimmetleri.length === 0) {
+        console.log('Personel zimmetleri yükleniyor...');
+        const result = await GetPersonelZimmetleri(item.id, { showToast: false });
+        
+        // Zimmetleri store'dan al
+        const zimmetler = MalzemeHareket_Store.getState().personelZimmetleri;
+        
+        if (!zimmetler || zimmetler.length === 0) {
+          toast.warning(`${item.ad} ${item.soyad} adlı personelin zimmetinde malzeme bulunmamaktadır.`);
+          return;
+        }
+        
+        // Bulk devir sheet'i aç - her malzeme için kaynak personeli belirle
+        const malzemelerWithSource = zimmetler.map(malzeme => ({
+          ...malzeme,
+          kaynakPersonelId: item.id // Mevcut personel kaynak olacak
+        }));
+        
+        openBulkDevirSheet(malzemelerWithSource);
+      } else {
+        // Zaten yüklenmiş zimmetleri kullan
+        if (personelZimmetleri.length === 0) {
+          toast.warning(`${item.ad} ${item.soyad} adlı personelin zimmetinde malzeme bulunmamaktadır.`);
+          return;
+        }
+        
+        // Bulk devir sheet'i aç - her malzeme için kaynak personeli belirle
+        const malzemelerWithSource = personelZimmetleri.map(malzeme => ({
+          ...malzeme,
+          kaynakPersonelId: item.id // Mevcut personel kaynak olacak
+        }));
+        
+        openBulkDevirSheet(malzemelerWithSource);
+      }
+      
+      console.log(`${item.ad} için bulk devir işlemi başlatıldı`);
+    } catch (error) {
+      console.error('Bulk devir işlemi başlatılamadı:', error);
+      toast.error('Zimmetli malzemeler yüklenirken hata oluştu.');
+    }
+  }, [item, personelZimmetleri, GetPersonelZimmetleri, openBulkDevirSheet]);
+
   return (
     <BaseContextMenu item={item} entityType={EntityType} entityHuman={EntityHuman} menuTitle={menuTitle}>
-      {/* Personel Zimmetlerini Göster */}
+      {/* Personel Zimmetleri Göster */}
       <ContextMenuItem className="" onSelect={handleShowPersonelZimmetleri}>
         <Package className="mr-2 h-4 w-4 text-orange-500" />
         <span>Zimmetli Malzemeleri Göster</span>
       </ContextMenuItem>
+
+      {/* Bulk İşlemler */}
+      <ContextMenuSeparator />
+      
+      <ContextMenuItem className="" onSelect={handleBulkIade}>
+        <RotateCcw className="mr-2 h-4 w-4 text-blue-500" />
+        <span>Tüm Zimmetleri İade Al</span>
+      </ContextMenuItem>
+
+      <ContextMenuItem className="" onSelect={handleBulkDevir}>
+        <ArrowLeftRight className="mr-2 h-4 w-4 text-purple-500" />
+        <span>Tüm Zimmetleri Devret</span>
+      </ContextMenuItem>
+
+      <ContextMenuSeparator />
 
       {/* Bağlı Büro Görüntüleme */}
       {item?.buro && (

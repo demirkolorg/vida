@@ -8,7 +8,7 @@ export const SarfMalzemeTablo = ({ sarfMalzemeler }) => {
         <table className="w-full border-collapse border border-black text-sm">
           <thead>
             <tr className="bg-primary/20">
-              <th className="border border-black p-2 text-center w-12">S.N.</th>
+              {/* <th className="border border-black p-2 text-center w-12">S.N.</th> */}
               <th className="border border-black p-2 text-center">Sabit Kodu</th>
               <th className="border border-black p-2 text-center">Marka</th>
               <th className="border border-black p-2 text-center">Model</th>
@@ -21,7 +21,7 @@ export const SarfMalzemeTablo = ({ sarfMalzemeler }) => {
           <tbody>
             {sarfMalzemeler.map((malzeme, index) => (
               <tr key={malzeme.id}>
-                <td className="border border-black text-center text-xs">{index + 1}</td>
+                {/* <td className="border border-black text-center text-xs">{index + 1}</td> */}
                 <td className="border border-black text-center text-xs">{getMalzemeBilgi(malzeme, 'sabitKodu')}</td>
                 <td className="border border-black text-center text-xs">{getMalzemeBilgi(malzeme, 'marka')}</td>
                 <td className="border border-black text-center text-xs">{getMalzemeBilgi(malzeme, 'model')}</td>
@@ -35,7 +35,7 @@ export const SarfMalzemeTablo = ({ sarfMalzemeler }) => {
         </table>
 
         <div className="mt-3 text-right text-sm">
-          Toplam {sayiyiYaziyaCevir(sarfMalzemeler.length).toLowerCase()} ({sarfMalzemeler.length}) kalem demirbaş malzemedir.
+          Toplam {sayiyiYaziyaCevir(sarfMalzemeler.length).toLowerCase()} ({sarfMalzemeler.length}) kalem sarf malzemedir.
         </div>
       </div>
     )
