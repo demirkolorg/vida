@@ -77,7 +77,7 @@ export const getTutanakBilgileri = (hareketTuru, mockMalzemeler) => {
         title: 'MALZEME KAYIT TUTANAĞI',
         aciklama: `Yukarıdaki tabloda stok kodu, marka, model ve seri numaraları belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme sisteme kayıt edilmiştir. Kayıt işlemi tamamlanmış olup, malzemeler envantere eklenmiştir.`,
       };
-    case 'ZimmetBilgilendirme':
+    case 'Bilgi':
       return {
         title: 'PERSONEL ZİMMET TEBLİĞ TEBELLÜĞ TUTANAĞI',
         aciklama: `Yukarıdaki tabloda stok kodu, marka, model ve seri numaraları belirtilen ${sayiyiYaziyaCevir(mockMalzemeler.length).toLowerCase()} (${mockMalzemeler.length}) adet malzeme ilgili personelin zimmet ve sorumluluğunda bulunmaktadır. Bu tutanak, personelin zimmetinde olan tüm malzemelerin güncel durumunu göstermek amacıyla düzenlenmiştir. Personel, listede yer alan tüm malzemelerin sorumluluğunu taşımakta olup, herhangi bir kayıp, hasar veya eksiklik durumunda sorumlu tutulacaktır. Bu belge bilgilendirme amaçlı olup, mevcut zimmet durumunun teyidi niteliğindedir.`,
@@ -109,7 +109,7 @@ export const formatPersonel = personel => {
 // Hareket türüne göre imza alanları ve personel bilgileri
 export const getImzaAlanlari = (hareketTuru, hedefPersonel, kaynakPersonel, islemYapan) => {
   switch (hareketTuru) {
-     case 'ZimmetBilgilendirme':
+    case 'Bilgi':
       return [
         {
           label: 'TEBELLÜĞ EDEN',

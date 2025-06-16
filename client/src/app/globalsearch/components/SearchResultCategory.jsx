@@ -25,6 +25,7 @@ export const SearchResultCategory = ({
   const supportedContextMenuEntities = [
     'malzeme', 
     'personel', 
+    'tutanak', 
     'birim', 
     'sube', 
     'buro', 

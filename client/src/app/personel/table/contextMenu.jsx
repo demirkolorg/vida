@@ -14,14 +14,21 @@ import { Activity,
   Package,
   ArrowLeftRight,
   RotateCcw,
-  PackageCheck
+  PackageCheck,
+  FileTextIcon  // YENİ: Zimmet bilgi fişi ikonu
 } from 'lucide-react';
 import { MalzemeHareket_Store } from '@/app/malzemehareket/constants/store';
 import { usePersonelStore } from '@/stores/usePersonelStore';
 import { useMalzemeHareketStore } from '@/stores/useMalzemeHareketStore';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+
+// YENİ: Tutanak store import'u
+import { Tutanak_Store } from '@/app/tutanak/constants/store';
 
 export function Personel_ContextMenu({ item }) {
+  const navigate = useNavigate();
+  
   const GetPersonelZimmetleri = MalzemeHareket_Store(state => state.GetPersonelZimmetleri);
   const openPersonelZimmetSheet = usePersonelStore(state => state.openPersonelZimmetSheet);
   
@@ -30,6 +37,9 @@ export function Personel_ContextMenu({ item }) {
   const openBulkDevirSheet = useMalzemeHareketStore(state => state.openBulkDevirSheet);
   const GetPersonelHareketleri = MalzemeHareket_Store(state => state.GetPersonelHareketleri);
   const openPersonelHareketleriSheet = usePersonelStore(state => state.openPersonelHareketleriSheet);
+  
+  // YENİ: Tutanak store metodları
+  const GeneratePersonelZimmetBilgiFisi = Tutanak_Store(state => state.GeneratePersonelZimmetBilgiFisi);
   
   // Personel zimmetlerini almak için store
   const personelZimmetleri = MalzemeHareket_Store(state => state.personelZimmetleri);
@@ -94,6 +104,32 @@ export function Personel_ContextMenu({ item }) {
       console.error('Personel zimmetleri getirilemedi:', error);
     }
   }, [item, GetPersonelZimmetleri, openPersonelZimmetSheet]);
+
+  // YENİ: Zimmet bilgi fişi oluştur ve yazdır
+  const handleGenerateZimmetBilgiFisi = useCallback(async () => {
+    if (!item?.id) return;
+    
+    try {
+      console.log('Personel zimmet bilgi fişi oluşturuluyor:', item.id);
+      
+      const result = await GeneratePersonelZimmetBilgiFisi(item.id);
+      
+      if (result && result.tutanak) {
+        toast.success(`${item.ad} ${item.soyad} personelinin zimmet bilgi fişi oluşturuldu.`);
+        
+        // Tutanak sayfasına yönlendir ve yazdırma işlemi için flag gönder
+        navigate('/tutanak', { 
+          state: { 
+            showPrint: true,
+            selectedTutanakId: result.tutanak.id 
+          } 
+        });
+      }
+    } catch (error) {
+      console.error('Zimmet bilgi fişi oluşturma hatası:', error);
+      toast.error('Zimmet bilgi fişi oluşturulurken hata oluştu.');
+    }
+  }, [item, GeneratePersonelZimmetBilgiFisi, navigate]);
 
   // Bulk iade işlemi
   const handleBulkIade = useCallback(async () => {
@@ -192,7 +228,7 @@ export function Personel_ContextMenu({ item }) {
     }
   }, [item, personelZimmetleri, GetPersonelZimmetleri, openBulkDevirSheet]);
 
-    const handleShowPersonelHareketleri = useCallback(async () => {
+  const handleShowPersonelHareketleri = useCallback(async () => {
     if (!item?.id) {
       toast.error('Personel bilgisi bulunamadı.');
       return;
@@ -218,6 +254,7 @@ export function Personel_ContextMenu({ item }) {
       toast.error('Personel hareketleri getirilirken bir hata oluştu.');
     }
   }, [item, GetPersonelHareketleri, openPersonelHareketleriSheet]);
+
   return (
     <BaseContextMenu item={item} entityType={EntityType} entityHuman={EntityHuman} menuTitle={menuTitle}>
       {/* Personel Zimmetleri Göster */}
@@ -226,9 +263,15 @@ export function Personel_ContextMenu({ item }) {
         <span>Zimmetli Malzemeleri Göster</span>
       </ContextMenuItem>
 
-   <ContextMenuItem className="" onSelect={handleShowPersonelHareketleri}>
+      <ContextMenuItem className="" onSelect={handleShowPersonelHareketleri}>
         <Activity className="mr-2 h-4 w-4 text-green-500" />
         <span>Malzeme Hareketlerini Göster</span>
+      </ContextMenuItem>
+
+      {/* YENİ: Zimmet Bilgi Fişi Yazdır */}
+      <ContextMenuItem className="" onSelect={handleGenerateZimmetBilgiFisi}>
+        <FileTextIcon className="mr-2 h-4 w-4 text-indigo-500" />
+        <span>Zimmet Bilgi Fişi Yazdır</span>
       </ContextMenuItem>
 
       {/* Bulk İşlemler */}

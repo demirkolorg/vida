@@ -1,4 +1,4 @@
-import { useCallback } from 'react'; // ReactNode tipi kaldırıldı
+import { useCallback } from 'react';
 import { Pencil, Trash2, Eye, ShuffleIcon, Copy } from 'lucide-react';
 import { useSheetStore } from '@/stores/sheetStore';
 import { ContextMenuLabel, ContextMenuContent, ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu';
@@ -41,7 +41,16 @@ export function BaseContextMenu({ item, entityType, entityHuman, menuTitle, chil
   const showSeparatorAfterChildren = children;
 
   return (
-    <ContextMenuContent className="w-48">
+    <ContextMenuContent
+      className=""
+      side="top" // Öncelikli olarak üstte açılmaya çalışır
+      align="start"
+      sideOffset={4}
+      alignOffset={0}
+      collisionPadding={170} // Viewport kenarından 16px uzakta kalır
+      avoidCollisions={true} // Çarpışmaları otomatik olarak önler
+      sticky="partial" // Kısmi yapışkan pozisyonlama
+    >
       {menuTitle && (
         <>
           <ContextMenuLabel className="px-2 py-1.5 text-sm font-semibold text-center">{menuTitle}</ContextMenuLabel>
@@ -81,11 +90,7 @@ export function BaseContextMenu({ item, entityType, entityHuman, menuTitle, chil
       {!hideDeleteButton && (
         <>
           <ContextMenuSeparator />
-          <ContextMenuItem
-            variant="destructive" // Bu prop ContextMenuItem bileşenine aittir
-            className=""
-            onSelect={handleDelete}
-          >
+          <ContextMenuItem variant="destructive" className="" onSelect={handleDelete}>
             <Trash2 className="mr-2 h-4 w-4" />
             <span>Sil</span>
           </ContextMenuItem>

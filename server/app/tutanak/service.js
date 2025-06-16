@@ -4,6 +4,7 @@ import { prisma } from '../../config/db.js';
 import helper from '../../utils/helper.js';
 import { PrismaName, HumanName, VarlıkKod } from './base.js';
 import { AuditStatusEnum, HareketTuruEnum, MalzemeTipiEnum } from '@prisma/client';
+import MalzemeHareketService from '../malzemehareket/service.js';
 
 const service = {
   checkExistsById: async id => {
@@ -47,8 +48,8 @@ const service = {
         where: whereClause,
         orderBy: { createdAt: 'desc' },
         include: {
-          createdBy: { select: { id: true, ad: true, avatar: true,soyad:true, sicil: true } },
-          updatedBy: { select: { id: true, ad: true, avatar: true, soyad:true,sicil: true } },
+          createdBy: { select: { id: true, ad: true, avatar: true, soyad: true, sicil: true } },
+          updatedBy: { select: { id: true, ad: true, avatar: true, soyad: true, sicil: true } },
         },
       });
     } catch (error) {
@@ -74,7 +75,6 @@ const service = {
 
   create: async data => {
     try {
-
       // İstatistikleri hesapla
       const malzemeler = data.malzemeler || [];
       const toplamMalzeme = malzemeler.length;
@@ -99,8 +99,8 @@ const service = {
       return await prisma[PrismaName].create({
         data: createPayload,
         include: {
-          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
-          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true, sicil: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true, sicil: true } },
         },
       });
     } catch (error) {
@@ -425,6 +425,105 @@ const service = {
         toplam,
         hareketTuruIstatistik,
         aylikIstatistik,
+      };
+    } catch (error) {
+      throw error;
+    }
+  },
+  // Personel zimmet bilgi fişi oluştur
+  // Personel zimmet bilgi fişi oluştur
+  generatePersonelZimmetBilgiFisi: async data => {
+    try {
+      const { personelId, islemYapanKullanici } = data;
+      console.log('islemYapanKullanici', islemYapanKullanici);
+
+      if (!personelId) throw new Error('Personel ID gerekli.');
+
+      // Personel bilgilerini getir
+      const personelBilgileri = await prisma.personel.findUnique({
+        where: { id: personelId, status: AuditStatusEnum.Aktif },
+        include: {
+          buro: {
+            include: {
+              sube: { include: { birim: true } },
+            },
+          },
+        },
+      });
+
+      if (!personelBilgileri) throw new Error('Personel bulunamadı.');
+      const zimmetliMalzemeler = await MalzemeHareketService.getPersonelZimmetleri({ personelId: personelId });
+      if (zimmetliMalzemeler.length === 0) throw new Error('Personelin aktif zimmetinde malzeme bulunmuyor.');
+
+      // Malzeme bilgilerini tutanak formatına çevir
+      const malzemeler = zimmetliMalzemeler.map(malzeme => ({
+        id: malzeme.id,
+        vidaNo: malzeme.vidaNo,
+        sabitKodu: malzeme.sabitKodu?.ad,
+        marka: malzeme.marka?.ad,
+        model: malzeme.model?.ad,
+        bademSeriNo: malzeme.bademSeriNo,
+        etmysSeriNo: malzeme.etmysSeriNo,
+        stokDemirbasNo: malzeme.stokDemirbasNo,
+        malzemeTipi: malzeme.malzemeTipi,
+        kondisyon: malzeme.zimmetBilgileri?.malzemeKondisyonu || 'Saglam',
+        birim: malzeme.birim?.ad,
+        sube: malzeme.sube?.ad,
+        zimmetTarihi: malzeme.zimmetBilgileri?.zimmetTarihi,
+        zimmetTuru: malzeme.zimmetBilgileri?.zimmetTuru,
+        zimmetAciklamasi: malzeme.zimmetBilgileri?.zimmetAciklamasi,
+        kaynakKonum: malzeme.zimmetBilgileri?.kaynakKonum
+          ? {
+              id: malzeme.zimmetBilgileri.kaynakKonum.id,
+              ad: malzeme.zimmetBilgileri.kaynakKonum.ad,
+              depo: malzeme.zimmetBilgileri.kaynakKonum.depo?.ad,
+            }
+          : null,
+      }));
+
+      // Tutanak verilerini hazırla
+      const tutanakData = {
+        hareketTuru: 'Bilgi',
+        malzemeIds: malzemeler.map(m => m.id),
+        malzemeler,
+        personelBilgileri: {
+          hedefPersonel: {
+            id: personelBilgileri.id,
+            ad: personelBilgileri.ad,
+            soyad: personelBilgileri.soyad,
+            sicil: personelBilgileri.sicil,
+            avatar: personelBilgileri.avatar,
+            buro: personelBilgileri.buro?.ad,
+            sube: personelBilgileri.buro?.sube?.ad,
+            birim: personelBilgileri.buro?.sube?.birim?.ad,
+          },
+          kaynakPersonel: null, // Bilgi fişinde kaynak personel yok
+        },
+        islemBilgileri: {
+          tarih: new Date(),
+          hareketTuru: 'Bilgi',
+          aciklama: `${personelBilgileri.ad} ${personelBilgileri.soyad} (${personelBilgileri.sicil}) personelinin zimmet bilgi fişi - ${malzemeler.length} adet malzeme`,
+        },
+        konumBilgileri: {
+          kaynakKonumlar: malzemeler.reduce((acc, malzeme) => {
+            if (malzeme.kaynakKonum) {
+              acc[malzeme.id] = malzeme.kaynakKonum;
+            }
+            return acc;
+          }, {}),
+        },
+        islemYapanKullanici,
+      };
+
+      // Tutanak oluştur
+      const tutanak = await service.create(tutanakData);
+
+      return {
+        tutanak,
+        personelBilgileri,
+        malzemeSayisi: malzemeler.length,
+        demirbasSayisi: malzemeler.filter(m => m.malzemeTipi === 'Demirbas').length,
+        sarfSayisi: malzemeler.filter(m => m.malzemeTipi === 'Sarf').length,
       };
     } catch (error) {
       throw error;

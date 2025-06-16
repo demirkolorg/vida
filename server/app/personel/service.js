@@ -28,14 +28,14 @@ const service = {
         where: { status: AuditStatusEnum.Aktif },
         orderBy: { ad: 'asc' },
         include: {
-          buro: { 
-            select: { 
-              id: true, 
+          buro: {
+            select: {
+              id: true,
               ad: true,
               sube: {
-                select: { id: true, ad: true }
-              }
-            } 
+                select: { id: true, ad: true },
+              },
+            },
           },
           createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
@@ -61,14 +61,14 @@ const service = {
         where: whereClause,
         orderBy: { ad: 'asc' },
         include: {
-          buro: { 
-            select: { 
-              id: true, 
+          buro: {
+            select: {
+              id: true,
               ad: true,
               sube: {
-                select: { id: true, ad: true }
-              }
-            } 
+                select: { id: true, ad: true },
+              },
+            },
           },
           createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
@@ -86,14 +86,14 @@ const service = {
       return await prisma[PrismaName].findFirst({
         where: { id: data.id, status: AuditStatusEnum.Aktif },
         include: {
-          buro: { 
-            select: { 
-              id: true, 
+          buro: {
+            select: {
+              id: true,
               ad: true,
               sube: {
-                select: { id: true, ad: true }
-              }
-            } 
+                select: { id: true, ad: true },
+              },
+            },
           },
           createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
@@ -108,7 +108,6 @@ const service = {
     try {
       if (data.buroId) await BuroService.checkExistsById(data.buroId);
 
-
       const createPayload = {
         ad: data.ad,
         sicil: data.sicil,
@@ -121,7 +120,7 @@ const service = {
 
       if (data.buroId !== undefined) createPayload.buroId = data.buroId;
       if (data.avatar !== undefined) createPayload.avatar = data.avatar;
-      
+
       // Parola varsa hashle
       if (data.parola) {
         const saltRounds = 10;
@@ -131,14 +130,14 @@ const service = {
       return await prisma[PrismaName].create({
         data: createPayload,
         include: {
-          buro: { 
-            select: { 
-              id: true, 
+          buro: {
+            select: {
+              id: true,
               ad: true,
               sube: {
-                select: { id: true, ad: true }
-              }
-            } 
+                select: { id: true, ad: true },
+              },
+            },
           },
           createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
@@ -149,78 +148,77 @@ const service = {
     }
   },
 
-update: async data => {
-  try {
-    const existingEntity = await service.checkExistsById(data.id);
-    const updatePayload = { updatedById: data.islemYapanKullanici };
-    
-    if (data.ad !== undefined) updatePayload.ad = data.ad;
-    if (data.sicil !== undefined) updatePayload.sicil = data.sicil;
-    if (data.role !== undefined) updatePayload.role = data.role;
-    if (data.avatar !== undefined) updatePayload.avatar = data.avatar;
-    if (data.isUser !== undefined) updatePayload.isUser = data.isUser;
-    if (data.isAmir !== undefined) updatePayload.isAmir = data.isAmir;
+  update: async data => {
+    try {
+      const existingEntity = await service.checkExistsById(data.id);
+      const updatePayload = { updatedById: data.islemYapanKullanici };
 
-    if (data.buroId !== undefined) {
-      if (data.buroId !== null && data.buroId !== existingEntity.buroId) {
-        await BuroService.checkExistsById(data.buroId);
+      if (data.ad !== undefined) updatePayload.ad = data.ad;
+      if (data.sicil !== undefined) updatePayload.sicil = data.sicil;
+      if (data.role !== undefined) updatePayload.role = data.role;
+      if (data.avatar !== undefined) updatePayload.avatar = data.avatar;
+      if (data.isUser !== undefined) updatePayload.isUser = data.isUser;
+      if (data.isAmir !== undefined) updatePayload.isAmir = data.isAmir;
+
+      if (data.buroId !== undefined) {
+        if (data.buroId !== null && data.buroId !== existingEntity.buroId) {
+          await BuroService.checkExistsById(data.buroId);
+        }
+        updatePayload.buroId = data.buroId;
       }
-      updatePayload.buroId = data.buroId;
-    }
 
-    // ÖNEMLİ: Parola sadece gönderilmişse ve boş değilse hashle
-    if (data.parola && data.parola.trim() !== '') {
-      const saltRounds = 10;
-      updatePayload.parola = await bcrypt.hash(data.parola, saltRounds);
-    }
-    // Parola gönderilmemişse veya boşsa, mevcut parolayı koru (updatePayload'a ekleme)
+      // ÖNEMLİ: Parola sadece gönderilmişse ve boş değilse hashle
+      if (data.parola && data.parola.trim() !== '') {
+        const saltRounds = 10;
+        updatePayload.parola = await bcrypt.hash(data.parola, saltRounds);
+      }
+      // Parola gönderilmemişse veya boşsa, mevcut parolayı koru (updatePayload'a ekleme)
 
-    return await prisma[PrismaName].update({
-      where: { id: data.id },
-      data: updatePayload,
-      include: {
-        buro: { 
-          select: { 
-            id: true, 
-            ad: true,
-            sube: {
-              select: { id: true, ad: true }
-            }
-          } 
+      return await prisma[PrismaName].update({
+        where: { id: data.id },
+        data: updatePayload,
+        include: {
+          buro: {
+            select: {
+              id: true,
+              ad: true,
+              sube: {
+                select: { id: true, ad: true },
+              },
+            },
+          },
+          createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
+          updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
-        createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
-        updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
-      },
-    });
-  } catch (error) {
-    throw error;
-  }
-},
+      });
+    } catch (error) {
+      throw error;
+    }
+  },
 
   updateStatus: async data => {
     try {
       await service.checkExistsById(data.id);
 
-      if (!Object.values(AuditStatusEnum).includes(data.status)) 
-        throw new Error(`Girilen '${data.status}' durumu geçerli bir durum değildir.`);
+      if (!Object.values(AuditStatusEnum).includes(data.status)) throw new Error(`Girilen '${data.status}' durumu geçerli bir durum değildir.`);
 
-      const updatePayload = { 
+      const updatePayload = {
         updatedById: data.islemYapanKullanici,
-        status: data.status 
+        status: data.status,
       };
 
       return await prisma[PrismaName].update({
         where: { id: data.id },
         data: updatePayload,
         include: {
-          buro: { 
-            select: { 
-              id: true, 
+          buro: {
+            select: {
+              id: true,
               ad: true,
               sube: {
-                select: { id: true, ad: true }
-              }
-            } 
+                select: { id: true, ad: true },
+              },
+            },
           },
           createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
@@ -260,14 +258,14 @@ update: async data => {
         where: whereClause,
         orderBy: { ad: 'asc' },
         include: {
-          buro: { 
-            select: { 
-              id: true, 
+          buro: {
+            select: {
+              id: true,
               ad: true,
               sube: {
-                select: { id: true, ad: true }
-              }
-            } 
+                select: { id: true, ad: true },
+              },
+            },
           },
           createdBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },

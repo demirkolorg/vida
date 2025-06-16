@@ -3,20 +3,24 @@ import { Badge } from '@/components/ui/badge';
 import { AvatarWithName } from '@/components/table/AvatarWithName';
 
 export const Tutanak_Columns = () => [
-  {
-    accessorKey: 'tutanakId',
-    header: ({ column }) => <HeaderButton column={column} title="Tutanak No" />,
-    cell: ({ row }) => {
-      const tutanakNo = row.original?.id;
-      return <div className="font-medium font-mono text-sm">{tutanakNo || '-'}</div>;
-    },
-    enableHiding: false,
-    size: 200,
-    meta: {
-      exportHeader: 'Tutanak No',
-      filterVariant: 'text',
-    },
+ {
+  accessorKey: 'tutanakId',
+  header: ({ column }) => <HeaderButton column={column} title="Tutanak No" />,
+  cell: ({ row }) => {
+    const tutanakNo = row.original?.id;
+    return (
+      <div className="font-medium font-mono text-sm whitespace-normal break-all leading-tight max-w-[300px]">
+        {tutanakNo || '-'}
+      </div>
+    );
   },
+  enableHiding: false,
+  size: 300,
+  meta: {
+    exportHeader: 'Tutanak No',
+    filterVariant: 'text',
+  },
+},
   {
     accessorKey: 'hareketTuru', // tutanakTuru yerine hareketTuru
     header: ({ column }) => <HeaderButton column={column} title="Hareket Türü" />,

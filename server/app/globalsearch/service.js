@@ -15,15 +15,11 @@ const service = {
   globalSearch: async data => {
     try {
       const { query, entityTypes = [], limit = 50, includeInactive = false, includeRelations = true } = data;
-
-      // Arama terimini Türkçe karakter duyarlı olarak temizle
       const searchTerm = query.replace(/İ/g, 'i');
-      console.log('searchTerm', searchTerm);
-
       if (searchTerm.length < 2) throw new Error('Arama terimi en az 2 karakter olmalıdır.');
       const searchResults = {};
       const statusClause = includeInactive ? {} : { status: AuditStatusEnum.Aktif };
-      const availableEntities = ['birim', 'sube', 'buro', 'personel', 'malzeme', 'malzemeHareket', 'marka', 'model', 'depo', 'konum', 'sabitKodu'];
+      const availableEntities = ['birim', 'sube', 'buro', 'personel', 'malzeme', 'malzemeHareket', 'marka', 'model', 'depo', 'konum', 'sabitKodu', 'tutanak'];
       const entitiesToSearch = entityTypes.length > 0 ? entityTypes.filter(et => availableEntities.includes(et)) : availableEntities;
       for (const entityType of entitiesToSearch) {
         try {
@@ -64,6 +60,198 @@ const service = {
       take: limit,
     });
   },
+
+  // Tutanak arama
+searchTutanak: async (searchTerm, statusClause, limit, includeRelations) => {
+  try {
+    // UUID kısmi arama kontrolü (en az 4 karakter UUID benzeri)
+    const isUUIDLike = /^[0-9a-f-]{4,}$/i.test(searchTerm);
+    const isFullUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchTerm);
+    
+    // UUID kısmi araması için raw query kullan
+    if (isUUIDLike && !isFullUUID) {
+      try {
+        const rawQuery = `
+          SELECT id FROM "Tutanak" 
+          WHERE "status" = $1::"AuditStatusEnum"
+          AND (
+            "id"::text ILIKE $2 OR
+            $3 = ANY("malzemeIds") OR
+            "malzemeler"::text ILIKE $2 OR
+            "personelBilgileri"::text ILIKE $2 OR
+            "islemBilgileri"::text ILIKE $2 OR
+            ("konumBilgileri" IS NOT NULL AND "konumBilgileri"::text ILIKE $2) OR
+            ("ekDosyalar" IS NOT NULL AND "ekDosyalar"::text ILIKE $2)
+          )
+          ORDER BY "createdAt" DESC, "updatedAt" DESC
+          LIMIT $4
+        `;
+        
+        const searchPattern = `%${searchTerm}%`;
+        const tutanakIds = await prisma.$queryRawUnsafe(
+          rawQuery,
+          statusClause.status || 'Aktif',
+          searchPattern,
+          searchTerm, // Array içinde exact match için
+          limit
+        );
+        
+        if (tutanakIds.length > 0) {
+          const ids = tutanakIds.map(t => t.id);
+          const includeClause = includeRelations ? {
+            createdBy: {
+              select: {
+                id: true,
+                ad: true,
+                soyad: true,
+                sicil: true
+              }
+            },
+            updatedBy: {
+              select: {
+                id: true,
+                ad: true,
+                soyad: true,
+                sicil: true
+              }
+            }
+          } : {};
+          
+          return await prisma.tutanak.findMany({
+            where: { id: { in: ids } },
+            include: includeClause,
+            orderBy: [{ createdAt: 'desc' }, { updatedAt: 'desc' }]
+          });
+        }
+      } catch (error) {
+        console.error('Raw query error:', error);
+        // Raw query başarısız olursa normal aramaya devam et
+      }
+    }
+    
+    // Normal arama koşulları
+    const orConditions = [];
+    
+    // Tam UUID ise exact match
+    if (isFullUUID) {
+      orConditions.push({ id: searchTerm });
+      orConditions.push({ malzemeIds: { has: searchTerm } });
+    }
+    
+    // HareketTuruEnum değerleri kontrolü
+    const validHareketTurleri = ['Kayit', 'Zimmet', 'Iade', 'Devir', 'DepoTransferi', 'KondisyonGuncelleme', 'Kayip', 'Dusum'];
+    const matchingTurler = validHareketTurleri.filter(tur => 
+      tur.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    if (matchingTurler.length > 0) {
+      orConditions.push({ hareketTuru: { in: matchingTurler } });
+    }
+    
+    // UUID değilse ve hareket türü de değilse, JSON içeriğinde arama yap
+    if (!isUUIDLike && matchingTurler.length === 0 && searchTerm.length >= 2) {
+      try {
+        const jsonSearchQuery = `
+          SELECT id FROM "Tutanak" 
+          WHERE "status" = $1::"AuditStatusEnum"
+          AND (
+            "malzemeler"::text ILIKE $2 OR
+            "personelBilgileri"::text ILIKE $2 OR
+            "islemBilgileri"::text ILIKE $2 OR
+            ("konumBilgileri" IS NOT NULL AND "konumBilgileri"::text ILIKE $2) OR
+            ("ekDosyalar" IS NOT NULL AND "ekDosyalar"::text ILIKE $2)
+          )
+          ORDER BY "createdAt" DESC, "updatedAt" DESC
+          LIMIT $3
+        `;
+        
+        const searchPattern = `%${searchTerm}%`;
+        const tutanakIds = await prisma.$queryRawUnsafe(
+          jsonSearchQuery,
+          statusClause.status || 'Aktif',
+          searchPattern,
+          limit
+        );
+        
+        if (tutanakIds.length > 0) {
+          const ids = tutanakIds.map(t => t.id);
+          const includeClause = includeRelations ? {
+            createdBy: {
+              select: {
+                id: true,
+                ad: true,
+                soyad: true,
+                sicil: true
+              }
+            },
+            updatedBy: {
+              select: {
+                id: true,
+                ad: true,
+                soyad: true,
+                sicil: true
+              }
+            }
+          } : {};
+          
+          return await prisma.tutanak.findMany({
+            where: { id: { in: ids } },
+            include: includeClause,
+            orderBy: [{ createdAt: 'desc' }, { updatedAt: 'desc' }]
+          });
+        }
+      } catch (error) {
+        console.error('JSON search error:', error);
+        // JSON arama başarısız olursa normal aramaya devam et
+      }
+    }
+    
+    // Hiç koşul yoksa boş sonuç döndür
+    if (orConditions.length === 0) {
+      return [];
+    }
+    
+    const whereClause = {
+      ...statusClause,
+      OR: orConditions
+    };
+
+    const includeClause = includeRelations ? {
+      createdBy: {
+        select: {
+          id: true,
+          ad: true,
+          soyad: true,
+          sicil: true
+        }
+      },
+      updatedBy: {
+        select: {
+          id: true,
+          ad: true,
+          soyad: true,
+          sicil: true
+        }
+      }
+    } : {};
+
+    const tutanaklar = await prisma.tutanak.findMany({
+      where: whereClause,
+      include: includeClause,
+      take: limit,
+      orderBy: [
+        { createdAt: 'desc' },
+        { updatedAt: 'desc' }
+      ]
+    });
+
+    return tutanaklar;
+  } catch (error) {
+    console.error('Error in searchTutanak:', error);
+    // Hata durumunda boş array döndür
+    return [];
+  }
+},
 
   // Şube arama
   searchSube: async (searchTerm, statusClause, limit, includeRelations) => {

@@ -54,7 +54,7 @@ export const HeaderSearchComponent = () => {
       <KayitSheet />
 
       {/* RETURN */}
-      <GlobalSearchComponent enableContextMenu={true} onResultSelect={handleResultSelect} />
+      <GlobalSearchComponent enableContextMenu={false} onResultSelect={handleResultSelect} />
     </>
   );
 };

@@ -4,17 +4,7 @@ import { TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { useEffect, useRef, useState } from 'react';
 
-export function DataTableBody({
-  table,
-  isLoading,
-  onRowClick,
-  rowContextMenu,
-  enableRowSelection,
-  visibleColumnsCount,
-  autoClickFirstRow = false,
-  onFirstRowClicked = null,
-  highlightId =null
-}) {
+export function DataTableBody({ table, isLoading, onRowClick, rowContextMenu, enableRowSelection, visibleColumnsCount, autoClickFirstRow = false, onFirstRowClicked = null, highlightId = null }) {
   const hasAutoClickedRef = useRef(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -26,7 +16,7 @@ export function DataTableBody({
 
   const handleRowClick = (rowData, row) => {
     if (!isMounted) return; // Mount kontrolü ekle
-    
+
     if (enableRowSelection && (window.event?.ctrlKey || window.event?.metaKey)) {
       row.toggleSelected();
       return;
@@ -36,7 +26,7 @@ export function DataTableBody({
 
   const handleFirstRowClick = () => {
     if (!isMounted) return null; // Mount kontrolü ekle
-    
+
     const rows = table.getRowModel().rows;
 
     if (!rows || rows.length === 0) {
@@ -115,23 +105,13 @@ export function DataTableBody({
           const rowData = row.original;
           const contextMenuContent = rowContextMenu ? rowContextMenu(row) : null;
           const isHighlighted = highlightId && rowData.id?.toString() === highlightId?.toString();
-          const rowClassName = cn(
-            'even:bg-primary/3 cursor-default transition-colors',
-            row.getIsSelected() && 'bg-muted/50',
-            onRowClick && 'hover:bg-primary/40',
-            isHighlighted && 'bg-yellow-200 hover:bg-yellow-300 dark:bg-yellow-800 dark:hover:bg-yellow-700 '
-
-          );
+          const rowClassName = cn('even:bg-primary/3 cursor-default transition-colors', row.getIsSelected() && 'bg-muted/50', onRowClick && 'hover:bg-primary/40', isHighlighted && 'bg-yellow-200 hover:bg-yellow-300 dark:bg-yellow-800 dark:hover:bg-yellow-700 ');
 
           if (contextMenuContent) {
             return (
               <ContextMenu key={`context-${row.id}`}>
                 <ContextMenuTrigger asChild>
-                  <TableRow
-                    data-state={row.getIsSelected() ? 'selected' : undefined}
-                    onClick={() => handleRowClick(rowData, row)}
-                    className={rowClassName}
-                  >
+                  <TableRow data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => handleRowClick(rowData, row)} className={rowClassName}>
                     {renderRowContent(row)}
                   </TableRow>
                 </ContextMenuTrigger>
@@ -140,12 +120,7 @@ export function DataTableBody({
             );
           } else {
             return (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() ? 'selected' : undefined}
-                onClick={() => handleRowClick(rowData, row)}
-                className={rowClassName}
-              >
+              <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined} onClick={() => handleRowClick(rowData, row)} className={rowClassName}>
                 {renderRowContent(row)}
               </TableRow>
             );

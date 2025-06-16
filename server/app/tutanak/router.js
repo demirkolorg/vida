@@ -25,6 +25,8 @@ r.post('/generateFromMalzemeler', authToken, authRoles(RoleEnum.User, RoleEnum.A
 r.post('/generateBulkTutanak', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.generateBulkTutanak);
 r.post('/getByHareketTuru', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getByHareketTuru);
 r.get('/getIstatistikler', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getIstatistikler);
+// Personel zimmet bilgi fişi oluştur
+r.post('/generatePersonelZimmetBilgiFisi/:personelId', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.generatePersonelZimmetBilgiFisi);
 
 // Print ve Export işlemleri
 r.post('/getPrintData', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getPrintData);

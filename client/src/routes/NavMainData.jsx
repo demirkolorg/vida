@@ -8,58 +8,41 @@ export const NavMainData = [
     icon: LayoutDashboard,
   },
 
-  // {
-  //   to: '/malzeme',
-  //   label: 'Malzeme Yönetimi',
-  //   icon: Package,
-  // },
-  // {
-  //   to: '/malzeme-hareketleri',
-  //   label: 'Malzeme Hareketleri',
-  //   icon: Route,
-  // },
-
-  // {
-  //   to: '/tutanak',
-  //   label: 'Tutanak',
-  //   icon: FileTextIcon,
-  // },
-
   {
-    label: 'Malzeme Yönetimi',
-    icon: Building2,
-    isDropdown: true,
-    children: [
-      {
-        to: '/malzeme',
-        label: 'Malzeme Listesi',
-        icon: Package,
-      },
-      {
-        to: '/malzeme-hareketleri',
-        label: 'Malzeme Hareketleri',
-        icon: Route,
-      },
-
-      {
-        to: '/tutanak',
-        label: 'Tutanaklar',
-        icon: FileTextIcon,
-      },
-    ],
+    to: '/personel',
+    label: 'Personel Listesi',
+    icon: Users,
   },
 
   {
-    label: 'Personel Yönetimi',
-    icon: Building2,
+    to: '/malzeme',
+    label: 'Malzeme Listesi',
+    icon: Package,
+  },
+  {
+    to: '/malzeme-hareketleri',
+    label: 'Malzeme Hareketleri',
+    icon: Route,
+  },
+
+  {
+    to: '/tutanak',
+    label: 'Tutanak',
+    icon: FileTextIcon,
+  },
+
+  {
+    to: '/denetim-kaydi',
+    label: 'Denetim Kaydı',
+    icon: Shield,
+  },
+
+  {
+    label: 'Tanımlamalar',
+    icon: Layers,
     isDropdown: true,
     children: [
       {
-        to: '/personel',
-        label: 'Personel Listesi',
-        icon: Users,
-      },
-     {
         to: '/birim',
         label: 'Birimler',
         icon: Building2,
@@ -74,15 +57,6 @@ export const NavMainData = [
         label: 'Bürolar',
         icon: Briefcase,
       },
-    ],
-  },
-
-  {
-    label: 'Tanımlamalar',
-    icon: Layers,
-    isDropdown: true,
-    children: [
-     
       {
         to: '/sabitkodu',
         label: 'Stok Kodu',
@@ -111,9 +85,55 @@ export const NavMainData = [
     ],
   },
 
-  {
-    to: '/denetim-kaydi',
-    label: 'Denetim Kaydı',
-    icon: Shield,
-  },
+  // {
+  //   label: 'Malzeme Yönetimi',
+  //   icon: Building2,
+  //   isDropdown: true,
+  //   children: [
+  //     {
+  //       to: '/malzeme',
+  //       label: 'Malzeme Listesi',
+  //       icon: Package,
+  //     },
+  //     {
+  //       to: '/malzeme-hareketleri',
+  //       label: 'Malzeme Hareketleri',
+  //       icon: Route,
+  //     },
+
+  //     {
+  //       to: '/tutanak',
+  //       label: 'Tutanaklar',
+  //       icon: FileTextIcon,
+  //     },
+  //   ],
+  // },
+
+  // {
+  //   label: 'Personel Yönetimi',
+  //   icon: Building2,
+  //   isDropdown: true,
+  //   children: [
+  //     {
+  //       to: '/personel',
+  //       label: 'Personel Listesi',
+  //       icon: Users,
+  //     },
+  //     {
+  //       to: '/birim',
+  //       label: 'Birimler',
+  //       icon: Building2,
+  //     },
+  //     {
+  //       to: '/sube',
+  //       label: 'Şubeler',
+  //       icon: ShieldCheck,
+  //     },
+  //     {
+  //       to: '/buro',
+  //       label: 'Bürolar',
+  //       icon: Briefcase,
+  //     },
+  //   ],
+  // },
 ];

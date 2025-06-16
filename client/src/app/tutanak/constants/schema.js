@@ -11,13 +11,14 @@ export const HareketTuruEnum = {
   DepoTransferi: 'DepoTransferi',
   KondisyonGuncelleme: 'KondisyonGuncelleme',
   Kayip: 'Kayip',
-  Dusum: 'Dusum'
+  Dusum: 'Dusum',
+  Bilgi: 'Bilgi', // YENİ: Personel zimmet bilgi fişi
 };
 
 // Malzeme tipi enum'u
 export const MalzemeTipiEnum = {
   Demirbas: 'Demirbas',
-  Sarf: 'Sarf'
+  Sarf: 'Sarf',
 };
 
 // Personel için temel şema
@@ -54,11 +55,14 @@ export const IslemBilgileri_Schema = z.object({
 });
 
 // Konum bilgileri şeması
-export const KonumBilgileri_Schema = z.object({
-  id: z.string().optional().nullable(),
-  ad: z.string().optional().nullable(),
-  depo: z.string().optional().nullable(),
-}).optional().nullable();
+export const KonumBilgileri_Schema = z
+  .object({
+    id: z.string().optional().nullable(),
+    ad: z.string().optional().nullable(),
+    depo: z.string().optional().nullable(),
+  })
+  .optional()
+  .nullable();
 
 // --- Ana Tutanak Şeması ---
 export const Tutanak_Schema = z.object({
@@ -101,15 +105,17 @@ export const Tutanak_CreateSchema = z.object({
 });
 
 // --- Güncelleme Şeması ---
-export const Tutanak_UpdateSchema = z.object({
-  hareketTuru: z.enum(Object.values(HareketTuruEnum)).optional(),
-  malzemeIds: z.array(z.string()).optional(),
-  malzemeler: z.array(Malzeme_BaseSchema_for_Tutanak_Relation).optional(),
-  personelBilgileri: PersonelBilgileri_Schema.optional(),
-  islemBilgileri: IslemBilgileri_Schema.optional(),
-  konumBilgileri: KonumBilgileri_Schema.optional().nullable(),
-  ekDosyalar: z.any().optional().nullable(),
-}).partial();
+export const Tutanak_UpdateSchema = z
+  .object({
+    hareketTuru: z.enum(Object.values(HareketTuruEnum)).optional(),
+    malzemeIds: z.array(z.string()).optional(),
+    malzemeler: z.array(Malzeme_BaseSchema_for_Tutanak_Relation).optional(),
+    personelBilgileri: PersonelBilgileri_Schema.optional(),
+    islemBilgileri: IslemBilgileri_Schema.optional(),
+    konumBilgileri: KonumBilgileri_Schema.optional().nullable(),
+    ekDosyalar: z.any().optional().nullable(),
+  })
+  .partial();
 
 // --- Form Girdi Şeması ---
 export const Tutanak_FormInputSchema = z.object({
@@ -177,6 +183,7 @@ export const HareketTuruLabels = {
   [HareketTuruEnum.KondisyonGuncelleme]: 'Kondisyon Güncelleme',
   [HareketTuruEnum.Kayip]: 'Kayıp',
   [HareketTuruEnum.Dusum]: 'Düşüm',
+  [HareketTuruEnum.Bilgi]: 'Zimmet Bilgilendirme', // YENİ
 };
 
 // Malzeme tipi için human-readable labels

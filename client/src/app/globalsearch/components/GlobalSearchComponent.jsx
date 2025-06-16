@@ -101,6 +101,7 @@ export const GlobalSearchComponent = ({
     const supportedEntities = [
       'malzeme', 
       'personel', 
+      'tutanak', 
       'birim', 
       'sube', 
       'buro', 

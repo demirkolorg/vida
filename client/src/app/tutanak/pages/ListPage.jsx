@@ -10,13 +10,18 @@ import { Tutanak_StatusDialog as EntityStatusDialog } from '../dialogs/StatusDia
 
 // Tutanak önizleme paneli
 import TutanakDetailPanel from '../components/TutanakDetailPanel';
-import { useLocation } from 'react-router-dom'; // Bu import'u ekleyin
+import { useLocation } from 'react-router-dom';
 
 export function Tutanak_ListPage() {
   const [selectedTutanak, setSelectedTutanak] = useState(null);
   const { setDisablePadding, setIsDetailPanelOpen } = useLayout();
-const location = useLocation();
-const showPrint = location.state?.showPrint;
+  const location = useLocation();
+  const showPrint = location.state?.showPrint;
+  const selectedTutanakId = location.state?.selectedTutanakId;
+
+  // Store'dan tutanakları al
+  const tutanakData = EntityStore(state => state.datas);
+  const getAll = EntityStore(state => state.GetAll);
 
   // selectedTutanak durumuna göre layout padding'ini kontrol et
   useEffect(() => {
@@ -36,6 +41,35 @@ const showPrint = location.state?.showPrint;
       setIsDetailPanelOpen(false);
     };
   }, [setDisablePadding, setIsDetailPanelOpen]);
+
+  // Location state'ten gelen tutanak ID'sini handle et
+  useEffect(() => {
+    if (selectedTutanakId && showPrint && tutanakData?.length > 0) {
+      console.log("Location state'ten tutanak aranıyor:", selectedTutanakId);
+
+      const foundTutanak = tutanakData.find(t => t.id === selectedTutanakId);
+
+      if (foundTutanak) {
+        setSelectedTutanak(foundTutanak);
+      } else {
+        getAll();
+      }
+
+      // State'i temizle (tek seferlik işlem)
+      window.history.replaceState({}, document.title);
+    }
+  }, [selectedTutanakId, showPrint, tutanakData, getAll]);
+
+  // Tutanak listesi güncellendiğinde tekrar kontrol et
+  useEffect(() => {
+    if (selectedTutanakId && showPrint && tutanakData?.length > 0 && !selectedTutanak) {
+      const foundTutanak = tutanakData.find(t => t.id === selectedTutanakId);
+      if (foundTutanak) {
+        console.log('Liste güncellendikten sonra tutanak bulundu:', foundTutanak);
+        setSelectedTutanak(foundTutanak);
+      }
+    }
+  }, [tutanakData, selectedTutanakId, showPrint, selectedTutanak]);
 
   const handleRowClick = tutanak => {
     setSelectedTutanak(tutanak);

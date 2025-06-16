@@ -25,6 +25,7 @@ enum HareketTuruEnum {
   KondisyonGuncelleme //belli değil
   Kayip //belli değil
   Dusum //belli değil
+  Bilgi
 }
 
 enum MalzemeKondisyonuEnum {

@@ -153,10 +153,10 @@ const controller = {
   health: async (req, res) => {
     const rota = 'health';
     try {
-      const result = { 
-        status: `${HumanName} Servisi Aktif`, 
+      const result = {
+        status: `${HumanName} Servisi Aktif`,
         timestamp: new Date().toISOString(),
-        supportedHareketTurleri: Object.values(HareketTuruEnum)
+        supportedHareketTurleri: Object.values(HareketTuruEnum),
       };
       response.success(req, res, HizmetName, rota, message.health.ok, result);
     } catch (error) {
@@ -175,7 +175,7 @@ const controller = {
         return response.error(req, res, HizmetName, rota, message.special.error.generateFailed, message.required.islemYapanKullanici);
       }
       if (!data.hareketIds || !Array.isArray(data.hareketIds) || data.hareketIds.length === 0) {
-        return response.error(req, res, HizmetName, rota, message.special.error.generateFailed, 'Hareket ID\'leri gerekli.');
+        return response.error(req, res, HizmetName, rota, message.special.error.generateFailed, "Hareket ID'leri gerekli.");
       }
       if (!data.hareketTuru) {
         return response.error(req, res, HizmetName, rota, message.special.error.generateFailed, 'Hareket türü gerekli.');
@@ -198,7 +198,7 @@ const controller = {
         return response.error(req, res, HizmetName, rota, message.special.error.generateFailed, message.required.islemYapanKullanici);
       }
       if (!data.malzemeIds || !Array.isArray(data.malzemeIds) || data.malzemeIds.length === 0) {
-        return response.error(req, res, HizmetName, rota, message.special.error.generateFailed, 'Malzeme ID\'leri gerekli.');
+        return response.error(req, res, HizmetName, rota, message.special.error.generateFailed, "Malzeme ID'leri gerekli.");
       }
       if (!data.hareketTuru) {
         return response.error(req, res, HizmetName, rota, message.special.error.generateFailed, 'Hareket türü gerekli.');
@@ -259,12 +259,12 @@ const controller = {
 
       // Başarılı hareketlerin ID'lerini al
       const hareketIds = data.bulkResult.success.map(hareket => hareket.id);
-      
+
       const tutanakData = {
         hareketIds,
         hareketTuru: data.hareketTuru,
         aciklama: data.aciklama || `Toplu ${data.hareketTuru} işlemi tutanağı`,
-        islemYapanKullanici: data.islemYapanKullanici
+        islemYapanKullanici: data.islemYapanKullanici,
       };
 
       const result = await service.generateFromHareketler(tutanakData);
@@ -285,7 +285,7 @@ const controller = {
       }
 
       const tutanak = await service.getById(data);
-      
+
       // Print için formatlanmış data
       const printData = {
         tarih: tutanak.islemBilgileri?.tarih || tutanak.createdAt,
@@ -303,7 +303,7 @@ const controller = {
         toplamMalzeme: tutanak.toplamMalzeme || 0,
         // Meta bilgiler
         olusturanKullanici: tutanak.createdBy,
-        olusturmaTarihi: tutanak.createdAt
+        olusturmaTarihi: tutanak.createdAt,
       };
 
       response.success(req, res, HizmetName, rota, message.special.info.ready, printData);
@@ -325,15 +325,33 @@ const controller = {
       // PDF export işlemi burada yapılacak
       // Şu an için sadece tutanak verisini döndürüyoruz
       const tutanak = await service.getById(data);
-      
+
       response.success(req, res, HizmetName, rota, message.special.success.exported, {
         message: 'PDF export henüz implement edilmedi',
-        tutanak
+        tutanak,
       });
     } catch (error) {
       response.error(req, res, HizmetName, rota, message.special.error.exportFailed, error.message);
     }
-  }
+  },
+  // Personel zimmet bilgi fişi oluştur
+  // Personel zimmet bilgi fişi oluştur
+  generatePersonelZimmetBilgiFisi: async (req, res) => {
+    const rota = 'generatePersonelZimmetBilgiFisi';
+    try {
+      const { personelId } = req.params;
+      const islemYapanKullanici = req.user?.id;
+
+      if (!personelId) return response.error(req, res, HizmetName, rota, message.special.error.generateFailed, 'Personel ID gerekli.');
+      if (!islemYapanKullanici) return response.error(req, res, HizmetName, rota, message.special.error.generateFailed, message.required.islemYapanKullanici);
+
+      const result = await service.generatePersonelZimmetBilgiFisi({ personelId, islemYapanKullanici });
+
+      response.success(req, res, HizmetName, rota, `${result.personelBilgileri.ad} ${result.personelBilgileri.soyad} personelinin zimmet bilgi fişi başarıyla oluşturuldu. (${result.malzemeSayisi} malzeme)`, result);
+    } catch (error) {
+      response.error(req, res, HizmetName, rota, message.special.error.generateFailed, error.message);
+    }
+  },
 };
 
 export default controller;
