@@ -46,7 +46,7 @@ const MODUL_REHBERLERI = {
 };
 
 const RehberPage = () => {
-  const [secilenModul, setSecilenModul] = useState('marka');
+  const [secilenModul, setSecilenModul] = useState('personel');
   const [aramaMetni, setAramaMetni] = useState('');
   const [aktifTab, setAktifTab] = useState('genel');
 
@@ -57,7 +57,7 @@ const RehberPage = () => {
     const IconComponent = modulData.modul.icon;
 
     return (
-      <Card className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? 'ring-2 ring-primary bg-primary/5' : ''}`} onClick={() => onClick(modulKey)}>
+      <Card className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? 'bg-primary/10 border-primary border-2' : ''}`} onClick={() => onClick(modulKey)}>
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
