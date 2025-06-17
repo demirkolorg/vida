@@ -79,6 +79,43 @@ export const Personel_Columns = () => {
         filterVariant: 'text',
       },
     },
+    // YENİ: Malzeme Sayısı Kolonu
+    {
+      accessorKey: 'malzemeSayisi',
+      accessorFn: row => row.malzemeSayisi || 0,
+      header: ({ column }) => <HeaderButton column={column} title="Malzeme Sayısı" />,
+      cell: ({ row }) => {
+        const malzemeSayisi = row.original.malzemeSayisi || 0;
+        const demirbasSayisi = row.original.demirbasSayisi || 0;
+        const sarfSayisi = row.original.sarfSayisi || 0;
+        
+        return (
+          <div className="flex flex-col items-center space-y-1">
+            <Badge 
+              variant={malzemeSayisi > 0 ? "default" : "outline"} 
+              className="text-xs font-semibold"
+            >
+              {malzemeSayisi}
+            </Badge>
+            {malzemeSayisi > 0 && (
+              <div className="text-xs text-muted-foreground">
+                D:{demirbasSayisi} S:{sarfSayisi}
+              </div>
+            )}
+          </div>
+        );
+      },
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.malzemeSayisi || 0;
+        const b = rowB.original.malzemeSayisi || 0;
+        return a - b;
+      },
+      size: 100,
+      meta: {
+        exportHeader: 'Malzeme Sayısı',
+        filterVariant: 'none',
+      },
+    },
     {
       accessorKey: 'role',
       header: ({ column }) => <HeaderButton column={column} title="Rol" />,

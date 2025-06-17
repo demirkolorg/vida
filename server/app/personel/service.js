@@ -22,9 +22,110 @@ const service = {
     }
   },
 
+  // Personel malzeme sayılarını hesaplayan yardımcı fonksiyon
+  calculateMalzemeSayilari: async personelId => {
+    try {
+      // Son hareket türü Zimmet veya Devir olan ve hedef personeli bu personel olan malzemeleri bul
+      const zimmetliHareketler = await prisma.malzemeHareket.findMany({
+        where: {
+          hedefPersonelId: personelId,
+          hareketTuru: { in: ['Zimmet', 'Devir'] },
+          status: AuditStatusEnum.Aktif,
+        },
+        include: {
+          malzeme: {
+            select: {
+              id: true,
+              malzemeTipi: true,
+              malzemeHareketleri: {
+                where: { status: AuditStatusEnum.Aktif },
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+                select: {
+                  hareketTuru: true,
+                  hedefPersonelId: true,
+                  kaynakPersonelId: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Gerçekten zimmetli olan malzemeleri filtrele
+      const aktifZimmetler = zimmetliHareketler.filter(hareket => {
+        const sonHareket = hareket.malzeme.malzemeHareketleri[0];
+        // Son hareket zimmet/devir ise ve hedef personel bu personel ise aktif zimmet
+        return sonHareket && ['Zimmet', 'Devir'].includes(sonHareket.hareketTuru) && sonHareket.hedefPersonelId === personelId;
+      });
+
+      const toplamMalzeme = aktifZimmetler.length;
+      const demirbasSayisi = aktifZimmetler.filter(hareket => hareket.malzeme.malzemeTipi === 'Demirbas').length;
+      const sarfSayisi = aktifZimmetler.filter(hareket => hareket.malzeme.malzemeTipi === 'Sarf').length;
+
+      return {
+        malzemeSayisi: toplamMalzeme,
+        demirbasSayisi,
+        sarfSayisi,
+      };
+    } catch (error) {
+      console.error('Malzeme sayıları hesaplanırken hata:', error);
+      return {
+        malzemeSayisi: 0,
+        demirbasSayisi: 0,
+        sarfSayisi: 0,
+      };
+    }
+  },
+
+  // Tüm personeller için malzeme sayılarını toplu hesaplayan fonksiyon
+  // getPersonelZimmetleri fonksiyonunu doğrudan kullanarak kesin doğru sonuç alır
+  bulkCalculateMalzemeSayilari: async personelIds => {
+    try {
+      const malzemeSayilariMap = {};
+
+      // MalzemeHareket servisini import et (eğer yoksa)
+      const MalzemeHareketService = (await import('../malzemehareket/service.js')).default;
+
+      // Her personel için getPersonelZimmetleri fonksiyonunu kullan
+      for (const personelId of personelIds) {
+        try {
+          // getPersonelZimmetleri fonksiyonunu kullan - bu fonksiyon test edilmiş ve doğru
+          const zimmetliMalzemeler = await MalzemeHareketService.getPersonelZimmetleri({
+            personelId,
+          });
+
+          // Sayıları hesapla
+          const toplamMalzeme = zimmetliMalzemeler.length;
+          const demirbasSayisi = zimmetliMalzemeler.filter(malzeme => malzeme.malzemeTipi === 'Demirbas').length;
+          const sarfSayisi = zimmetliMalzemeler.filter(malzeme => malzeme.malzemeTipi === 'Sarf').length;
+
+          malzemeSayilariMap[personelId] = {
+            malzemeSayisi: toplamMalzeme,
+            demirbasSayisi,
+            sarfSayisi,
+          };
+        } catch (personelError) {
+          console.error(`Personel ${personelId} için malzeme sayıları hesaplanırken hata:`, personelError);
+          // Hata durumunda 0 değerleri ata
+          malzemeSayilariMap[personelId] = {
+            malzemeSayisi: 0,
+            demirbasSayisi: 0,
+            sarfSayisi: 0,
+          };
+        }
+      }
+
+      return malzemeSayilariMap;
+    } catch (error) {
+      console.error('Toplu malzeme sayıları hesaplanırken hata:', error);
+      return {};
+    }
+  },
+
   getAll: async () => {
     try {
-      return await prisma[PrismaName].findMany({
+      const personeller = await prisma[PrismaName].findMany({
         where: { status: AuditStatusEnum.Aktif },
         orderBy: { ad: 'asc' },
         include: {
@@ -41,6 +142,22 @@ const service = {
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
+
+      // Tüm personeller için malzeme sayılarını hesapla
+      const personelIds = personeller.map(p => p.id);
+      const malzemeSayilariMap = await service.bulkCalculateMalzemeSayilari(personelIds);
+
+      // Personel verilerine malzeme sayılarını ekle
+      const personellerWithMalzemeSayilari = personeller.map(personel => ({
+        ...personel,
+        ...(malzemeSayilariMap[personel.id] || {
+          malzemeSayisi: 0,
+          demirbasSayisi: 0,
+          sarfSayisi: 0,
+        }),
+      }));
+
+      return personellerWithMalzemeSayilari;
     } catch (error) {
       throw error;
     }
@@ -57,7 +174,7 @@ const service = {
       if (data.isUser !== undefined) whereClause.isUser = data.isUser;
       if (data.isAmir !== undefined) whereClause.isAmir = data.isAmir;
 
-      return await prisma[PrismaName].findMany({
+      const personeller = await prisma[PrismaName].findMany({
         where: whereClause,
         orderBy: { ad: 'asc' },
         include: {
@@ -74,6 +191,22 @@ const service = {
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
+
+      // Tüm personeller için malzeme sayılarını hesapla
+      const personelIds = personeller.map(p => p.id);
+      const malzemeSayilariMap = await service.bulkCalculateMalzemeSayilari(personelIds);
+
+      // Personel verilerine malzeme sayılarını ekle
+      const personellerWithMalzemeSayilari = personeller.map(personel => ({
+        ...personel,
+        ...(malzemeSayilariMap[personel.id] || {
+          malzemeSayisi: 0,
+          demirbasSayisi: 0,
+          sarfSayisi: 0,
+        }),
+      }));
+
+      return personellerWithMalzemeSayilari;
     } catch (error) {
       throw error;
     }
@@ -83,7 +216,7 @@ const service = {
     try {
       await service.checkExistsById(data.id);
 
-      return await prisma[PrismaName].findFirst({
+      const personel = await prisma[PrismaName].findFirst({
         where: { id: data.id, status: AuditStatusEnum.Aktif },
         include: {
           buro: {
@@ -99,6 +232,14 @@ const service = {
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
+
+      // Bu personel için malzeme sayılarını hesapla
+      const malzemeSayilari = await service.calculateMalzemeSayilari(data.id);
+
+      return {
+        ...personel,
+        ...malzemeSayilari,
+      };
     } catch (error) {
       throw error;
     }
@@ -110,6 +251,7 @@ const service = {
 
       const createPayload = {
         ad: data.ad,
+        soyad: data.soyad, // Eksik olan soyad alanı eklendi
         sicil: data.sicil,
         role: data.role || 'Personel',
         isUser: data.isUser || false,
@@ -127,7 +269,7 @@ const service = {
         createPayload.parola = await bcrypt.hash(data.parola, saltRounds);
       }
 
-      return await prisma[PrismaName].create({
+      const yeniPersonel = await prisma[PrismaName].create({
         data: createPayload,
         include: {
           buro: {
@@ -143,6 +285,14 @@ const service = {
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
+
+      // Yeni personel için malzeme sayıları (başlangıçta 0 olacak)
+      return {
+        ...yeniPersonel,
+        malzemeSayisi: 0,
+        demirbasSayisi: 0,
+        sarfSayisi: 0,
+      };
     } catch (error) {
       throw error;
     }
@@ -154,6 +304,7 @@ const service = {
       const updatePayload = { updatedById: data.islemYapanKullanici };
 
       if (data.ad !== undefined) updatePayload.ad = data.ad;
+      if (data.soyad !== undefined) updatePayload.soyad = data.soyad; // Soyad güncellemesi eklendi
       if (data.sicil !== undefined) updatePayload.sicil = data.sicil;
       if (data.role !== undefined) updatePayload.role = data.role;
       if (data.avatar !== undefined) updatePayload.avatar = data.avatar;
@@ -174,7 +325,7 @@ const service = {
       }
       // Parola gönderilmemişse veya boşsa, mevcut parolayı koru (updatePayload'a ekleme)
 
-      return await prisma[PrismaName].update({
+      const güncelPersonel = await prisma[PrismaName].update({
         where: { id: data.id },
         data: updatePayload,
         include: {
@@ -191,6 +342,14 @@ const service = {
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
+
+      // Güncellenmiş personel için malzeme sayılarını hesapla
+      const malzemeSayilari = await service.calculateMalzemeSayilari(data.id);
+
+      return {
+        ...güncelPersonel,
+        ...malzemeSayilari,
+      };
     } catch (error) {
       throw error;
     }
@@ -207,7 +366,7 @@ const service = {
         status: data.status,
       };
 
-      return await prisma[PrismaName].update({
+      const güncelPersonel = await prisma[PrismaName].update({
         where: { id: data.id },
         data: updatePayload,
         include: {
@@ -224,6 +383,14 @@ const service = {
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
+
+      // Durum güncellenmiş personel için malzeme sayılarını hesapla
+      const malzemeSayilari = await service.calculateMalzemeSayilari(data.id);
+
+      return {
+        ...güncelPersonel,
+        ...malzemeSayilari,
+      };
     } catch (error) {
       throw error;
     }
@@ -254,7 +421,7 @@ const service = {
       if (data.role) whereClause.role = data.role;
       if (data.buroId) whereClause.buroId = data.buroId;
 
-      return await prisma[PrismaName].findMany({
+      const personeller = await prisma[PrismaName].findMany({
         where: whereClause,
         orderBy: { ad: 'asc' },
         include: {
@@ -271,6 +438,22 @@ const service = {
           updatedBy: { select: { id: true, ad: true, soyad: true, avatar: true } },
         },
       });
+
+      // Arama sonuçları için malzeme sayılarını hesapla
+      const personelIds = personeller.map(p => p.id);
+      const malzemeSayilariMap = await service.bulkCalculateMalzemeSayilari(personelIds);
+
+      // Personel verilerine malzeme sayılarını ekle
+      const personellerWithMalzemeSayilari = personeller.map(personel => ({
+        ...personel,
+        ...(malzemeSayilariMap[personel.id] || {
+          malzemeSayisi: 0,
+          demirbasSayisi: 0,
+          sarfSayisi: 0,
+        }),
+      }));
+
+      return personellerWithMalzemeSayilari;
     } catch (error) {
       throw error;
     }

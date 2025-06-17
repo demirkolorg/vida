@@ -11,9 +11,9 @@ const includeEntity = {
     select: {
       id: true,
       vidaNo: true,
-      etmysSeriNo:true,
-      bademSeriNo:true,
-      stokDemirbasNo:true,
+      etmysSeriNo: true,
+      bademSeriNo: true,
+      stokDemirbasNo: true,
       sabitKodu: { select: { id: true, ad: true } },
       marka: { select: { id: true, ad: true } },
       model: { select: { id: true, ad: true } },
@@ -906,12 +906,9 @@ const service = {
   devir: async data => {
     try {
       await service.checkMalzemeExists(data.malzemeId);
-      if (!data.kaynakPersonelId || !data.hedefPersonelId) {
-        throw new Error('Devir işlemi için kaynak ve hedef personel zorunludur.');
-      }
-      if (data.kaynakPersonelId === data.hedefPersonelId) {
-        throw new Error('Kaynak ve hedef personel aynı olamaz.');
-      }
+      if (!data.kaynakPersonelId || !data.hedefPersonelId) throw new Error('Devir işlemi için kaynak ve hedef personel zorunludur.');
+      if (data.kaynakPersonelId === data.hedefPersonelId) throw new Error('Kaynak ve hedef personel aynı olamaz.');
+
       await service.checkPersonelExists(data.kaynakPersonelId);
       await service.checkPersonelExists(data.hedefPersonelId);
 
@@ -2239,87 +2236,79 @@ const service = {
     }
   },
 
-getPersonelHareketleri: async (data) => {
-  try {
-    // Basit validasyon
-    if (!data.personelId) {
-      throw new Error('Personel ID gereklidir.');
-    }
-
-    // Personelin var olup olmadığını kontrol et
-    await service.checkPersonelExists(data.personelId);
-
-    // Sayfalama - basit
-    const page = parseInt(data.page) || 1;
-    const limit = parseInt(data.limit) || 50;
-    const skip = (page - 1) * limit;
-
-    // Prisma sorgusu - personelin alan veya veren olduğu hareketler
-    const [hareketler, toplamSayı] = await Promise.all([
-      prisma.malzemeHareket.findMany({
-        where: {
-          OR: [
-            { hedefPersonelId: data.personelId },
-            { kaynakPersonelId: data.personelId }
-          ]
-        },
-        include:includeEntity,
-        orderBy: {
-          islemTarihi: 'desc'
-        },
-        skip: skip,
-        take: limit
-      }),
-      
-      prisma.malzemeHareket.count({
-        where: {
-          OR: [
-            { hedefPersonelId: data.personelId },
-            { kaynakPersonelId: data.personelId }
-          ]
-        }
-      })
-    ]);
-
-    // Basit istatistikler
-    const zimmetAlinan = hareketler.filter(h => h.hedefPersonelId === data.personelId && h.hareketTuru === 'Zimmet').length;
-    const iadeEdilen = hareketler.filter(h => h.kaynakPersonelId === data.personelId && h.hareketTuru === 'Iade').length;
-
-    // Prisma formatına uygun sonuç
-    const result = {
-      hareketler: hareketler.map(hareket => ({
-        id: hareket.id,
-        hareketTuru: hareket.hareketTuru,
-        islemTarihi: hareket.islemTarihi,
-        malzemeKondisyonu: hareket.malzemeKondisyonu,
-        aciklama: hareket.aciklama,
-        personelRolu: hareket.hedefPersonelId === data.personelId ? 'ALAN' : 'VEREN',
-        malzeme: hareket.malzeme,
-        hedefPersonel: hareket.hedefPersonel,
-        kaynakPersonel: hareket.kaynakPersonel
-      })),
-      sayfalama: {
-        currentPage: page,
-        totalPages: Math.ceil(toplamSayı / limit),
-        totalRecords: toplamSayı,
-        hasNextPage: page < Math.ceil(toplamSayı / limit),
-        hasPrevPage: page > 1
-      },
-      istatistikler: {
-        toplamHareket: toplamSayı,
-        zimmetAlinan: zimmetAlinan,
-        iadeEdilen: iadeEdilen
+  getPersonelHareketleri: async data => {
+    try {
+      // Basit validasyon
+      if (!data.personelId) {
+        throw new Error('Personel ID gereklidir.');
       }
-    };
 
-    return result;
+      // Personelin var olup olmadığını kontrol et
+      await service.checkPersonelExists(data.personelId);
 
-  } catch (error) {
-    console.error('getPersonelHareketleri servis hatası:', error);
-    throw error;
-  }
-}
+      // Sayfalama - basit
+      const page = parseInt(data.page) || 1;
+      const limit = parseInt(data.limit) || 50;
+      const skip = (page - 1) * limit;
 
+      // Prisma sorgusu - personelin alan veya veren olduğu hareketler
+      const [hareketler, toplamSayı] = await Promise.all([
+        prisma.malzemeHareket.findMany({
+          where: {
+            OR: [{ hedefPersonelId: data.personelId }, { kaynakPersonelId: data.personelId }],
+          },
+          include: includeEntity,
+          orderBy: {
+            islemTarihi: 'desc',
+          },
+          skip: skip,
+          take: limit,
+        }),
+
+        prisma.malzemeHareket.count({
+          where: {
+            OR: [{ hedefPersonelId: data.personelId }, { kaynakPersonelId: data.personelId }],
+          },
+        }),
+      ]);
+
+      // Basit istatistikler
+      const zimmetAlinan = hareketler.filter(h => h.hedefPersonelId === data.personelId && h.hareketTuru === 'Zimmet').length;
+      const iadeEdilen = hareketler.filter(h => h.kaynakPersonelId === data.personelId && h.hareketTuru === 'Iade').length;
+
+      // Prisma formatına uygun sonuç
+      const result = {
+        hareketler: hareketler.map(hareket => ({
+          id: hareket.id,
+          hareketTuru: hareket.hareketTuru,
+          islemTarihi: hareket.islemTarihi,
+          malzemeKondisyonu: hareket.malzemeKondisyonu,
+          aciklama: hareket.aciklama,
+          personelRolu: hareket.hedefPersonelId === data.personelId ? 'ALAN' : 'VEREN',
+          malzeme: hareket.malzeme,
+          hedefPersonel: hareket.hedefPersonel,
+          kaynakPersonel: hareket.kaynakPersonel,
+        })),
+        sayfalama: {
+          currentPage: page,
+          totalPages: Math.ceil(toplamSayı / limit),
+          totalRecords: toplamSayı,
+          hasNextPage: page < Math.ceil(toplamSayı / limit),
+          hasPrevPage: page > 1,
+        },
+        istatistikler: {
+          toplamHareket: toplamSayı,
+          zimmetAlinan: zimmetAlinan,
+          iadeEdilen: iadeEdilen,
+        },
+      };
+
+      return result;
+    } catch (error) {
+      console.error('getPersonelHareketleri servis hatası:', error);
+      throw error;
+    }
+  },
 };
 
 export default service;

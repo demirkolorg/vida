@@ -227,7 +227,7 @@ export function DevirSheet() {
                 <hr className="my-2" />
                 <BilgiSatiri label="Badem Seri No" value={currentDevirMalzeme.bademSeriNo} icon={Barcode} />
                 <hr className="my-2" />
-                <BilgiSatiri label="Mevcut Sahibi" value={kaynakPersonel.ad} icon={User} />
+                <BilgiSatiri label="Mevcut Sahibi" value={kaynakPersonel?.ad} icon={User} />
                 {currentDevirMalzeme.aciklama && (
                   <>
                     <hr className="my-2" />
