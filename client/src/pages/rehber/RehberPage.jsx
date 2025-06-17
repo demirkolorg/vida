@@ -26,9 +26,11 @@ import { MalzemeHareketRehber } from '@/app/malzemeHareket/constants/rehber';
 import { TutanakRehber } from '@/app/tutanak/constants/rehber';
 import { AuditRehber } from '@/app/audit/constants/rehber';
 import { GlobalSearchRehber } from '@/app/globalSearch/constants/rehber';
+import { ProjeRehber } from '@/pages/rehber/constants/rehber';
 
 // Tüm modül rehberlerini topla
 const MODUL_REHBERLERI = {
+  proje: ProjeRehber,
   personel: PersonelRehber,
   malzeme: MalzemeRehber,
   malzemeHareket: MalzemeHareketRehber,
@@ -46,7 +48,7 @@ const MODUL_REHBERLERI = {
 };
 
 const RehberPage = () => {
-  const [secilenModul, setSecilenModul] = useState('personel');
+  const [secilenModul, setSecilenModul] = useState('proje');
   const [aramaMetni, setAramaMetni] = useState('');
   const [aktifTab, setAktifTab] = useState('genel');
 
@@ -174,7 +176,7 @@ const RehberPage = () => {
                 Özellikler
               </h4>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-6">
-                {ozellik.ozellikler.map((oz, index) => (
+                {ozellik.ozellikler?.map((oz, index) => (
                   <li key={index}>{oz}</li>
                 ))}
               </ul>
@@ -267,94 +269,209 @@ const RehberPage = () => {
 
             <CardContent>
               <Tabs value={aktifTab} onValueChange={setAktifTab}>
-                <TabsList className="grid w-full grid-cols-6">
-                  <TabsTrigger value="genel">Genel</TabsTrigger>
-                  <TabsTrigger value="ozellikler">Özellikler</TabsTrigger>
-                  <TabsTrigger value="veri">Veri Modeli</TabsTrigger>
-                  <TabsTrigger value="api">API</TabsTrigger>
-                  <TabsTrigger value="yetki">Yetkiler</TabsTrigger>
-                  <TabsTrigger value="sorun">Sorun Giderme</TabsTrigger>
-                </TabsList>
+              <TabsList className="grid w-full grid-cols-6">
+  <TabsTrigger value="genel">Genel</TabsTrigger>
+  <TabsTrigger value="ozellikler">Özellikler</TabsTrigger>
+  <TabsTrigger value="veri">Veri Modeli</TabsTrigger>
+  <TabsTrigger value="api">API</TabsTrigger>
+  <TabsTrigger value="yetki">Yetkiler</TabsTrigger>
+  <TabsTrigger value="sorun">Sorun Giderme</TabsTrigger>
+</TabsList>
 
-                <TabsContent value="genel" className="space-y-4 mt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Layers className="h-5 w-5" />
-                          İlişkiler
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {rehber.iliskiler?.map((iliski, index) => (
-                            <div key={index} className="p-3 border rounded-lg">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge variant="outline">{iliski.tip}</Badge>
-                                <ChevronRight className="h-4 w-4" />
-                                <span className="font-medium">{iliski.hedef}</span>
-                              </div>
-                              <p className="text-sm text-muted-foreground">{iliski.aciklama}</p>
-                              {iliski.ornekler && (
-                                <ul className="list-disc list-inside text-xs text-muted-foreground mt-2 ml-2">
-                                  {iliski.ornekler.slice(0, 2).map((ornek, i) => (
-                                    <li key={i}>{ornek}</li>
-                                  ))}
-                                </ul>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
+               <TabsContent value="genel" className="space-y-4 mt-6">
+  {/* Proje rehberi için özel bölüm */}
+  {secilenModul === 'proje' && (
+    <div className="space-y-6">
+      {/* Proje Genel Açıklama */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Info className="h-5 w-5" />
+            Proje Hakkında
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium mb-2">Amaç</h4>
+              <p className="text-sm text-muted-foreground">{rehber.genel_aciklama?.amac}</p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2">Hedef Kullanıcı</h4>
+              <p className="text-sm text-muted-foreground">{rehber.genel_aciklama?.hedef_kullanici}</p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2">Kapsam</h4>
+              <p className="text-sm text-muted-foreground">{rehber.genel_aciklama?.kapsam}</p>
+            </div>
+            {rehber.genel_aciklama?.avantajlar && (
+              <div>
+                <h4 className="font-medium mb-2">Ana Avantajlar</h4>
+                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-4">
+                  {rehber.genel_aciklama.avantajlar.slice(0, 5).map((avantaj, index) => (
+                    <li key={index}>{avantaj}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Lightbulb className="h-5 w-5" />
-                          İpuçları & Öneriler
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-2">
-                          {rehber.ipuclari.map((ipucu, index) => (
-                            <li key={index} className="flex items-start gap-2 text-sm">
-                              <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              {ipucu}
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  </div>
+      {/* Teknoloji Stack */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Code className="h-5 w-5" />
+            Teknoloji Stack
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <h4 className="font-medium mb-2 text-blue-600">Frontend</h4>
+              <div className="space-y-1 text-sm">
+                <p><strong>Framework:</strong> {rehber.teknoloji_stack?.frontend?.framework}</p>
+                <p><strong>UI:</strong> {rehber.teknoloji_stack?.frontend?.ui_kutuphanesi}</p>
+                <p><strong>State:</strong> {rehber.teknoloji_stack?.frontend?.state_yonetimi}</p>
+                <p><strong>Routing:</strong> {rehber.teknoloji_stack?.frontend?.routing}</p>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2 text-green-600">Backend</h4>
+              <div className="space-y-1 text-sm">
+                <p><strong>Runtime:</strong> {rehber.teknoloji_stack?.backend?.runtime}</p>
+                <p><strong>Framework:</strong> {rehber.teknoloji_stack?.backend?.framework}</p>
+                <p><strong>Database:</strong> {rehber.teknoloji_stack?.backend?.veritabani}</p>
+                <p><strong>Auth:</strong> {rehber.teknoloji_stack?.backend?.kimlik_dogrulama}</p>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2 text-purple-600">Dev Tools</h4>
+              <div className="space-y-1 text-sm">
+                <p><strong>Linter:</strong> {rehber.teknoloji_stack?.gelistirme_araclari?.linter}</p>
+                <p><strong>Type Check:</strong> {rehber.teknoloji_stack?.gelistirme_araclari?.type_checking}</p>
+                <p><strong>Build:</strong> {rehber.teknoloji_stack?.frontend?.build_tool}</p>
+                <p><strong>Package:</strong> {rehber.teknoloji_stack?.gelistirme_araclari?.package_manager}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-                  {rehber.modul.bagimlilık && rehber.modul.bagimlilık.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Package className="h-5 w-5" />
-                          Modül Bağımlılıkları
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex gap-2 flex-wrap">
-                          {rehber.modul.bagimlilık.map(bagimlilık => (
-                            <Badge key={bagimlilık} variant="secondary" className="cursor-pointer hover:bg-secondary/80">
-                              {bagimlilık}
-                              <ExternalLink className="h-3 w-3 ml-1" />
-                            </Badge>
-                          ))}
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-3">Bu modül yukarıdaki modüllerle ilişkilidir. İşlemler yaparken bu bağımlılıkları göz önünde bulundurun.</p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </TabsContent>
+      {/* Ana Modüller */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Layers className="h-5 w-5" />
+            Ana Modüller
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {rehber.ana_moduller?.map((modul, index) => (
+              <div key={index} className="p-3 border rounded-lg">
+                <h4 className="font-medium text-sm mb-1">{modul.modul}</h4>
+                <p className="text-xs text-muted-foreground mb-2">{modul.aciklama}</p>
+                <div className="flex flex-wrap gap-1">
+                  {modul.bagimlilık?.map((bag, i) => (
+                    <Badge key={i} variant="outline" className="text-xs">
+                      {bag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )}
+
+  {/* Diğer modüller için mevcut içerik */}
+  {secilenModul !== 'proje' && (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Mevcut İlişkiler kartı buraya gelir */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Layers className="h-5 w-5" />
+            İlişkiler
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {rehber.iliskiler?.map((iliski, index) => (
+              <div key={index} className="p-3 border rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline">{iliski.tip}</Badge>
+                  <ChevronRight className="h-4 w-4" />
+                  <span className="font-medium">{iliski.hedef}</span>
+                </div>
+                <p className="text-sm text-muted-foreground">{iliski.aciklama}</p>
+                {iliski.ornekler && (
+                  <ul className="list-disc list-inside text-xs text-muted-foreground mt-2 ml-2">
+                    {iliski.ornekler.slice(0, 2).map((ornek, i) => (
+                      <li key={i}>{ornek}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Mevcut İpuçları kartı buraya gelir */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Lightbulb className="h-5 w-5" />
+            İpuçları & Öneriler
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            {rehber.ipuclari?.map((ipucu, index) => (
+              <li key={index} className="flex items-start gap-2 text-sm">
+                <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                {ipucu}
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
+  )}
+
+  {/* Modül Bağımlılıkları kartı (tüm modüller için) */}
+  {rehber.modul.bagimlilık && rehber.modul.bagimlilık.length > 0 && (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Package className="h-5 w-5" />
+          Modül Bağımlılıkları
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-2 flex-wrap">
+          {rehber.modul.bagimlilık.map(bagimlilık => (
+            <Badge key={bagimlilık} variant="secondary" className="cursor-pointer hover:bg-secondary/80">
+              {bagimlilık}
+              <ExternalLink className="h-3 w-3 ml-1" />
+            </Badge>
+          ))}
+        </div>
+        <p className="text-sm text-muted-foreground mt-3">Bu modül yukarıdaki modüllerle ilişkilidir. İşlemler yaparken bu bağımlılıkları göz önünde bulundurun.</p>
+      </CardContent>
+    </Card>
+  )}
+</TabsContent>
 
                 <TabsContent value="ozellikler" className="mt-6">
                   <ScrollArea className=" pr-4">
                     <div className="space-y-4">
-                      {rehber.ozellikler.map((ozellik, index) => (
+                      {rehber.ozellikler?.map((ozellik, index) => (
                         <OzellikCard key={index} ozellik={ozellik} />
                       ))}
                     </div>
@@ -427,7 +544,7 @@ const RehberPage = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          {rehber.api_endpoints.map((endpoint, index) => (
+                          {rehber.api_endpoints?.map((endpoint, index) => (
                             <div key={index} className="border rounded-lg p-4">
                               <div className="flex items-center gap-3 mb-3">
                                 <Badge variant={endpoint.method === 'GET' ? 'secondary' : endpoint.method === 'POST' ? 'default' : endpoint.method === 'PUT' ? 'outline' : 'destructive'}>{endpoint.method}</Badge>
@@ -492,55 +609,113 @@ const RehberPage = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="yetki" className="mt-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Shield className="h-5 w-5" />
-                        Yetki Matrisi
-                      </CardTitle>
-                      <CardDescription>Kullanıcı rollerine göre işlem yetkileri</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                          <thead>
-                            <tr className="border-b">
-                              <th className="text-left p-3 font-medium">Rol</th>
-                              <th className="text-center p-3 font-medium">Okuma</th>
-                              <th className="text-center p-3 font-medium">Ekleme</th>
-                              <th className="text-center p-3 font-medium">Güncelleme</th>
-                              <th className="text-center p-3 font-medium">Silme</th>
-                              <th className="text-center p-3 font-medium">Durum Değiştirme</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {Object.entries(rehber.yetki_matrisi).map(([rol, yetkiler]) => (
-                              <tr key={rol} className="border-b hover:bg-muted/50">
-                                <td className="p-3 font-medium">{rol}</td>
-                                <td className="p-3 text-center">
-                                  <Badge variant={yetkiler.okuma ? 'default' : 'secondary'}>{yetkiler.okuma ? '✓' : '✗'}</Badge>
-                                </td>
-                                <td className="p-3 text-center">
-                                  <Badge variant={yetkiler.ekleme ? 'default' : 'secondary'}>{yetkiler.ekleme ? '✓' : '✗'}</Badge>
-                                </td>
-                                <td className="p-3 text-center">
-                                  <Badge variant={yetkiler.guncelleme ? 'default' : 'secondary'}>{yetkiler.guncelleme ? '✓' : '✗'}</Badge>
-                                </td>
-                                <td className="p-3 text-center">
-                                  <Badge variant={yetkiler.silme ? 'default' : 'secondary'}>{yetkiler.silme ? '✓' : '✗'}</Badge>
-                                </td>
-                                <td className="p-3 text-center">
-                                  <Badge variant={yetkiler.durum_degistirme ? 'default' : 'secondary'}>{yetkiler.durum_degistirme ? '✓' : '✗'}</Badge>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
+               <TabsContent value="yetki" className="mt-6">
+  {rehber.yetki_matrisi ? (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="h-5 w-5" />
+          Yetki Matrisi
+        </CardTitle>
+        <CardDescription>Kullanıcı rollerine göre işlem yetkileri</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-3 font-medium">Rol</th>
+                <th className="text-center p-3 font-medium">Okuma</th>
+                <th className="text-center p-3 font-medium">Ekleme</th>
+                <th className="text-center p-3 font-medium">Güncelleme</th>
+                <th className="text-center p-3 font-medium">Silme</th>
+                <th className="text-center p-3 font-medium">Durum Değiştirme</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(rehber.yetki_matrisi).map(([rol, yetkiler]) => (
+                <tr key={rol} className="border-b hover:bg-muted/50">
+                  <td className="p-3 font-medium">{rol}</td>
+                  <td className="p-3 text-center">
+                    <Badge variant={yetkiler.okuma ? 'default' : 'secondary'}>
+                      {yetkiler.okuma ? '✓' : '✗'}
+                    </Badge>
+                  </td>
+                  <td className="p-3 text-center">
+                    <Badge variant={yetkiler.ekleme ? 'default' : 'secondary'}>
+                      {yetkiler.ekleme ? '✓' : '✗'}
+                    </Badge>
+                  </td>
+                  <td className="p-3 text-center">
+                    <Badge variant={yetkiler.guncelleme ? 'default' : 'secondary'}>
+                      {yetkiler.guncelleme ? '✓' : '✗'}
+                    </Badge>
+                  </td>
+                  <td className="p-3 text-center">
+                    <Badge variant={yetkiler.silme ? 'default' : 'secondary'}>
+                      {yetkiler.silme ? '✓' : '✗'}
+                    </Badge>
+                  </td>
+                  <td className="p-3 text-center">
+                    <Badge variant={yetkiler.durum_degistirme ? 'default' : 'secondary'}>
+                      {yetkiler.durum_degistirme ? '✓' : '✗'}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  ) : secilenModul === 'proje' && rehber.kullanici_rolleri ? (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="h-5 w-5" />
+          Kullanıcı Rolleri ve Yetkiler
+        </CardTitle>
+        <CardDescription>Sistem genelindeki kullanıcı rolleri ve yetki seviyelerimiz</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {Object.entries(rehber.kullanici_rolleri).map(([rol, bilgi]) => (
+            <div key={rol} className="p-4 border rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="outline">{rol}</Badge>
+                <span className="text-sm text-muted-foreground">{bilgi.aciklama}</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                <div>
+                  <h4 className="text-sm font-medium text-green-600 mb-1">Yetkiler</h4>
+                  <ul className="list-disc list-inside text-xs space-y-1">
+                    {bilgi.yetkiler?.map((yetki, i) => (
+                      <li key={i}>{yetki}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-red-600 mb-1">Kısıtlamalar</h4>
+                  <ul className="list-disc list-inside text-xs space-y-1">
+                    {bilgi.kisitlamalar?.map((kisit, i) => (
+                      <li key={i}>{kisit}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  ) : (
+    <Alert>
+      <Info className="h-4 w-4" />
+      <AlertTitle>Yetki Bilgisi Yok</AlertTitle>
+      <AlertDescription>Bu modül için yetki matrisi bilgisi bulunmuyor.</AlertDescription>
+    </Alert>
+  )}
+</TabsContent>
 
                 <TabsContent value="sorun" className="mt-6">
                   <div className="space-y-6">
