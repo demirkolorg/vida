@@ -51,13 +51,10 @@ export function ThemeSelector() {
   return (
     <div className="flex items-center gap-2">
       {/* Dialogu Açan Buton */}
-      <Button variant="outline" onClick={() => setIsGalleryOpen(true)} className="w-[130px] justify-between" size="sm" disabled={isLoadingSettings && isAuthenticated}>
-        <div className="flex items-center">
-          <Palette className="mr-2 h-4 w-4" style={{ color: currentThemeObj.iconColor }} />
-          {currentThemeObj.label}
-        </div>
-        {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> Artık dropdown değil */}
+      <Button variant="outline" onClick={() => setIsGalleryOpen(true)} className=" h-8 w-8" size="icon" disabled={isLoadingSettings && isAuthenticated}>
+        <Palette className="" style={{ color: currentThemeObj.iconColor }} />
       </Button>
+
       <FontSizeMenu />
 
       {/* Karanlık Mod Butonu */}

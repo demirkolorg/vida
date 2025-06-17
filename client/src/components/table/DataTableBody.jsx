@@ -98,6 +98,26 @@ export function DataTableBody({ table, isLoading, onRowClick, rowContextMenu, en
       );
     });
 
+  const getRowClassName = (row, isHighlighted, onRowClick) => {
+    const baseClasses = 'even:bg-primary/3 cursor-default transition-colors';
+
+    const classes = [baseClasses];
+
+    if (row.getIsSelected()) {
+      classes.push('bg-muted/50');
+    }
+
+    if (isHighlighted) {
+      // Highlighted durumunda sarı background ve hover
+      classes.push('!bg-yellow-200 hover:!bg-yellow-300 dark:!bg-yellow-800 dark:hover:!bg-yellow-700');
+    } else if (onRowClick) {
+      // Normal durumda sadece hover
+      classes.push('hover:bg-primary/40');
+    }
+
+    return cn(classes);
+  };
+
   return (
     <TableBody>
       {table.getRowModel().rows?.length ? (
@@ -105,8 +125,8 @@ export function DataTableBody({ table, isLoading, onRowClick, rowContextMenu, en
           const rowData = row.original;
           const contextMenuContent = rowContextMenu ? rowContextMenu(row) : null;
           const isHighlighted = highlightId && rowData.id?.toString() === highlightId?.toString();
-          const rowClassName = cn('even:bg-primary/3 cursor-default transition-colors', row.getIsSelected() && 'bg-muted/50', onRowClick && 'hover:bg-primary/40', isHighlighted && 'bg-yellow-200 hover:bg-yellow-300 dark:bg-yellow-800 dark:hover:bg-yellow-700 ');
-
+          // const rowClassName = cn('even:bg-primary/3 cursor-default transition-colors', row.getIsSelected() && 'bg-muted/50', onRowClick && 'hover:bg-primary/40', isHighlighted && 'bg-yellow-200! hover:bg-yellow-300 dark:bg-yellow-800! dark:hover:bg-yellow-700 ');
+          const rowClassName = getRowClassName(row, isHighlighted, onRowClick);
           if (contextMenuContent) {
             return (
               <ContextMenu key={`context-${row.id}`}>

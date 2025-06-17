@@ -15,6 +15,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { currentDb } from '../../api/database';
 import { useEffect, useState } from 'react';
 import { HeaderSearchComponent } from '@/app/globalSearch/pages/HeaderSearchComponent';
+import { RehberButton } from '../theme/RehberButton';
 
 export const VidaHeader = () => {
   const user = useAuthStore(state => state.user);
@@ -43,6 +44,9 @@ export const VidaHeader = () => {
         <HeaderSearchComponent />
 
         <ThemeSelector />
+
+      <RehberButton/>
+
         <NotificationMenu />
 
         <DropdownMenu>

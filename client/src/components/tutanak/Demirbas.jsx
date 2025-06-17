@@ -25,7 +25,7 @@ export const DemirbasMalzemeTablo = ({ demirbasMalzemeler }) => {
             </tr>
           </thead>
           <tbody>
-            {demirbasMalzemeler.map((malzeme, index) => (
+            {demirbasMalzemeler.map((malzeme) => (
               <tr key={malzeme.id}>
                 {/* <td className="border border-black text-center text-xs">{index + 1}</td> */}
                 <td className={`border border-black text-center ${cellTextSize}`}>{getMalzemeBilgi(malzeme, 'sabitKodu')}</td>
