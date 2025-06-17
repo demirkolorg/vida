@@ -267,7 +267,7 @@ export const SubeRehber = {
       foreign_key: "birimId",
       cascade: "Restrict",
       ornekler: [
-        "Asayiş Şubesi → Emniyet GM",
+        "Asayiş Şubesi → Teşkilat GM",
         "Mali Şube → İdari ve Mali İşler GM"
       ]
     },
@@ -389,12 +389,12 @@ export const SubeRehber = {
     basarili_senaryolar: [
       {
         senaryo: "Yeni şube ekleme",
-        adimlar: "Emniyet GM altına Asayiş Şubesi başarıyla eklendi",
+        adimlar: "Teşkilat GM altına Asayiş Şubesi başarıyla eklendi",
         sonuc: "Şube listesinde görünür, büro ekleme için hazır"
       },
       {
         senaryo: "Birim bazlı şube görüntüleme",
-        adimlar: "Emniyet GM seçildi, altındaki tüm şubeler listelendi",
+        adimlar: "Teşkilat GM seçildi, altındaki tüm şubeler listelendi",
         sonuc: "5 şube ve toplam 12 büro görüntülendi"
       },
       {
@@ -427,7 +427,7 @@ export const SubeRehber = {
     {
       kural: "Birim İçi Şube Benzersizliği",
       aciklama: "Aynı birim altında aynı isimde şube olamaz",
-      ornek: "Emniyet GM altında iki tane 'Asayiş Şubesi' olamaz"
+      ornek: "Teşkilat GM altında iki tane 'Asayiş Şubesi' olamaz"
     },
     {
       kural: "Birim Bağımlılığı",

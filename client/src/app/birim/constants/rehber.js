@@ -250,7 +250,7 @@ export const BirimRehber = {
       alan: "subeler",
       cascade: "Restrict",
       ornekler: [
-        "Emniyet Genel Müdürlüğü altında İl Emniyet Müdürlükleri",
+        "Teşkilat Genel Müdürlüğü altında İl Teşkilat Müdürlükleri",
         "Merkez Birim altında İdari Şubeler"
       ]
     },
@@ -363,7 +363,7 @@ export const BirimRehber = {
     basarili_senaryolar: [
       {
         senaryo: "Yeni birim ekleme",
-        adimlar: "Emniyet Genel Müdürlüğü birimi başarıyla eklendi",
+        adimlar: "Teşkilat Genel Müdürlüğü birimi başarıyla eklendi",
         sonuc: "Birim listesinde görünür, şube ekleme için hazır"
       },
       {
@@ -373,7 +373,7 @@ export const BirimRehber = {
       },
       {
         senaryo: "Birim bazlı raporlama",
-        adimlar: "Emniyet GM için personel raporu oluşturuldu",
+        adimlar: "Teşkilat GM için personel raporu oluşturuldu",
         sonuc: "Birime ait 450 personel ve alt birimlerin raporu alındı"
       }
     ],
@@ -401,7 +401,7 @@ export const BirimRehber = {
     {
       kural: "Birim Adı Benzersizliği",
       aciklama: "Sistemde aynı isimde birden fazla birim olamaz",
-      ornek: "İki tane 'Emniyet Genel Müdürlüğü' birimi oluşturulamaz"
+      ornek: "İki tane 'Teşkilat Genel Müdürlüğü' birimi oluşturulamaz"
     },
     {
       kural: "Hiyerarşik Bütünlük",

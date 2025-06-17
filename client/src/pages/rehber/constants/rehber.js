@@ -29,7 +29,7 @@ export const ProjeRehber = {
   // Proje temel bilgileri
   modul: {
     ad: "VIDA - Malzeme Takip Sistemi",
-    aciklama: "Emniyet Teşkilatı için geliştirilmiş kapsamlı malzeme ve zimmet takip sistemi",
+    aciklama: "Teşkilat Teşkilatı için geliştirilmiş kapsamlı malzeme ve zimmet takip sistemi",
     icon: BookOpen,
     kategori: "Ana Sistem",
     oncelik: "Kritik",
@@ -39,8 +39,8 @@ export const ProjeRehber = {
 
   // Proje genel açıklama
   genel_aciklama: {
-    amac: "Emniyet Teşkilatı'nın tüm malzeme, zimmet ve personel takip işlemlerini dijitalleştirmek ve merkezi bir sistemde yönetmek",
-    hedef_kullanici: "Emniyet personeli, sistem yöneticileri, malzeme sorumlular",
+    amac: "Teşkilatın tüm malzeme, zimmet ve personel takip işlemlerini dijitalleştirmek ve merkezi bir sistemde yönetmek",
+    hedef_kullanici: "Teşkilat personeli, sistem yöneticileri, malzeme sorumlular",
     kapsam: "Malzeme kaydı, zimmet takibi, hareket izleme, raporlama, tutanak oluşturma ve sistem yönetimi",
     avantajlar: [
       "Merkezi malzeme takip sistemi",
@@ -121,7 +121,7 @@ export const ProjeRehber = {
   ana_moduller: [
     {
       modul: "Personel Yönetimi",
-      aciklama: "Emniyet personellerinin kayıt, düzenleme ve takip işlemleri",
+      aciklama: "Teşkilat personellerinin kayıt, düzenleme ve takip işlemleri",
       ozellikler: ["Personel CRUD", "Sicil takibi", "Organizasyonel hiyerarşi", "Yetki yönetimi"],
       bagimlilık: ["Birim", "Şube", "Büro"]
     },
@@ -168,7 +168,7 @@ export const ProjeRehber = {
     {
       modul: "Organizasyon Yapısı",
       bilesenler: ["Birim", "Şube", "Büro"],
-      aciklama: "Emniyet Teşkilatı'nın hiyerarşik yapısının dijital reprezentasyonu"
+      aciklama: "Teşkilatın hiyerarşik yapısının dijital reprezentasyonu"
     },
     {
       modul: "Kategorizasyon",

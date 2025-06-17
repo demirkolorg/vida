@@ -196,7 +196,7 @@ export const GlobalSearchRehber = {
   arama_varliklari: {
     birim: {
       aranabilir_alanlar: ["ad", "aciklama"],
-      ornek_sonuc: "Emniyet Genel Müdürlüğü",
+      ornek_sonuc: "Teşkilat Genel Müdürlüğü",
       donus_bilgileri: ["id", "ad", "aciklama", "subeSayisi"]
     },
     sube: {
