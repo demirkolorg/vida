@@ -16,7 +16,7 @@ r.post('/getById', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.
 r.post('/create', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.create);
 r.post('/update', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.update);
 r.post('/updateStatus', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.updateStatus);
-r.post('/delete', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.delete);
+r.post('/delete', authToken, authRoles(RoleEnum.Superadmin), c.delete);
 r.post('/search', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.search);
 
 // Özel tutanak endpoint'leri

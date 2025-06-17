@@ -16,7 +16,7 @@ r.get('/health', c.health);
 r.get('/getAll', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getAll);
 r.post('/getByQuery', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getByQuery);
 r.post('/getById', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getById);
-r.post('/delete', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.delete);
+r.post('/delete', authToken, authRoles(RoleEnum.Superadmin), c.delete);
 r.post('/search', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.search);
 
 // ================================
@@ -28,24 +28,24 @@ r.post('/devir', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Su
 r.post('/depoTransfer', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.depoTransfer);
 r.post('/kondisyon', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.kondisyon);
 r.post('/kayip', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.kayip);
-r.post('/dusum', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.dusum); // Düşüm sadece admin+
+r.post('/dusum', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.dusum); // Düşüm sadece admin+
 r.post('/kayit', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.kayit);
 
 // ================================
 // BULK İŞLEMLERİ - TOPLU HAREKET İŞLEMLERİ
 // ================================
-r.post('/bulk/zimmet', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.bulkZimmet);
-r.post('/bulk/iade', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.bulkIade);
-r.post('/bulk/devir', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.bulkDevir);
-r.post('/bulk/depoTransfer', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.bulkDepoTransfer);
-r.post('/bulk/kondisyonGuncelleme', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.bulkKondisyonGuncelleme);
-r.post('/bulk/kayip', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.bulkKayip);
-r.post('/bulk/dusum', authToken, authRoles(RoleEnum.Superadmin), c.bulkDusum); // Bulk düşüm sadece superadmin
+r.post('/bulk/zimmet', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.bulkZimmet);
+r.post('/bulk/iade', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.bulkIade);
+r.post('/bulk/devir', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.bulkDevir);
+r.post('/bulk/depoTransfer', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.bulkDepoTransfer);
+r.post('/bulk/kondisyonGuncelleme', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.bulkKondisyonGuncelleme);
+r.post('/bulk/kayip', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.bulkKayip);
+r.post('/bulk/dusum', authToken, authRoles(RoleEnum.User, RoleEnum.Superadmin), c.bulkDusum); // Bulk düşüm sadece superadmin
 
 // ================================
 // BULK STATUS İŞLEMLERİ
 // ================================
-r.post('/bulk/updateStatus', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.bulkUpdateStatus);
+r.post('/bulk/updateStatus', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.bulkUpdateStatus);
 r.post('/bulk/delete', authToken, authRoles(RoleEnum.Superadmin), c.bulkDelete); // Bulk silme sadece superadmin
 
 // ================================
@@ -64,7 +64,7 @@ r.post('/checkMalzemeDurumu', authToken, authRoles(RoleEnum.User, RoleEnum.Admin
 // ================================
 // İSTATİSTİK VE RAPORLAMA ENDPOİNTLERİ
 // ================================
-r.post('/istatistik/hareket', authToken, authRoles(RoleEnum.Admin, RoleEnum.Superadmin), c.getHareketIstatistikleri);
+r.post('/istatistik/hareket', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getHareketIstatistikleri);
 r.post('/istatistik/personel', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getPersonelIstatistikleri);
 r.post('/istatistik/malzeme', authToken, authRoles(RoleEnum.User, RoleEnum.Admin, RoleEnum.Superadmin), c.getMalzemeIstatistikleri);
 
@@ -97,7 +97,7 @@ ENDPOINT GRUPLARI VE YETKİLENDİRME TABLOSU:
 ├─────────────────────────────┼─────────────┼─────────┼──────────────┤
 │ Sağlık Kontrolü             │ x           │ x       │ x (Public)   │
 │ Genel CRUD (Read)           │ ✓           │ ✓       │ ✓            │
-│ Genel CRUD (Write)          │ Create Only │ ✓       │ ✓            │
+│ Genel CRUD (Delete)         │ x           │ x       │ ✓            │
 │ Tek Hareket İşlemleri       │ ✓           │ ✓       │ ✓            │
 │ Düşüm İşlemi                │ x           │ ✓       │ ✓            │
 │ Bulk Hareket İşlemleri      │ x           │ ✓       │ ✓            │
@@ -111,7 +111,7 @@ GÜVENLİK KATIMLARI:
 1. Public: Kimlik doğrulama gerektirmez
 2. User: Temel operasyonel işlemler
 3. Admin: Toplu işlemler ve raporlama
-4. Superadmin: Kritik sistem işlemleri
+4. Superadmin: Kritik sistem işlemleri (Silme dahil)
 
 BULK İŞLEM ENDPOINT'LERİ:
 - /bulk/zimmet - Toplu zimmet işlemi
