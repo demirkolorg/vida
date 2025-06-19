@@ -1,15 +1,15 @@
-import { useAuthStore } from '@/stores/authStore';
-import { DropdownMenuItem, DropdownMenuShortcut } from '../ui/dropdown-menu';
-import { useNavigate } from 'react-router';
-import { LogOut } from 'lucide-react';
+import { useAuthStore } from "@/stores/authStore";
+import { DropdownMenuItem, DropdownMenuShortcut } from "../ui/dropdown-menu";
+import { useNavigate } from "react-router";
+import { LogOut } from "lucide-react";
 
 export const LogoutDropdownMenuItem = () => {
   const navigate = useNavigate();
-  const logout = useAuthStore(state => state.logout);
+  const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   return (
