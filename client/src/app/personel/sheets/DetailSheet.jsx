@@ -40,6 +40,13 @@ const renderDetails = itemData => {
             </Avatar>
           </DetailItem>
           
+          <DetailItem label="Profil Fotoğrafı">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={personelAvatar} alt={itemData.soyad || 'Avatar'} />
+              <AvatarFallback className="text-lg">{itemData.soyad?.substring(0, 1) || 'P'}</AvatarFallback>
+            </Avatar>
+          </DetailItem>
+
           <DetailItem label={`${EntityHuman} ID`}>
             <Badge variant="secondary" className="font-mono text-xs">
               {itemData.id}

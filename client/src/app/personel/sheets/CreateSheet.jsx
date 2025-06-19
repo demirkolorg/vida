@@ -1,22 +1,22 @@
-import React from 'react';
-import { FormFieldInput } from '@/components/form/FormFieldInput';
-import { FormFieldSelect } from '@/components/form/FormFieldSelect';
-import { FormFieldCheckbox } from '@/components/form/FormFieldCheckbox';
-import { BaseCreateSheet } from '@/components/sheet/BaseCreateSheet';
-import { EntityType, EntityHuman } from '../constants/api';
+import React from "react";
+import { FormFieldInput } from "@/components/form/FormFieldInput";
+import { FormFieldSelect } from "@/components/form/FormFieldSelect";
+import { FormFieldCheckbox } from "@/components/form/FormFieldCheckbox";
+import { BaseCreateSheet } from "@/components/sheet/BaseCreateSheet";
+import { EntityType, EntityHuman } from "../constants/api";
 
-import { Personel_Store as EntityStore } from '../constants/store'; 
-import { Personel_CreateSchema as EntityCreateSchema } from '../constants/schema'; 
+import { Personel_Store as EntityStore } from "../constants/store";
+import { Personel_CreateSchema as EntityCreateSchema } from "../constants/schema";
 
 // Büro seçenekleri için hook veya store
-import { Buro_Store } from '@/app/buro/constants/store';
+import { Buro_Store } from "@/app/buro/constants/store";
 
 const renderFormInputs = ({ formData, setFieldValue, errors, buroOptions }) => {
   const roleOptions = [
-    { value: 'User', label: 'User' },
-    { value: 'Personel', label: 'Personel' },
-    { value: 'Admin', label: 'Admin' },
-    { value: 'Superadmin', label: 'Superadmin' },
+    { value: "User", label: "User" },
+    { value: "Personel", label: "Personel" },
+    { value: "Admin", label: "Admin" },
+    { value: "Superadmin", label: "Superadmin" },
   ];
 
   return (
@@ -25,20 +25,30 @@ const renderFormInputs = ({ formData, setFieldValue, errors, buroOptions }) => {
         label={`${EntityHuman} Adı`}
         name="ad"
         id={`create-${EntityType}-ad`}
-        value={formData.ad || ''}
-        onChange={e => setFieldValue('ad', e.target.value)}
+        value={formData.ad || ""}
+        onChange={(e) => setFieldValue("ad", e.target.value)}
         error={errors.ad}
         showRequiredStar={true}
         maxLength={100}
         placeholder={`${EntityHuman} adını giriniz`}
       />
-
+      <FormFieldInput
+        label={`${EntityHuman} Soyadı`}
+        name="soyad"
+        id={`create-${EntityType}-soyad`}
+        value={formData.soyad || ""}
+        onChange={(e) => setFieldValue("soyad", e.target.value)}
+        error={errors.soyad}
+        showRequiredStar={true}
+        maxLength={100}
+        placeholder={`${EntityHuman} soyadını giriniz`}
+      />
       <FormFieldInput
         label="Sicil Numarası"
         name="sicil"
         id={`create-${EntityType}-sicil`}
-        value={formData.sicil || ''}
-        onChange={e => setFieldValue('sicil', e.target.value)}
+        value={formData.sicil || ""}
+        onChange={(e) => setFieldValue("sicil", e.target.value)}
         error={errors.sicil}
         showRequiredStar={true}
         maxLength={20}
@@ -50,8 +60,8 @@ const renderFormInputs = ({ formData, setFieldValue, errors, buroOptions }) => {
         name="parola"
         type="password"
         id={`create-${EntityType}-parola`}
-        value={formData.parola || ''}
-        onChange={e => setFieldValue('parola', e.target.value)}
+        value={formData.parola || ""}
+        onChange={(e) => setFieldValue("parola", e.target.value)}
         error={errors.parola}
         maxLength={50}
         placeholder="Parola giriniz (opsiyonel)"
@@ -61,8 +71,8 @@ const renderFormInputs = ({ formData, setFieldValue, errors, buroOptions }) => {
         label="Rol"
         name="role"
         id={`create-${EntityType}-role`}
-        value={formData.role || 'Personel'}
-        onChange={value => setFieldValue('role', value)}
+        value={formData.role || "Personel"}
+        onChange={(value) => setFieldValue("role", value)}
         error={errors.role}
         showRequiredStar={true}
         placeholder="Rol seçiniz"
@@ -74,8 +84,8 @@ const renderFormInputs = ({ formData, setFieldValue, errors, buroOptions }) => {
         label="Avatar URL"
         name="avatar"
         id={`create-${EntityType}-avatar`}
-        value={formData.avatar || ''}
-        onChange={e => setFieldValue('avatar', e.target.value)}
+        value={formData.avatar || ""}
+        onChange={(e) => setFieldValue("avatar", e.target.value)}
         error={errors.avatar}
         placeholder="Avatar URL'si giriniz (opsiyonel)"
       />
@@ -84,8 +94,8 @@ const renderFormInputs = ({ formData, setFieldValue, errors, buroOptions }) => {
         label="Bağlı Büro"
         name="buroId"
         id={`create-${EntityType}-buroId`}
-        value={formData.buroId || ''}
-        onChange={value => setFieldValue('buroId', value)}
+        value={formData.buroId || ""}
+        onChange={(value) => setFieldValue("buroId", value)}
         error={errors.buroId}
         placeholder="Büro seçiniz (opsiyonel)"
         options={buroOptions}
@@ -98,7 +108,7 @@ const renderFormInputs = ({ formData, setFieldValue, errors, buroOptions }) => {
           name="isUser"
           id={`create-${EntityType}-isUser`}
           checked={formData.isUser || false}
-          onChange={checked => setFieldValue('isUser', checked)}
+          onChange={(checked) => setFieldValue("isUser", checked)}
           error={errors.isUser}
           description="Bu personel sisteme giriş yapabilir"
         />
@@ -108,7 +118,7 @@ const renderFormInputs = ({ formData, setFieldValue, errors, buroOptions }) => {
           name="isAmir"
           id={`create-${EntityType}-isAmir`}
           checked={formData.isAmir || false}
-          onChange={checked => setFieldValue('isAmir', checked)}
+          onChange={(checked) => setFieldValue("isAmir", checked)}
           error={errors.isAmir}
           description="Bu personel amir yetkilerine sahip"
         />
@@ -117,17 +127,17 @@ const renderFormInputs = ({ formData, setFieldValue, errors, buroOptions }) => {
   );
 };
 
-export const Personel_CreateSheet = (props) => { 
-  const createAction = EntityStore(state => state.Create);
-  const loadingCreate = EntityStore(state => state.loadingAction);
+export const Personel_CreateSheet = (props) => {
+  const createAction = EntityStore((state) => state.Create);
+  const loadingCreate = EntityStore((state) => state.loadingAction);
 
   // Büro listesi için store'dan veri çekiyoruz
-  const buroList = Buro_Store(state => state.datas);
-  const loadBuroList = Buro_Store(state => state.GetAll);
-  
+  const buroList = Buro_Store((state) => state.datas);
+  const loadBuroList = Buro_Store((state) => state.GetAll);
+
   // ÖNEMLİ: useEffect'i düzelttik - sürekli çalışmasın
   const [buroLoaded, setBuroLoaded] = React.useState(false);
-  
+
   React.useEffect(() => {
     // Sadece bir kez yükle ve buroLoaded flag'i ile kontrol et
     if (!buroLoaded && (!buroList || buroList.length === 0)) {
@@ -139,9 +149,9 @@ export const Personel_CreateSheet = (props) => {
   // Büro seçeneklerini hazırla
   const buroOptions = React.useMemo(() => {
     if (!buroList || buroList.length === 0) return [];
-    return buroList.map(buro => ({
+    return buroList.map((buro) => ({
       value: buro.id,
-      label: `${buro.ad} (${buro.sube?.ad || 'Şube Yok'})`
+      label: `${buro.ad} (${buro.sube?.ad || "Şube Yok"})`,
     }));
   }, [buroList?.length]); // Sadece length değişimini izle
 
@@ -155,11 +165,11 @@ export const Personel_CreateSheet = (props) => {
       {...props}
     >
       {({ formData, setFieldValue, errors }) =>
-        renderFormInputs({ 
-          formData, 
-          setFieldValue, 
-          errors, 
-          buroOptions
+        renderFormInputs({
+          formData,
+          setFieldValue,
+          errors,
+          buroOptions,
         })
       }
     </BaseCreateSheet>

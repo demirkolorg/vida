@@ -1,0 +1,8 @@
+VITE_API_URL=http://localhost:2020/api
+VITE_APP_NAME=VidaApp
+
+VITE_AVATAR_URL=http://localhost:2020/uploads/avatars
+VITE_COVER_URL=http://localhost:2020/uploads/covers
+
+VITE_DEFAULT_AVATAR=http://localhost:2020/uploads/avatars/default.png
+VITE_DEFAULT_COVER=http://localhost:2020/uploads/covers/default.png

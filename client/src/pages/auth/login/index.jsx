@@ -1,6 +1,6 @@
 // pages/auth/login.jsx (veya .tsx)
-import { useAuthStore } from '@/stores/authStore';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from "@/stores/authStore";
+import { Navigate, useLocation } from "react-router-dom";
 import { GalleryVerticalEnd } from "lucide-react";
 import { LoginForm } from "@/pages/auth/login/login-form"; // LoginForm importunuzu doğrulayın
 import loginimage from "../../../assets/login.jpg"; // Resim yolunuzu doğrulayın
@@ -30,9 +30,7 @@ export default function LoginPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            {/* LoginForm'a `from` bilgisini prop olarak geçin,
-                başarılı login sonrası yönlendirme için kullanabilir. */}
-            <LoginForm redirectTo={{redirectTo:from}} />
+            <LoginForm redirectTo={{ redirectTo: from }} />
           </div>
         </div>
       </div>
@@ -40,7 +38,7 @@ export default function LoginPage() {
         <img
           src={loginimage}
           alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[1] dark:grayscale"
+          className="absolute inset-0 h-full w-full object-cover "
         />
       </div>
     </div>
