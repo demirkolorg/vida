@@ -1,23 +1,32 @@
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useSheetStore } from '@/stores/sheetStore';
-import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
-import { ToolbarIndex } from '@/components/toolbar/ToolbarIndex';
-import { AuditColumns } from '@/components/table/AuditColumns';
-import { DataTablePagination } from '@/components/table/Pagination';
-import { DataTableHeader } from '@/components/table/DataTableHeader';
-import { DataTableBody } from '@/components/table/DataTableBody';
-import { DataTableFooter } from '@/components/table/DataTableFooter';
-import { customGlobalFilterFn, useDebounce } from '@/components/table/Functions';
-import { Table } from '@/components/ui/table';
-import { getSortedRowModel, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable } from '@tanstack/react-table';
-import { FilterManagementSheet } from '@/app/filter/sheet/FilterManagementSheet';
-import { AdvancedFilterSheet } from '@/app/filter/sheet/AdvancedFilterSheet';
-import { toast } from 'sonner';
-import { getMySettings, updateMySettings } from '@/api/userSettings';
-import { useHighlightId, useHighlightIdClear } from '@/hooks/useHighlightId';
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useSheetStore } from "@/stores/sheetStore";
+import { useMemo, useCallback, useState, useEffect, useRef } from "react";
+import { ToolbarIndex } from "@/components/toolbar/ToolbarIndex";
+import { AuditColumns } from "@/components/table/AuditColumns";
+import { DataTablePagination } from "@/components/table/Pagination";
+import { DataTableHeader } from "@/components/table/DataTableHeader";
+import { DataTableBody } from "@/components/table/DataTableBody";
+import { DataTableFooter } from "@/components/table/DataTableFooter";
+import {
+  customGlobalFilterFn,
+  useDebounce,
+} from "@/components/table/Functions";
+import { Table } from "@/components/ui/table";
+import {
+  getSortedRowModel,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { FilterManagementSheet } from "@/app/filter/sheet/FilterManagementSheet";
+import { AdvancedFilterSheet } from "@/app/filter/sheet/AdvancedFilterSheet";
+import { toast } from "sonner";
+import { getMySettings, updateMySettings } from "@/api/userSettings";
+import { useHighlightId, useHighlightIdClear } from "@/hooks/useHighlightId";
 
 export function DataTable({
   entityType,
@@ -50,25 +59,35 @@ export function DataTable({
   autoClickFirstRow = false,
   // highlightId =null
 }) {
-  const openSheet = useSheetStore(state => state.openSheet);
+  const openSheet = useSheetStore((state) => state.openSheet);
   const [columnFilters, setColumnFilters] = useState([]);
-  const [globalSearchInput, setGlobalSearchInput] = useState('');
+  const [globalSearchInput, setGlobalSearchInput] = useState("");
   const [advancedFilterObject, setAdvancedFilterObject] = useState(null);
   const [sorting, setSorting] = useState(initialSortingState);
-  const [isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen] = useState(false);
+  const [isCollapsibleToolbarOpen, setIsCollapsibleToolbarOpen] = useState(
+    false
+  );
   const [columnOrder, setColumnOrder] = useState([]);
   const scrollRef = useRef(null);
   const [userSettings, setUserSettings] = useState(null);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
   const [internalRowSelection, setInternalRowSelection] = useState({});
-  const rowSelection = selectedRowIds?.length > 0 ? selectedRowIds.reduce((acc, id) => ({ ...acc, [id]: true }), {}) : internalRowSelection;
+  const rowSelection =
+    selectedRowIds?.length > 0
+      ? selectedRowIds.reduce((acc, id) => ({ ...acc, [id]: true }), {})
+      : internalRowSelection;
 
   const handleRowSelectionChange = useCallback(
-    updaterOrValue => {
-      const newSelection = typeof updaterOrValue === 'function' ? updaterOrValue(rowSelection) : updaterOrValue;
-      if (selectionMode === 'single') {
-        const selectedKeys = Object.keys(newSelection).filter(key => newSelection[key]);
+    (updaterOrValue) => {
+      const newSelection =
+        typeof updaterOrValue === "function"
+          ? updaterOrValue(rowSelection)
+          : updaterOrValue;
+      if (selectionMode === "single") {
+        const selectedKeys = Object.keys(newSelection).filter(
+          (key) => newSelection[key]
+        );
         if (selectedKeys.length > 1) {
           const lastSelected = selectedKeys[selectedKeys.length - 1];
           const singleSelection = { [lastSelected]: true };
@@ -80,7 +99,7 @@ export function DataTable({
       setInternalRowSelection(newSelection);
       onRowSelectionChange?.(newSelection);
     },
-    [rowSelection, selectionMode, onRowSelectionChange],
+    [rowSelection, selectionMode, onRowSelectionChange]
   );
 
   // Kullanıcı ayarlarını yükleme
@@ -90,8 +109,8 @@ export function DataTable({
       const settings = await getMySettings();
       setUserSettings(settings);
     } catch (error) {
-      console.error('Kullanıcı ayarları yüklenemedi:', error);
-      toast.error('Ayarlar yüklenirken hata oluştu');
+      console.error("Kullanıcı ayarları yüklenemedi:", error);
+      toast.error("Ayarlar yüklenirken hata oluştu");
     } finally {
       setIsLoadingSettings(false);
     }
@@ -128,12 +147,12 @@ export function DataTable({
         }
         return false;
       } catch (error) {
-        console.error('Kullanıcı ayarları güncellenemedi:', error);
-        toast.error('Ayarlar kaydedilemedi');
+        console.error("Kullanıcı ayarları güncellenemedi:", error);
+        toast.error("Ayarlar kaydedilemedi");
         return false;
       }
     },
-    [userSettings],
+    [userSettings]
   );
 
   // Kaydedilmiş kolon ayarlarını al
@@ -206,20 +225,56 @@ export function DataTable({
         setColumnOrder(savedColumnSettings.columnOrder);
       }
     }
-  }, [isLoadingSettings, savedColumnSettings, includeAuditColumns, columnVisibilityData]);
+  }, [
+    isLoadingSettings,
+    savedColumnSettings,
+    includeAuditColumns,
+    columnVisibilityData,
+  ]);
 
   const debouncedGlobalSearchTerm = useDebounce(globalSearchInput, 300);
 
   const activeGlobalFilter = useMemo(() => {
-    if (advancedFilterObject && advancedFilterObject.rules && advancedFilterObject.rules.length > 0) return advancedFilterObject;
-    return debouncedGlobalSearchTerm || '';
+    if (
+      advancedFilterObject &&
+      advancedFilterObject.rules &&
+      advancedFilterObject.rules.length > 0
+    )
+      return advancedFilterObject;
+    return debouncedGlobalSearchTerm || "";
   }, [advancedFilterObject, debouncedGlobalSearchTerm]);
 
   const selectionColumn = useMemo(
     () => ({
-      id: 'select',
-      header: ({ table }) => <div className="flex justify-center">{enableSelectAll && selectionMode === 'multiple' ? <Checkbox checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')} onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)} aria-label="Tümünü seç" className="translate-y-[2px]" /> : <span className="sr-only">Seç</span>}</div>,
-      cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={value => row.toggleSelected(!!value)} aria-label={`Satır ${row.index + 1}'i seç`} className="cursor-pointer translate-y-[2px]" onClick={e => e.stopPropagation()} />,
+      id: "select",
+      header: ({ table }) => (
+        <div className="flex justify-center">
+          {enableSelectAll && selectionMode === "multiple" ? (
+            <Checkbox
+              checked={
+                table.getIsAllPageRowsSelected() ||
+                (table.getIsSomePageRowsSelected() && "indeterminate")
+              }
+              onCheckedChange={(value) =>
+                table.toggleAllPageRowsSelected(!!value)
+              }
+              aria-label="Tümünü seç"
+              className="translate-y-[2px]"
+            />
+          ) : (
+            <span className="sr-only">Seç</span>
+          )}
+        </div>
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label={`Satır ${row.index + 1}'i seç`}
+          className="cursor-pointer translate-y-[2px]"
+          onClick={(e) => e.stopPropagation()}
+        />
+      ),
       enableSorting: false,
       enableHiding: true,
       enableResizing: false,
@@ -227,16 +282,16 @@ export function DataTable({
       maxSize: 30,
       minSize: 30,
       meta: {
-        exportHeader: 'Seç',
-        filterVariant: 'text',
+        exportHeader: "Seç",
+        filterVariant: "text",
       },
     }),
-    [enableSelectAll, selectionMode],
+    [enableSelectAll, selectionMode]
   );
 
   const rowNumberColumn = useMemo(
     () => ({
-      id: 'rowNumber',
+      id: "rowNumber",
       header: () => <div className="text-center">#</div>,
       cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
       size: 30,
@@ -246,11 +301,11 @@ export function DataTable({
       enableHiding: true,
       enableResizing: false,
       meta: {
-        exportHeader: '#',
-        filterVariant: 'text',
+        exportHeader: "#",
+        filterVariant: "text",
       },
     }),
-    [],
+    []
   );
 
   const allColumns = useMemo(() => {
@@ -266,7 +321,15 @@ export function DataTable({
     }
 
     return [...leadingCols, ...specificColumns, ...auditCols];
-  }, [specificColumns, includeAuditColumns, enableRowSelection, showRowSelectionColumn, selectionColumn, showRowNumberColumn, rowNumberColumn]);
+  }, [
+    specificColumns,
+    includeAuditColumns,
+    enableRowSelection,
+    showRowSelectionColumn,
+    selectionColumn,
+    showRowNumberColumn,
+    rowNumberColumn,
+  ]);
 
   // Debounced kaydetme fonksiyonu
   const debouncedSaveSettings = useCallback(
@@ -279,13 +342,16 @@ export function DataTable({
         }, delay);
       };
     })(),
-    [entityType, updateUserColumnSettings],
+    [entityType, updateUserColumnSettings]
   );
 
   // Kolon görünürlüğü değiştiğinde veritabanına kaydet
   const handleColumnVisibilityChange = useCallback(
-    updaterOrValue => {
-      const newVisibility = typeof updaterOrValue === 'function' ? updaterOrValue(columnVisibility) : updaterOrValue;
+    (updaterOrValue) => {
+      const newVisibility =
+        typeof updaterOrValue === "function"
+          ? updaterOrValue(columnVisibility)
+          : updaterOrValue;
       setColumnVisibility(newVisibility);
 
       // Debounced kaydetme
@@ -295,16 +361,19 @@ export function DataTable({
           columnSizing,
           columnOrder,
         },
-        500,
+        500
       );
     },
-    [columnVisibility, columnSizing, columnOrder, debouncedSaveSettings],
+    [columnVisibility, columnSizing, columnOrder, debouncedSaveSettings]
   );
 
   // Kolon boyutu değiştiğinde veritabanına kaydet
   const handleColumnSizingChange = useCallback(
-    updaterOrValue => {
-      const newSizing = typeof updaterOrValue === 'function' ? updaterOrValue(columnSizing) : updaterOrValue;
+    (updaterOrValue) => {
+      const newSizing =
+        typeof updaterOrValue === "function"
+          ? updaterOrValue(columnSizing)
+          : updaterOrValue;
       setColumnSizing(newSizing);
 
       // Debounced kaydetme (boyut değişikliği için daha uzun süre)
@@ -314,16 +383,19 @@ export function DataTable({
           columnSizing: newSizing,
           columnOrder,
         },
-        1500,
+        1500
       );
     },
-    [columnVisibility, columnSizing, columnOrder, debouncedSaveSettings],
+    [columnVisibility, columnSizing, columnOrder, debouncedSaveSettings]
   );
 
   // Kolon sırası değiştiğinde veritabanına kaydet
   const handleColumnOrderChange = useCallback(
-    updaterOrValue => {
-      const newOrder = typeof updaterOrValue === 'function' ? updaterOrValue(columnOrder) : updaterOrValue;
+    (updaterOrValue) => {
+      const newOrder =
+        typeof updaterOrValue === "function"
+          ? updaterOrValue(columnOrder)
+          : updaterOrValue;
       setColumnOrder(newOrder);
 
       debouncedSaveSettings(
@@ -332,10 +404,10 @@ export function DataTable({
           columnSizing,
           columnOrder: newOrder,
         },
-        500,
+        500
       );
     },
-    [columnVisibility, columnSizing, columnOrder, debouncedSaveSettings],
+    [columnVisibility, columnSizing, columnOrder, debouncedSaveSettings]
   );
 
   const table = useReactTable({
@@ -343,7 +415,7 @@ export function DataTable({
     columns: allColumns,
     autoResetPageIndex: true,
     enableRowSelection,
-    getRowId: originalRow => originalRow.id,
+    getRowId: (originalRow) => originalRow.id,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -355,7 +427,7 @@ export function DataTable({
     onColumnSizingChange: handleColumnSizingChange,
     globalFilterFn: customGlobalFilterFn,
     enableColumnResizing: true,
-    columnResizeMode: 'onChange',
+    columnResizeMode: "onChange",
     enableColumnOrdering: enableColumnReordering,
     onColumnOrderChange: handleColumnOrderChange,
     state: {
@@ -368,20 +440,22 @@ export function DataTable({
       columnSizing,
     },
     initialState: {
-      pagination: { pageSize: 20 },
+      pagination: { pageSize: 15 },
       columnSizing: savedColumnSettings?.columnSizing || {},
     },
   });
 
   const visibleColumnsCount = table.getVisibleLeafColumns().length;
-  const selectedRowCount = Object.keys(rowSelection).filter(key => rowSelection[key]).length;
+  const selectedRowCount = Object.keys(rowSelection).filter(
+    (key) => rowSelection[key]
+  ).length;
   const selectedRows = table.getFilteredSelectedRowModel().rows;
-  const selectedData = selectedRows.map(row => row.original);
+  const selectedData = selectedRows.map((row) => row.original);
 
   const clearSelection = useCallback(() => {
     setInternalRowSelection({});
     onRowSelectionChange?.({});
-    toast.info('Seçim temizlendi');
+    toast.info("Seçim temizlendi");
   }, [onRowSelectionChange]);
 
   const bulkActions = useMemo(() => {
@@ -391,30 +465,36 @@ export function DataTable({
       data: selectedData,
       clear: clearSelection,
       exportSelected: () => {
-        console.log('Seçili satırlar export edilecek:', selectedData);
+        console.log("Seçili satırlar export edilecek:", selectedData);
         toast.success(`${selectedRowCount} satır export edilecek`);
       },
       deleteSelected: () => {
-        console.log('Seçili satırlar silinecek:', selectedData);
+        console.log("Seçili satırlar silinecek:", selectedData);
         toast.success(`${selectedRowCount} satır silinecek`);
       },
     };
   }, [selectedRowCount, selectedData, clearSelection]);
 
   const handleCreate = useCallback(() => {
-    openSheet('create', null, entityType);
+    openSheet("create", null, entityType);
   }, [openSheet, entityType]);
 
   const allSummaries = useMemo(() => {
-    if (!summarySetup || summarySetup.length === 0 || !data || data.length === 0) return null;
+    if (
+      !summarySetup ||
+      summarySetup.length === 0 ||
+      !data ||
+      data.length === 0
+    )
+      return null;
     const summaries = {};
-    summarySetup.forEach(setup => {
+    summarySetup.forEach((setup) => {
       const { columnId, title } = setup;
       const counts = {};
       try {
-        data.forEach(row => {
+        data.forEach((row) => {
           const value = row[columnId];
-          const key = String(value ?? 'Bilinmeyen');
+          const key = String(value ?? "Bilinmeyen");
           counts[key] = (counts[key] || 0) + 1;
         });
         const items = Object.entries(counts)
@@ -422,77 +502,98 @@ export function DataTable({
           .map(([key, count]) => ({ key, count }));
         summaries[String(columnId)] = { title, items };
       } catch (error) {
-        console.error(`Summary calculation failed for column: ${String(columnId)}`, error);
+        console.error(
+          `Summary calculation failed for column: ${String(columnId)}`,
+          error
+        );
       }
     });
     return summaries;
   }, [data, summarySetup]);
 
   const handleGlobalSearchInputChange = useCallback(
-    value => {
-      const newSearchTerm = value || '';
+    (value) => {
+      const newSearchTerm = value || "";
       setGlobalSearchInput(newSearchTerm);
-      if (newSearchTerm.trim() !== '' && advancedFilterObject) {
+      if (newSearchTerm.trim() !== "" && advancedFilterObject) {
         setAdvancedFilterObject(null);
-        toast.info('Gelişmiş filtre temizlendi, basit arama uygulanıyor.');
+        toast.info("Gelişmiş filtre temizlendi, basit arama uygulanıyor.");
       }
     },
-    [advancedFilterObject],
+    [advancedFilterObject]
   );
 
   const applyAdvancedFiltersToTable = useCallback(
-    newAdvancedFilterLogic => {
-      if (newAdvancedFilterLogic && newAdvancedFilterLogic.rules && newAdvancedFilterLogic.rules.length > 0) {
+    (newAdvancedFilterLogic) => {
+      if (
+        newAdvancedFilterLogic &&
+        newAdvancedFilterLogic.rules &&
+        newAdvancedFilterLogic.rules.length > 0
+      ) {
         setAdvancedFilterObject(newAdvancedFilterLogic);
-        if (globalSearchInput) setGlobalSearchInput('');
-        toast.success('Gelişmiş filtreler uygulandı.');
+        if (globalSearchInput) setGlobalSearchInput("");
+        toast.success("Gelişmiş filtreler uygulandı.");
       } else {
         setAdvancedFilterObject(null);
       }
     },
-    [globalSearchInput],
+    [globalSearchInput]
   );
 
   const handleClearAllFilters = useCallback(() => {
     table.resetColumnFilters();
-    setGlobalSearchInput('');
+    setGlobalSearchInput("");
     setAdvancedFilterObject(null);
     clearSelection();
-    toast.info('Tüm filtreler temizlendi.');
+    toast.info("Tüm filtreler temizlendi.");
   }, [table, clearSelection]);
 
   const handleApplySavedFilter = useCallback(
-    savedFilterState => {
+    (savedFilterState) => {
       if (!savedFilterState) {
-        toast.error('Kaydedilmiş filtre durumu bulunamadı.');
+        toast.error("Kaydedilmiş filtre durumu bulunamadı.");
         return;
       }
-      const { columnFilters: savedColumnFilters, globalFilter: savedGlobalFilter, sorting: savedSorting } = savedFilterState;
+      const {
+        columnFilters: savedColumnFilters,
+        globalFilter: savedGlobalFilter,
+        sorting: savedSorting,
+      } = savedFilterState;
       table.setColumnFilters(savedColumnFilters || []);
-      if (typeof savedGlobalFilter === 'string') {
+      if (typeof savedGlobalFilter === "string") {
         setGlobalSearchInput(savedGlobalFilter);
         setAdvancedFilterObject(null);
-      } else if (typeof savedGlobalFilter === 'object' && savedGlobalFilter !== null && savedGlobalFilter.rules) {
+      } else if (
+        typeof savedGlobalFilter === "object" &&
+        savedGlobalFilter !== null &&
+        savedGlobalFilter.rules
+      ) {
         setAdvancedFilterObject(savedGlobalFilter);
-        setGlobalSearchInput('');
+        setGlobalSearchInput("");
       } else {
-        setGlobalSearchInput('');
+        setGlobalSearchInput("");
         setAdvancedFilterObject(null);
       }
       table.setSorting(savedSorting || []);
     },
-    [table],
+    [table]
   );
 
   const isTableFiltered = useMemo(() => {
     const { columnFilters, globalFilter } = table.getState();
     const hasColumnFilters = columnFilters && columnFilters.length > 0;
-    const hasGlobalFilter = globalFilter && (typeof globalFilter === 'string' ? globalFilter.trim().length > 0 : typeof globalFilter === 'object' && globalFilter.rules && globalFilter.rules.length > 0);
+    const hasGlobalFilter =
+      globalFilter &&
+      (typeof globalFilter === "string"
+        ? globalFilter.trim().length > 0
+        : typeof globalFilter === "object" &&
+          globalFilter.rules &&
+          globalFilter.rules.length > 0);
     return hasColumnFilters || hasGlobalFilter;
   }, [table.getState().columnFilters, table.getState().globalFilter]);
 
   useEffect(() => {
-    if (enableColumnReordering) console.log('Yeni Sütun Sırası:', columnOrder);
+    if (enableColumnReordering) console.log("Yeni Sütun Sırası:", columnOrder);
   }, [columnOrder, enableColumnReordering]);
 
   // Kolon ayarlarını sıfırlama fonksiyonu
@@ -524,15 +625,20 @@ export function DataTable({
       });
 
       if (success) {
-        toast.success('Kolon ayarları sıfırlandı');
+        toast.success("Kolon ayarları sıfırlandı");
       } else {
-        toast.error('Kolon ayarları sıfırlanamadı');
+        toast.error("Kolon ayarları sıfırlanamadı");
       }
     } catch (error) {
-      console.error('Error resetting column settings:', error);
-      toast.error('Kolon ayarları sıfırlanamadı');
+      console.error("Error resetting column settings:", error);
+      toast.error("Kolon ayarları sıfırlanamadı");
     }
-  }, [entityType, includeAuditColumns, columnVisibilityData, updateUserColumnSettings]);
+  }, [
+    entityType,
+    includeAuditColumns,
+    columnVisibilityData,
+    updateUserColumnSettings,
+  ]);
 
   const handleFirstRowClicked = useCallback(() => {}, []);
 
@@ -553,30 +659,39 @@ export function DataTable({
   useEffect(() => {
     if (highlightId && data && data.length > 0 && !isLoading) {
       // Highlight edilecek kaydın indeksini bul
-      const targetIndex = data.findIndex(item => item.id?.toString() === highlightId?.toString());
+      const targetIndex = data.findIndex(
+        (item) => item.id?.toString() === highlightId?.toString()
+      );
+      console.log("targetIndex", targetIndex);
 
       if (targetIndex !== -1) {
         // Hangi sayfada olması gerektiğini hesapla
         const pageSize = table.getState().pagination.pageSize;
+        console.log("pageSize", pageSize);
+
         const targetPage = Math.floor(targetIndex / pageSize);
+        console.log("targetPage", targetPage);
+
         const currentPage = table.getState().pagination.pageIndex;
+        console.log("currentPage", currentPage);
 
-        // Eğer farklı bir sayfadaysa, o sayfaya git
-        if (targetPage !== currentPage) {
-          console.log(`HighlightId ${highlightId} found at index ${targetIndex}, navigating to page ${targetPage + 1}`);
-          table.setPageIndex(targetPage);
-
-          // Sayfa değiştiğinde bildirim göster
-          toast.info(`Aranan kayıt ${targetPage + 1}. sayfada bulundu`);
-        }
+        console.log(
+          `HighlightId ${highlightId} found at index ${targetIndex}, navigating to page ${
+            targetPage + 1
+          }`
+        );
+        table.setPageIndex(targetPage);
+        toast.info(`Aranan kayıt ${targetPage + 1}. sayfada bulundu`);
 
         // Sayfaya gittikten sonra satırı scroll view'a getir
         setTimeout(() => {
-          const highlightedRow = document.querySelector(`[data-row-id="${highlightId}"]`);
+          const highlightedRow = document.querySelector(
+            `[data-row-id="${highlightId}"]`
+          );
           if (highlightedRow) {
             highlightedRow.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center',
+              behavior: "smooth",
+              block: "center",
             });
           }
         }, 100);
@@ -588,18 +703,69 @@ export function DataTable({
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] w-full overflow-hidden">
-      <FilterManagementSheet sheetTypeIdentifier="filterManagement" entityType={entityType} entityHuman={entityHuman} table={table} onClearAllFilters={handleClearAllFilters} onApplySavedFilter={handleApplySavedFilter} isTableFiltered={isTableFiltered} />
-      <AdvancedFilterSheet sheetTypeIdentifier="advancedFilter" entityType={entityType} entityHuman={entityHuman} table={table} onApplyFilters={applyAdvancedFiltersToTable} />
+      <FilterManagementSheet
+        sheetTypeIdentifier="filterManagement"
+        entityType={entityType}
+        entityHuman={entityHuman}
+        table={table}
+        onClearAllFilters={handleClearAllFilters}
+        onApplySavedFilter={handleApplySavedFilter}
+        isTableFiltered={isTableFiltered}
+      />
+      <AdvancedFilterSheet
+        sheetTypeIdentifier="advancedFilter"
+        entityType={entityType}
+        entityHuman={entityHuman}
+        table={table}
+        onApplyFilters={applyAdvancedFiltersToTable}
+      />
 
       <div className="flex-shrink-0">
-        <ToolbarIndex table={table} globalSearchTerm={globalSearchInput} onGlobalSearchChange={handleGlobalSearchInputChange} facetedFilterSetup={facetedFilterSetup} data={data} moreButtonRendered={moreButtonRendered} toolbarActions={toolbarActions} onRefresh={onRefresh} isLoading={isLoading} hideNewButton={hideNewButton} handleCreate={handleCreate} isCollapsibleToolbarOpen={isCollapsibleToolbarOpen} setIsCollapsibleToolbarOpen={setIsCollapsibleToolbarOpen} onClearAllFilters={handleClearAllFilters} renderCollapsibleToolbarContent={renderCollapsibleToolbarContent} entityType={entityType} displayStatusFilter={displayStatusFilter} onToggleStatus={onToggleStatus} isTableFiltered={isTableFiltered} bulkActions={bulkActions} resetColumnSettings={resetColumnSettings} selectedRowCount={selectedRowCount} clearSelection={clearSelection} />
+        <ToolbarIndex
+          table={table}
+          globalSearchTerm={globalSearchInput}
+          onGlobalSearchChange={handleGlobalSearchInputChange}
+          facetedFilterSetup={facetedFilterSetup}
+          data={data}
+          moreButtonRendered={moreButtonRendered}
+          toolbarActions={toolbarActions}
+          onRefresh={onRefresh}
+          isLoading={isLoading}
+          hideNewButton={hideNewButton}
+          handleCreate={handleCreate}
+          isCollapsibleToolbarOpen={isCollapsibleToolbarOpen}
+          setIsCollapsibleToolbarOpen={setIsCollapsibleToolbarOpen}
+          onClearAllFilters={handleClearAllFilters}
+          renderCollapsibleToolbarContent={renderCollapsibleToolbarContent}
+          entityType={entityType}
+          displayStatusFilter={displayStatusFilter}
+          onToggleStatus={onToggleStatus}
+          isTableFiltered={isTableFiltered}
+          bulkActions={bulkActions}
+          resetColumnSettings={resetColumnSettings}
+          selectedRowCount={selectedRowCount}
+          clearSelection={clearSelection}
+        />
       </div>
 
       <div className="flex-1 min-h-0 rounded-md border overflow-hidden">
-        <div className="h-full overflow-y-auto relative scrollbar dark:dark-scrollbar" ref={scrollRef}>
+        <div
+          className="h-full overflow-y-auto relative scrollbar dark:dark-scrollbar"
+          ref={scrollRef}
+        >
           <Table className="w-full table-fixed">
             <DataTableHeader table={table} />
-            <DataTableBody table={table} isLoading={isLoading} onRowClick={onRowClick} autoClickFirstRow={autoClickFirstRow} onFirstRowClicked={handleFirstRowClicked} rowContextMenu={rowContextMenu} enableRowSelection={enableRowSelection} visibleColumnsCount={visibleColumnsCount} highlightId={highlightId} />
+            <DataTableBody
+              table={table}
+              isLoading={isLoading}
+              onRowClick={onRowClick}
+              autoClickFirstRow={autoClickFirstRow}
+              onFirstRowClicked={handleFirstRowClicked}
+              rowContextMenu={rowContextMenu}
+              enableRowSelection={enableRowSelection}
+              visibleColumnsCount={visibleColumnsCount}
+              highlightId={highlightId}
+            />
           </Table>
 
           {/* <DataTableFooter summarySetup={summarySetup} allSummaries={allSummaries} visibleColumnsCount={visibleColumnsCount} /> */}

@@ -3,7 +3,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { Navigate, useLocation } from "react-router-dom";
 import { GalleryVerticalEnd } from "lucide-react";
 import { LoginForm } from "@/pages/auth/login/login-form"; // LoginForm importunuzu doğrulayın
-import loginimage from "../../../assets/login.jpg"; // Resim yolunuzu doğrulayın
+import loginimage from "@/assets/login.jpg"; // Resim yolunuzu doğrulayın
 
 export default function LoginPage() {
   const isAuth = useAuthStore((state) => state.isAuth);

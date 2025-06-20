@@ -1,22 +1,26 @@
-import { useCallback, useEffect, useMemo } from 'react';
-import { DataTable } from '@/components/table/DataTable';
-import { EntityType, EntityHuman } from '../constants/api';
+import { useCallback, useEffect, useMemo } from "react";
+import { DataTable } from "@/components/table/DataTable";
+import { EntityType, EntityHuman } from "../constants/api";
 
-import { Personel_Columns as EntityColumns } from './columns';
-import { Personel_ContextMenu as EntityContextMenu } from './contextMenu';
-import { Personel_Store as useEntityStore } from '../constants/store';
-import { Personel_SpecificToolbar as EntitySpecificToolbar } from './specificToolbar';
-import { useHighlightId, useHighlightIdClear } from '@/hooks/useHighlightId';
+import { Personel_Columns as EntityColumns } from "./columns";
+import { Personel_ContextMenu as EntityContextMenu } from "./contextMenu";
+import { Personel_Store as useEntityStore } from "../constants/store";
+import { Personel_SpecificToolbar as EntitySpecificToolbar } from "./specificToolbar";
+import { useHighlightId, useHighlightIdClear } from "@/hooks/useHighlightId";
 
 const columnVisibilityData = {};
-const sorting = [{ id: 'ad', desc: false }];
+const sorting = [];
 
 export function Personel_DataTable() {
-  const datas = useEntityStore(state => state.datas);
-  const fetchData = useEntityStore(state => state.GetByQuery);
-  const isLoading = useEntityStore(state => state.loadingList);
-  const toggleDisplayStatusFilter = useEntityStore(state => state.ToggleDisplayStatusFilter);
-  const displayStatusFilter = useEntityStore(state => state.displayStatusFilter);
+  const datas = useEntityStore((state) => state.datas);
+  const fetchData = useEntityStore((state) => state.GetByQuery);
+  const isLoading = useEntityStore((state) => state.loadingList);
+  const toggleDisplayStatusFilter = useEntityStore(
+    (state) => state.ToggleDisplayStatusFilter
+  );
+  const displayStatusFilter = useEntityStore(
+    (state) => state.displayStatusFilter
+  );
 
   // Columns'ı STABLE hale getirin - datas.length'e göre değil sadece data varsa oluştursun
   const columns = useMemo(() => {
@@ -28,22 +32,26 @@ export function Personel_DataTable() {
     }
 
     // Büro filter options'ını data'dan oluştur
-    const uniqueBurolar = [...new Set(datas.map(item => item.buro?.ad).filter(Boolean))];
-    const buroFilterOptions = uniqueBurolar.map(buroAd => ({
+    const uniqueBurolar = [
+      ...new Set(datas.map((item) => item.buro?.ad).filter(Boolean)),
+    ];
+    const buroFilterOptions = uniqueBurolar.map((buroAd) => ({
       label: buroAd,
       value: buroAd,
     }));
 
     // Role filter options
-    const uniqueRoles = [...new Set(datas.map(item => item.role).filter(Boolean))];
-    const roleFilterOptions = uniqueRoles.map(role => ({
+    const uniqueRoles = [
+      ...new Set(datas.map((item) => item.role).filter(Boolean)),
+    ];
+    const roleFilterOptions = uniqueRoles.map((role) => ({
       label: role,
       value: role,
     }));
 
     // Kolonları bul ve filterOptions'larını ekle
-    const updatedColumns = baseColumns.map(column => {
-      if (column.accessorKey === 'buro') {
+    const updatedColumns = baseColumns.map((column) => {
+      if (column.accessorKey === "buro") {
         return {
           ...column,
           meta: {
@@ -52,7 +60,7 @@ export function Personel_DataTable() {
           },
         };
       }
-      if (column.accessorKey === 'role') {
+      if (column.accessorKey === "role") {
         return {
           ...column,
           meta: {
@@ -70,17 +78,20 @@ export function Personel_DataTable() {
   // Faceted filter data - STABLE
   const facesFilterData = useMemo(
     () => [
-      { columnId: 'status', title: 'Durum' },
-      { columnId: 'role', title: 'Rol' },
-      { columnId: 'buro', title: 'Bağlı Büro' },
-      { columnId: 'isUser', title: 'Sistem Kullanıcısı' },
-      { columnId: 'isAmir', title: 'Amir' },
-      { columnId: 'createdBy', title: 'Oluşturan' },
+      { columnId: "status", title: "Durum" },
+      { columnId: "role", title: "Rol" },
+      { columnId: "buro", title: "Bağlı Büro" },
+      { columnId: "isUser", title: "Sistem Kullanıcısı" },
+      { columnId: "isAmir", title: "Amir" },
+      { columnId: "createdBy", title: "Oluşturan" },
     ],
-    [],
+    []
   ); // Hiç değişmeyecek
 
-  const contextMenu = useCallback(row => <EntityContextMenu item={row.original} />, []);
+  const contextMenu = useCallback(
+    (row) => <EntityContextMenu item={row.original} />,
+    []
+  );
 
   // useEffect - SADECE MOUNT'ta çalışsın
   useEffect(() => {
@@ -96,11 +107,11 @@ export function Personel_DataTable() {
   // filteredDatas - displayStatusFilter ve datas.length'e göre
   const filteredDatas = useMemo(() => {
     if (!datas || datas.length === 0) return [];
-    return datas.filter(item => item.status === displayStatusFilter);
+    return datas.filter((item) => item.status === displayStatusFilter);
   }, [datas, displayStatusFilter]); // datas objesi yerine length kullan
 
   // const highlightId = useHighlightId();
-  // const clearHighlight = useHighlightIdClear(); 
+  // const clearHighlight = useHighlightIdClear();
   // useEffect(() => {
   //   if (highlightId && datas.length > 0) {
   //     const timer = setTimeout(() => {
@@ -112,7 +123,7 @@ export function Personel_DataTable() {
   //   }
   // }, [highlightId, datas.length, clearHighlight]);
   // console.log('highlightId,', highlightId);
-  
+
   return (
     <DataTable
       data={filteredDatas}
