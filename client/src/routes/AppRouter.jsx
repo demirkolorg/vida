@@ -126,6 +126,7 @@ const router = createBrowserRouter([
                 path: '/builder',
                 element: <TutanakBuilder />,
               },
+              
             ],
           },
         ],
